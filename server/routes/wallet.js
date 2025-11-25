@@ -277,51 +277,78 @@ router.get('/utxos/:address', async (req, res) => {
         
         try {
             // Usar nova rota de wallet inscriptions via QuickNode
-            const ordResponse = await axios.get(`http://localhost:${process.env.PORT || 3000}/api/wallet/${address}/inscriptions`, {
+            const ordResponse = await axios.get(`http://localhost:4000/api/wallet/${address}/inscriptions`, {
                 timeout: 30000
             });
             
-            const responseData = ordResponse.data;
+            const html = ordResponse.data;
             
-            // Verificar se retornou JSON válido com inscriptions
-            if (responseData && responseData.success && Array.isArray(responseData.inscriptions)) {
-                console.log(`   📋 Found ${responseData.inscriptions.length} inscriptions in API response`);
+            // Parsear outputs do HTML
+            // <li><a class=collapse href=/output/TXID:VOUT>TXID:VOUT</a></li>
+            const outputMatches = [...html.matchAll(/<a[^>]+href=\/output\/([a-f0-9]+):(\d+)>/gi)];
+            
+            console.log(`   📋 Found ${outputMatches.length} outputs in ORD HTML`);
+            
+            // Para cada output, buscar detalhes
+            for (const match of outputMatches) {
+                const txid = match[1];
+                const vout = parseInt(match[2]);
+                const outpoint = `${txid}:${vout}`;
                 
-                // Mapear inscriptions para o formato de UTXOs
-                for (const insc of responseData.inscriptions) {
-                    // output format: "txid:vout"
-                    const [txid, voutStr] = insc.output.split(':');
-                    const vout = parseInt(voutStr);
+                try {
+                    // Usar nova rota de output via QuickNode
+                    const outResponse = await axios.get(`http://localhost:4000/api/output/${outpoint}`, {
+                        timeout: 3000
+                    });
                     
-                    try {
-                        // Usar nova rota de output via QuickNode
-                        // Nota: Se a rota /api/output retornar JSON, precisamos ajustar aqui também
-                        // Mas por enquanto vamos assumir que precisamos buscar dados do output
-                        const outResponse = await axios.get(`http://localhost:${process.env.PORT || 3000}/api/output/${insc.output}`, {
-                            timeout: 3000
-                        });
+                    const outHtml = outResponse.data;
+                    
+                    // Extrair value
+                    const valueMatch = outHtml.match(/<dt>value<\/dt><dd>(\d+)<\/dd>/);
+                    if (valueMatch) {
+                        const value = parseInt(valueMatch[1]);
                         
-                        const outData = outResponse.data;
+                        // Extrair script pubkey (formato ASM: "OP_PUSHNUM_1 OP_PUSHBYTES_32 xxx")
+                        const scriptMatch = outHtml.match(/<dt>script pubkey<\/dt><dd[^>]*>([^<]+)<\/dd>/);
+                        let scriptPubKey = '';
                         
-                        // Se outData for JSON (esperado do output.js)
-                        if (outData && outData.value) {
+                        if (scriptMatch) {
+                            const scriptAsm = scriptMatch[1].trim();
+                            
+                            // Converter ASM para HEX
+                            // "OP_PUSHNUM_1 OP_PUSHBYTES_32 4231fc..." → "51204231fc..."
+                            if (scriptAsm.startsWith('OP_PUSHNUM_1 OP_PUSHBYTES_32 ')) {
+                                // Taproot: 0x51 (OP_1) + 0x20 (32 bytes) + pubkey
+                                const pubkey = scriptAsm.replace('OP_PUSHNUM_1 OP_PUSHBYTES_32 ', '');
+                                scriptPubKey = '5120' + pubkey;
+                            } else if (scriptAsm.startsWith('OP_0 OP_PUSHBYTES_20 ')) {
+                                // P2WPKH: 0x00 (OP_0) + 0x14 (20 bytes) + hash
+                                const hash = scriptAsm.replace('OP_0 OP_PUSHBYTES_20 ', '');
+                                scriptPubKey = '0014' + hash;
+                            } else if (scriptAsm.startsWith('OP_0 OP_PUSHBYTES_32 ')) {
+                                // P2WSH: 0x00 (OP_0) + 0x20 (32 bytes) + hash
+                                const hash = scriptAsm.replace('OP_0 OP_PUSHBYTES_32 ', '');
+                                scriptPubKey = '0020' + hash;
+                            } else {
+                                console.warn(`   ⚠️  Unknown script format: ${scriptAsm.substring(0, 50)}...`);
+                                scriptPubKey = '';
+                            }
+                        }
+                        
+                        if (scriptPubKey) {
                             utxos.push({
                                 txid,
                                 vout,
-                                value: outData.value,
-                                script_pubkey: outData.scriptPubKey,
-                                scriptPubKey: outData.scriptPubKey,
-                                status: { confirmed: true }, // Assumir confirmado se veio do indexador
-                                hasInscription: true,
-                                inscription: { id: insc.id }
+                                value,
+                                script_pubkey: scriptPubKey,  // ✅ snake_case
+                                scriptPubKey: scriptPubKey,    // camelCase para compatibilidade
+                                status: { confirmed: true }
                             });
                         }
-                    } catch (outError) {
-                        console.warn(`   ⚠️  Failed to fetch output ${insc.output}:`, outError.message);
                     }
+                } catch (outError) {
+                    console.warn(`   ⚠️  Failed to fetch output ${outpoint}:`, outError.message);
                 }
-            } else {
-                console.warn('   ⚠️  Invalid response from inscriptions API');
             }
             
             console.log(`✅ Found ${utxos.length} UTXOs from LOCAL ORD server`);
@@ -348,12 +375,48 @@ router.get('/utxos/:address', async (req, res) => {
             const hasInscr = await utxoFilter.hasInscription(utxo.txid, utxo.vout);
             const hasRune = await utxoFilter.hasRunes(utxo.txid, utxo.vout);
             
+            // 🪙 Se tem runes, buscar detalhes via QuickNode
+            let runesDetails = [];
+            if (hasRune) {
+                try {
+                    const outpoint = `${utxo.txid}:${utxo.vout}`;
+                    const outputData = await quicknode.getOutput(outpoint);
+                    
+                    if (outputData.runes && Object.keys(outputData.runes).length > 0) {
+                        for (const [runeId, runeAmount] of Object.entries(outputData.runes)) {
+                            try {
+                                const runeData = await quicknode.call('ord_getRune', [runeId]);
+                                runesDetails.push({
+                                    name: runeData.entry.spaced_rune,
+                                    amount: runeAmount,
+                                    symbol: runeData.entry.symbol || '⧈',
+                                    divisibility: runeData.entry.divisibility || 0,
+                                    runeId: runeId
+                                });
+                                await new Promise(r => setTimeout(r, 120)); // Rate limit
+                            } catch (e) {
+                                // Fallback: usar runeId como nome
+                                runesDetails.push({
+                                    name: runeId,
+                                    amount: runeAmount,
+                                    symbol: '⧈',
+                                    divisibility: 0,
+                                    runeId: runeId
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Could not enrich runes for ${utxo.txid}:${utxo.vout}`);
+                }
+            }
+            
             return {
                 ...utxo,
                 hasInscription: hasInscr,
                 hasRunes: hasRune,
                 inscription: hasInscr ? { id: `${utxo.txid}i${utxo.vout}` } : null,
-                runes: hasRune ? [] : []
+                runes: runesDetails
             };
         }));
         
