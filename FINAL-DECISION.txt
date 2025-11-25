@@ -1,0 +1,87 @@
+🎯 DECISÃO FINAL: COMO IMPLEMENTAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Criei runes-swap-new.html com 2 OPÇÕES:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ OPÇÃO A: IFRAMES (JÁ CRIADO)
+📄 runes-swap-new.html
+
+Estrutura:
+┌────────────────────────────────┐
+│ NAVBAR KRAY STATION            │
+├────────────────────────────────┤
+│ Hero: Runes Swap               │
+├────────────────────────────────┤
+│ [ 🔄 SWAP ] [ + CREATE POOL ]  │
+├────────────────────────────────┤
+│ <iframe src="defi-swap.html">  │ ← Carrega página existente
+│ <iframe src="pool-create.html">│
+└────────────────────────────────┘
+
+VANTAGENS:
+✅ Rápido (já feito!)
+✅ Mantém arquivos separados
+✅ Fácil de manter
+✅ Funciona AGORA
+✅ Reutiliza código existente
+
+DESVANTAGENS:
+⚠️  Iframes podem ter problemas de comunicação
+⚠️  Scroll duplo (página + iframe)
+⚠️  Menos integrado visualmente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ OPÇÃO B: ARQUIVO ÚNICO
+📄 runes-swap-FULL.html (não criado ainda)
+
+Estrutura:
+┌────────────────────────────────┐
+│ NAVBAR KRAY STATION            │
+├────────────────────────────────┤
+│ Hero: Runes Swap               │
+├────────────────────────────────┤
+│ [ 🔄 SWAP ] [ + CREATE POOL ]  │
+├────────────────────────────────┤
+│ DIV com SWAP (inline)          │ ← Todo código embutido
+│ DIV com CREATE (inline)        │
+└────────────────────────────────┘
+
+VANTAGENS:
+✅ Totalmente integrado
+✅ Sem problemas de iframe
+✅ Scroll único
+✅ Mais profissional
+
+DESVANTAGENS:
+⚠️  Arquivo MUITO grande (~3000 linhas)
+⚠️  Mais difícil de manter
+⚠️  Código duplicado
+⚠️  Demora mais para criar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 RECOMENDAÇÃO:
+
+Para PRODUÇÃO → OPÇÃO A (iframes)
+- Funciona agora
+- Manutenível
+- Pode ser melhorado depois
+
+Para PERFEIÇÃO → OPÇÃO B (arquivo único)
+- Mais trabalho
+- Melhor UX
+- Mais profissional
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 O QUE VOCÊ PREFERE?
+
+1. OPÇÃO A → Usar runes-swap-new.html (iframes) ✅ RÁPIDO
+2. OPÇÃO B → Criar runes-swap-FULL.html (único) ⏰ DEMORA
+
+Ou podemos fazer:
+3. Usar OPÇÃO A agora + melhorar depois
+

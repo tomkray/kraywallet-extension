@@ -1,0 +1,115 @@
+✅ CREATE POOL REDESENHADO - MINIMALISTA E CLEAN!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 MUDANÇAS APLICADAS:
+
+## ANTES (Cores):
+- Banner: Gradiente verde forte
+- Inscription box: Gradiente laranja
+- Borders: Cores vibrantes
+- Botão: Gradiente verde
+
+## DEPOIS (Minimalista):
+- Banner: Fundo sutil rgba(255,255,255,0.02)
+- Inscription box: Fundo sutil igual banner
+- Borders: rgba(255,255,255,0.05-0.1)
+- Botão: Verde sólido #10b981
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ DESIGN MINIMALISTA:
+
+1. ✅ Sem gradientes coloridos
+2. ✅ Backgrounds sutis
+3. ✅ Borders finas e discretas
+4. ✅ Cores neutras (branco/cinza)
+5. ✅ Verde apenas no essencial
+6. ✅ Espaçamento limpo
+7. ✅ Tipografia simples
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 AGORA COMBINA COM SWAP:
+
+SWAP:
+┌────────────────────────────────┐
+│ Select token (FROM)            │  ← Minimalista
+│ [               ] ▼            │
+│                                │
+│ Select token (TO)              │
+│ [               ] ▼            │
+│                                │
+│ [      Swap Button     ]       │
+└────────────────────────────────┘
+
+CREATE POOL:
+┌────────────────────────────────┐
+│ Pool Name                      │  ← Minimalista
+│ [               ]              │
+│                                │
+│ 💎 Use Inscription             │  ← Sutil
+│ [               ]              │
+│                                │
+│ First Token                    │
+│ [               ] ▼            │
+│                                │
+│ [ Create Pool Button ]         │
+└────────────────────────────────┘
+
+MESMO ESTILO!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+1. Ir para tab "Create Pool"
+2. Ver novo design minimalista
+3. Comparar com tab "Swap"
+4. Observar consistência
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 CORES ATUALIZADAS:
+
+REMOVIDO:
+❌ linear-gradient(135deg, #10b981 0%, #059669 100%)
+❌ linear-gradient(135deg, #f59e0b 0%, #d97706 100%)
+❌ border: 1px solid #f59e0b
+❌ background: rgba(245, 158, 11, 0.2)
+
+ADICIONADO:
+✅ background: rgba(255,255,255,0.02)
+✅ border: 1px solid rgba(255,255,255,0.05)
+✅ background: #10b981 (sólido, sem gradiente)
+✅ Inscription selected: rgba(16,185,129,0.1)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Design consistente com Swap
+2. ✅ Minimalista e profissional
+3. ✅ Foco no conteúdo
+4. ✅ Menos poluição visual
+5. ✅ Cores sutis e elegantes
+6. ✅ Fácil de ler
+7. ✅ Moderno
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST:
+
+[ ] Hard refresh (Ctrl+Shift+R)
+[ ] Ir para Create Pool
+[ ] Banner cinza sutil (não verde)
+[ ] Inscription box cinza sutil (não laranja)
+[ ] Borders finas e discretas
+[ ] Botão verde sólido
+[ ] Visual limpo e profissional
+
+✅ AGORA ESTÁ PERFEITO E MINIMALISTA! 🚀
+

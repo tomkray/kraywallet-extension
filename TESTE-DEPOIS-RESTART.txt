@@ -1,0 +1,104 @@
+✅ DEPOIS DE REINICIAR O SERVIDOR - TESTE ASSIM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 PASSO 1: Reiniciar servidor
+
+Terminal 1:
+```bash
+cd "/Volumes/D2/KRAY WALLET- V1"
+./REINICIAR-SERVIDOR-LIMPO.sh
+```
+
+Aguarde ver:
+```
+🚀 Server running on http://localhost:3000
+✅ Bitcoin RPC connected
+✅ ORD Server connected
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌐 PASSO 2: Limpar cache do navegador
+
+## Chrome/Brave:
+1. Ctrl + Shift + Delete
+2. Selecionar "Tudo"
+3. Marcar "Imagens e arquivos em cache"
+4. Clicar "Limpar dados"
+
+## OU:
+Hard Refresh: Ctrl + Shift + R (várias vezes!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 PASSO 3: Testar em ORDEM
+
+## 3.1. Teste Simples PRIMEIRO:
+
+http://localhost:3000/TEST-TABS-NOW.html
+
+Deve aparecer:
+- 2 botões: "Swap" e "Create Pool"
+- Conteúdo "SWAP CONTENT" com iframe
+- Ao clicar "Create Pool": conteúdo muda
+
+Se FUNCIONAR: Vá para 3.2
+Se NÃO FUNCIONAR: Me avise!
+
+## 3.2. Teste Principal:
+
+http://localhost:3000/runes-swap.html
+
+Hard Refresh: Ctrl+Shift+R
+
+Deve aparecer:
+- Navbar Kray Station
+- 2 tabs: "🔄 Swap" e "+ Create Pool"
+- Iframe com formulário de swap embaixo
+- Ao clicar "+ Create Pool": iframe muda
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ SE APARECER E SUMIR:
+
+PROBLEMA: Cache do navegador ou conflito de JavaScript
+
+SOLUÇÕES:
+
+1. Desabilitar cache no DevTools:
+   - F12 (abrir DevTools)
+   - Network tab
+   - Marcar "Disable cache"
+   - Recarregar página
+
+2. Modo anônimo:
+   - Ctrl + Shift + N
+   - Ir para http://localhost:3000/runes-swap.html
+
+3. Ver erros no console:
+   - F12 → Console
+   - Ver se tem erros em vermelho
+   - Me enviar!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 CHECKLIST:
+
+[ ] Servidor reiniciado
+[ ] Cache do navegador limpo
+[ ] Hard refresh feito (Ctrl+Shift+R)
+[ ] TEST-TABS-NOW.html funciona?
+[ ] runes-swap.html funciona?
+[ ] Tabs trocam corretamente?
+[ ] Iframes aparecem e ficam?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 DICA:
+
+Se aparecer e sumir = problema de cache
+Se nunca aparecer = problema de código
+Se aparecer só às vezes = conflito de JavaScript
+
+ME DIGA O QUE ACONTECE! 🎯
+

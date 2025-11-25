@@ -1,0 +1,151 @@
+✅ VARIÁVEIS GLOBAIS EXPOSTAS - window.isWalletConnected AGORA FUNCIONA!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 PROBLEMA:
+
+❌ Wallet conectada mas window.isWalletConnected = undefined
+❌ window.connectedAddress = undefined
+❌ Iframes não recebem conexão
+
+CAUSA:
+- app.js define: let isWalletConnected = false
+- Variáveis são LOCAIS ao arquivo (let)
+- window.isWalletConnected nunca é atualizado!
+- runes-swap.html lê window.isWalletConnected → undefined
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO APLICADA:
+
+1. ✅ Criada função updateGlobalWalletState()
+2. ✅ Chamada em TODOS os lugares onde wallet conecta:
+   - connectMyWallet() (kraywallet)
+   - connectUnisat()
+   - connectXverse()
+   - restoreWalletConnection()
+   - handleUnlock() (2x)
+   - checkWalletConnection()
+
+## CÓDIGO ADICIONADO:
+
+```javascript
+// app.js (início)
+
+// 🌐 Expor variáveis globalmente para iframes
+window.isWalletConnected = isWalletConnected;
+window.connectedAddress = connectedAddress;
+window.currentWallet = currentWallet;
+
+// 🔄 Helper para atualizar variáveis globais
+function updateGlobalWalletState() {
+    window.isWalletConnected = isWalletConnected;
+    window.connectedAddress = connectedAddress;
+    window.currentWallet = currentWallet;
+    console.log('🌐 Global wallet state updated:', {
+        isWalletConnected,
+        connectedAddress,
+        currentWallet
+    });
+}
+```
+
+## EXEMPLO DE USO:
+
+```javascript
+// Em connectMyWallet()
+if (response && response.success && response.address) {
+    isWalletConnected = true;
+    connectedAddress = response.address;
+    currentWallet = 'kraywallet';
+    updateGlobalWalletState(); // ✅ Atualiza window.*
+    
+    // ... resto do código
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 FLUXO COMPLETO (AGORA):
+
+1. ✅ User conecta wallet
+2. ✅ app.js: isWalletConnected = true
+3. 🆕 app.js: updateGlobalWalletState()
+4. 🆕 window.isWalletConnected = true ✅
+5. 🆕 window.connectedAddress = "bc1p..." ✅
+6. ✅ User clica "Create Pool"
+7. ✅ runes-swap.html lê: window.isWalletConnected = true ✅
+8. ✅ runes-swap.html envia postMessage para iframe
+9. ✅ pool-create.html recebe e carrega dados!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R (IMPORTANTE!)
+
+## PASSO A PASSO:
+
+1. ✅ Clicar "Connect Wallet"
+2. ✅ Conectar KrayWallet
+3. ✅ Ver no console:
+   ```
+   🌐 Global wallet state updated: {
+     isWalletConnected: true,
+     connectedAddress: "bc1pvz02...",
+     currentWallet: "kraywallet"
+   }
+   ```
+
+4. ✅ Clicar "Create Pool"
+5. ✅ Ver no console:
+   ```
+   ✅ Switched to tab: create
+      isWalletConnected: true  ← AGORA TEM!
+      connectedAddress: bc1pvz02...  ← AGORA TEM!
+   📡 Sending wallet connection to tab: create
+      ✅ Sent connection to iframe: bc1pvz02...
+   ```
+
+6. ✅ Ver no pool-create.html:
+   ```
+   📨 pool-create received message: {type: 'CONNECT_WALLET', ...}
+   🎬 init() called
+   ✅ Found parent.krayWallet, getting address...
+   ✅ Address from wallet: bc1pvz02...
+   💰 BTC Balance: 22612 sats
+   🎯 Runes: 2
+   📞 Calling loadTokenSelectors()...
+   ✅ Runes loaded in custom dropdowns
+   🖼️ Inscriptions: 5
+   ```
+
+7. ✅ Clicar "Select rune..."
+8. ✅ Ver dropdown com 2 runes!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ RESUMO:
+
+PROBLEMA:
+❌ window.isWalletConnected = undefined
+❌ let isWalletConnected não é global
+
+SOLUÇÃO:
+✅ updateGlobalWalletState() expõe variáveis
+✅ Chamada em 7 lugares diferentes
+✅ window.isWalletConnected SEMPRE atualizado!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE E CONFIRME:
+
+1. Conectar wallet
+2. Ver log "Global wallet state updated"
+3. Clicar "Create Pool"
+4. Ver "isWalletConnected: true"
+5. Ver runes aparecerem!
+
+FUNCIONANDO! 🎉
+

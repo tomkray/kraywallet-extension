@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAY STATION - Bitcoin Ordinals & Runes Marketplace</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link">Runes (On-chain)</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning DEX</a>
+                <a href="#download" class="nav-link">Download</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="container">
+            <div class="hero-content-landing">
+                <h1 class="hero-title-landing">
+                    The First True<br>
+                    <span class="gradient-text">P2P Marketplace</span><br>
+                    for Bitcoin Ordinals & Runes
+                </h1>
+                <p class="hero-subtitle-landing">
+                    Trade inscriptions and runes directly on Bitcoin.<br>
+                    No middleman. No service fees. True peer-to-peer atomic swaps.
+                </p>
+                <div class="hero-buttons">
+                    <a href="ordinals.html" class="btn-hero primary">
+                        <span>Browse Ordinals</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </a>
+                    <a href="#download" class="btn-hero secondary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 3V13M10 13L6 9M10 13L14 9M4 17H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Download Wallet</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item-landing">
+                        <span class="stat-number">0%</span>
+                        <span class="stat-label">Service Fees</span>
+                    </div>
+                    <div class="stat-item-landing">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">P2P Atomic Swaps</span>
+                    </div>
+                    <div class="stat-item-landing">
+                        <span class="stat-number">∞</span>
+                        <span class="stat-label">Decentralized</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-landing">
+        <div class="container">
+            <div class="section-header-center">
+                <h2>Why KRAY STATION?</h2>
+                <p>The only truly decentralized marketplace for Bitcoin assets</p>
+            </div>
+            
+            <div class="features-grid-landing">
+                <!-- Feature 1 -->
+                <div class="feature-card-landing">
+                    <div class="feature-icon-landing">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2"/>
+                            <path d="M24 14V34M14 24H34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3>Zero Service Fees</h3>
+                    <p>No platform fees, no hidden costs. Only Bitcoin network fees. Keep 100% of your profits with true peer-to-peer trading.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card-landing">
+                    <div class="feature-icon-landing">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <path d="M24 8L38 16V32L24 40L10 32V16L24 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M24 8V24M24 24L38 16M24 24L10 16M24 24V40" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3>Atomic Swaps</h3>
+                    <p>PSBT-powered atomic swaps ensure trustless trading. Either both parties get what they want, or the deal is off. No escrow needed.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card-landing">
+                    <div class="feature-icon-landing">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="10" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/>
+                            <path d="M18 18L30 30M30 18L18 30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3>Self-Custodial</h3>
+                    <p>Your keys, your Bitcoin, your Ordinals. We never hold your assets. Trade directly from your MyWallet or connect Unisat/Xverse.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card-landing">
+                    <div class="feature-icon-landing">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="16" cy="24" r="6" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="32" cy="24" r="6" stroke="currentColor" stroke-width="2"/>
+                            <path d="M22 24H26" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3>Runes Swap</h3>
+                    <p>Deep liquidity pools for Runes tokens. Swap instantly with minimal price impact. Earn yield by providing liquidity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MyWallet Section -->
+    <section class="kraywallet-section" id="download">
+        <div class="container">
+            <div class="kraywallet-header">
+                <h2>KrayWallet Extension</h2>
+                <p class="kraywallet-subtitle">Your Bitcoin native wallet for Ordinals & Runes</p>
+            </div>
+            
+            <div class="kraywallet-content">
+                <div class="kraywallet-text">
+                    <div class="features-compact">
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Taproot · Ordinals · Runes</span>
+                        </div>
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>BIP39 · Encrypted Storage</span>
+                        </div>
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Advanced PSBT · Custom SIGHASH</span>
+                        </div>
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Instant L1 Settlements</span>
+                        </div>
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>100% Open Source · Auditable</span>
+                        </div>
+                        <div class="feature-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13L9 17L19 7" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>No Black Boxes · Transparent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kraywallet-preview">
+                    <div class="wallet-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <span class="mockup-title">MyWallet</span>
+                        </div>
+                        <div class="mockup-body">
+                            <div class="mockup-balance">
+                                <span class="balance-label">Total Balance</span>
+                                <span class="balance-amount">₿ 0.00245</span>
+                                <span class="balance-usd">$98.40 USD</span>
+                            </div>
+                            <div class="mockup-tabs">
+                                <span class="mockup-tab active">Ordinals</span>
+                                <span class="mockup-tab">Runes</span>
+                                <span class="mockup-tab">Activity</span>
+                            </div>
+                            <div class="mockup-content">
+                                <div class="mockup-inscription mockup-3d">
+                                    <model-viewer 
+                                        src="tk-3d.glb" 
+                                        alt="TK 3D Model"
+                                        auto-rotate 
+                                        camera-controls
+                                        style="width: 100%; height: 100%;">
+                                    </model-viewer>
+                                </div>
+                                <div class="mockup-inscription mockup-3d">
+                                    <model-viewer 
+                                        src="tk-3d.glb" 
+                                        alt="TK 3D Model"
+                                        auto-rotate 
+                                        camera-controls
+                                        style="width: 100%; height: 100%;">
+                                    </model-viewer>
+                                </div>
+                                <div class="mockup-inscription mockup-3d">
+                                    <model-viewer 
+                                        src="tk-3d.glb" 
+                                        alt="TK 3D Model"
+                                        auto-rotate 
+                                        camera-controls
+                                        style="width: 100%; height: 100%;">
+                                    </model-viewer>
+                                </div>
+                                <div class="mockup-inscription mockup-3d">
+                                    <model-viewer 
+                                        src="tk-3d.glb" 
+                                        alt="TK 3D Model"
+                                        auto-rotate 
+                                        camera-controls
+                                        style="width: 100%; height: 100%;">
+                                    </model-viewer>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kraywallet-download">
+                    <div class="download-buttons">
+                        <a href="kraywallet-extension" class="btn-download chrome">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <div>
+                                <span class="download-label">Download Extension</span>
+                                <span class="download-browser">Chrome · Brave · Edge</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <p class="download-note">
+                        💡 Load unpacked → chrome://extensions → Enable "Developer mode"
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header-center">
+                <h2>How It Works</h2>
+                <p>Trading on KRAY STATION is simple and secure</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Connect Wallet</h3>
+                    <p>Connect your MyWallet, Unisat, or Xverse to browse the marketplace.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>List or Buy</h3>
+                    <p>List your Ordinals for sale or browse available inscriptions.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Sign PSBT</h3>
+                    <p>Sign the Partially Signed Bitcoin Transaction in your wallet.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Instant Trade</h3>
+                    <p>Transaction broadcasts to Bitcoin. Atomic swap completes instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Trade?</h2>
+                <p>Join the future of decentralized Bitcoin trading. Zero fees. True P2P.</p>
+                <div class="cta-buttons">
+                    <a href="ordinals.html" class="btn-hero primary">Start Trading</a>
+                    <a href="runes-swap.html" class="btn-hero secondary">Swap Runes</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+                        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="kraywallet/logo.png" alt="KRAY STATION" class="footer-logo">
+                    <p>The first true P2P marketplace for Bitcoin Ordinals & Runes</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="ordinals.html">Ordinals Marketplace</a>
+                        <a href="runes-swap.html">Runes Swap</a>
+                        <a href="#download">Download Wallet</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="#">Documentation</a>
+                        <a href="#">GitHub</a>
+                        <a href="#">Support</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Community</h4>
+                        <a href="#">Twitter</a>
+                        <a href="#">Discord</a>
+                        <a href="#">Telegram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 KRAY STATION. Open source and decentralized. Built on Bitcoin.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="modal hidden">
+        <div class="modal-content wallet-modal">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <button class="modal-close" onclick="closeWalletModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Choose your preferred wallet to connect</p>
+                <div class="wallet-options">
+                    <button class="wallet-option" onclick="connectMyWallet()">
+                        <img src="kraywallet/logotk.png" alt="MyWallet" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">MyWallet</span>
+                            <span class="wallet-tag recommended">Recommended</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                    <button class="wallet-option" onclick="connectUnisat()">
+                        <img src="public/images/unisat.png" alt="Unisat" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Unisat</span>
+                            <span class="wallet-tag">Popular</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                    <button class="wallet-option" onclick="connectXverse()">
+                        <img src="public/images/xverse.png" alt="Xverse" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Xverse</span>
+                            <span class="wallet-tag">Popular</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Wallet Connect System -->
+    <script src="public/js/wallet-connect.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

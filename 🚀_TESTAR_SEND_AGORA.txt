@@ -1,0 +1,153 @@
+
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║                                                               ║
+   ║          🚀 SEND RUNES - PRONTO PARA TESTAR! 🚀              ║
+   ║                                                               ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+
+   ✅ TUDO IMPLEMENTADO!
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ UI completa com formulário de envio
+   ✓ Validações de endereço e quantidade
+   ✓ Integração com background script
+   ✓ Endpoints de sign e broadcast
+   ✓ Logs detalhados em cada etapa
+   ✓ Styling moderno e responsivo
+
+
+   🎯 PASSO A PASSO PARA TESTAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1️⃣  REINICIAR BACKEND
+   
+        Abra um terminal e rode:
+        
+        cd /Users/tomkray/Desktop/PSBT-Ordinals
+        ./START-BACKEND-SEND.sh
+        
+        OU manualmente:
+        
+        pkill -9 -f "node server/index.js"
+        node server/index.js
+
+   ────────────────────────────────────────────────────────────────
+
+   2️⃣  RECARREGAR EXTENSION
+   
+        1. Abra Chrome: chrome://extensions/
+        2. Encontre "MyWallet"
+        3. Clique no botão 🔄 RELOAD
+
+   ────────────────────────────────────────────────────────────────
+
+   3️⃣  ABRIR MYWALLET
+   
+        1. Clique no ícone da extensão no Chrome
+        2. Desbloqueie a wallet (se necessário)
+        3. Vá para a tab "RUNES" 🪙
+
+   ────────────────────────────────────────────────────────────────
+
+   4️⃣  TESTAR SEND
+   
+        1. Clique em uma rune (ex: DOG•GO•TO•THE•MOON)
+        2. Na modal, clique no botão "Send" 📤
+        3. Preencha o formulário:
+           - Recipient Address: bc1p... (válido)
+           - Amount: quantidade (ou MAX)
+           - Fee Rate: escolha a velocidade
+        4. Clique em "Send Rune"
+        5. Aguarde...
+        6. ✅ Sucesso ou ❌ Erro no console!
+
+   ────────────────────────────────────────────────────────────────
+
+   5️⃣  VERIFICAR LOGS
+   
+        CONSOLE DO POPUP (F12 na extension):
+        
+        🚀 ========== SEND RUNE TRANSACTION ==========
+        📦 Step 1: Building PSBT...
+        ✍️  Step 2: Signing PSBT...
+        📡 Step 3: Broadcasting transaction...
+        ✅ Transaction broadcast! TXID: ...
+        
+        
+        TERMINAL DO BACKEND:
+        
+        ✍️  SIGN TRANSACTION ENDPOINT CALLED
+        📦 Creating raw transaction...
+        ✍️  Signing with wallet...
+        ✅ Transaction signed successfully
+        📡 BROADCAST TRANSACTION ENDPOINT CALLED
+        ✅ Transaction broadcast successfully! TXID: ...
+
+
+   ⚠️  REQUISITOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Bitcoin Core rodando (porta 8332)
+   ✓ ORD Server rodando (porta 80)
+   ✓ Backend rodando (porta 3000)
+   ✓ Wallet desbloqueada no Bitcoin Core
+   ✓ Endereço com BTC para fees
+
+
+   📂 ARQUIVOS MODIFICADOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Frontend:
+   ✓ mywallet-extension/popup/popup.js
+   ✓ mywallet-extension/popup/popup.css
+   ✓ mywallet-extension/background/background-real.js
+   
+   Backend:
+   ✓ server/routes/wallet.js (+ sign-transaction, + broadcast)
+   ✓ server/routes/runes.js (já tinha build-send-psbt)
+   ✓ server/utils/psbtBuilderRunes.js (já existia)
+
+
+   🎉 FLUXO COMPLETO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   USER → Click Send
+       ↓
+   UI → Show Send Form
+       ↓
+   USER → Fill & Submit
+       ↓
+   Frontend → POST /api/runes/build-send-psbt
+       ↓
+   Backend → Build PSBT with Runestone
+       ↓
+   Frontend → chrome.runtime.sendMessage('signRunePSBT')
+       ↓
+   Background → POST /api/wallet/sign-transaction
+       ↓
+   Backend → Bitcoin Core RPC: signrawtransactionwithwallet
+       ↓
+   Background → chrome.runtime.sendMessage('broadcastTransaction')
+       ↓
+   Backend → Bitcoin Core RPC: sendrawtransaction
+       ↓
+   SUCCESS! ✅ TXID in console + notification
+
+
+   📖 DOCUMENTAÇÃO COMPLETA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Leia: ✅_SEND_RUNES_PRONTO.md
+
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   🔥 EXECUTE O PASSO 1 AGORA:
+   
+   ./START-BACKEND-SEND.sh
+   
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+

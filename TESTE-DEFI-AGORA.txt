@@ -1,0 +1,84 @@
+🚀 TESTE O DEFI AGORA - PÁGINA NOVA FUNCIONANDO
+
+═══════════════════════════════════════════════════════
+
+URL:
+http://localhost:3000/defi-swap.html
+
+═══════════════════════════════════════════════════════
+
+O QUE FOI CORRIGIDO:
+
+✅ Página nova criada do zero (sem cache)
+✅ Carrega runes da API do backend
+✅ Mostra BTC + todas suas Runes no modal
+✅ Mostra pools ativos
+✅ Calcula quote em tempo real
+✅ Interface simples e funcional
+
+═══════════════════════════════════════════════════════
+
+COMO TESTAR:
+
+1. Abrir: http://localhost:3000/defi-swap.html
+
+2. Clicar "Connect Wallet"
+   → MyWallet vai pedir autorização
+   → Autorizar
+
+3. Ver no console (F12):
+   ✅ Balance loaded: [seu saldo]
+   ✅ Runes loaded: [número] runes
+
+4. Clicar "Select token" (FROM)
+   → Modal abre
+   → Ver BTC (₿)
+   → Ver suas Runes (🎯)
+   → Ver pools disponíveis (🏊)
+
+5. Selecionar BTC
+
+6. Clicar "Select token" (TO)
+   → Selecionar uma Rune
+
+7. Digitar amount (exemplo: 0.001)
+   → Quote aparece automaticamente
+   → Ver fees, price impact, etc.
+
+8. Clicar "Swap"
+   → (Precisa ter pool criado)
+
+═══════════════════════════════════════════════════════
+
+LOGS NO CONSOLE:
+
+Ao conectar:
+✅ Balance loaded: [saldo]
+✅ Runes loaded: [número] runes
+
+Ao abrir modal:
+📋 Loading token list...
+   User runes: [número]
+   Active pools: [número]
+   Total tokens: [número]
+
+Ao selecionar token:
+🎯 Selecting token: [id]
+✅ Token found: [objeto]
+
+═══════════════════════════════════════════════════════
+
+SE NÃO VER SUAS RUNES:
+
+1. Verificar se a API retorna runes:
+   curl http://localhost:3000/api/runes/address/[SEU_ENDEREÇO]
+
+2. Ver console (F12) para erros
+
+3. Verificar se userAddress está correto
+
+═══════════════════════════════════════════════════════
+
+AGORA TESTE: http://localhost:3000/defi-swap.html
+
+

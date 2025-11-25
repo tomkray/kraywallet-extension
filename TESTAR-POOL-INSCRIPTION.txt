@@ -1,0 +1,83 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 POOL INSCRIPTION - PRONTO PARA TESTAR!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ IMPLEMENTADO:
+   1. Checkbox "Use Ordinal Inscription"
+   2. Dropdown com suas inscriptions
+   3. Preview da inscription selecionada
+   4. Backend salva tudo no banco
+   5. Pools exibem logo + badge ORDINAL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 COMO TESTAR:
+
+1️⃣ REINICIAR SERVIDOR:
+   npm run dev
+
+2️⃣ ABRIR:
+   http://localhost:3000/defi-swap.html
+
+3️⃣ CONECTAR WALLET
+
+4️⃣ CLICAR "+ Create Pool"
+
+5️⃣ MARCAR ✅ "Use Ordinal Inscription as Pool Logo"
+
+6️⃣ SELECIONAR INSCRIPTION:
+   - Dropdown aparece
+   - Escolher uma inscription
+   - Ver preview (imagem + número)
+
+7️⃣ PREENCHER:
+   - Selecionar rune (ex: DOG)
+   - Amount: 300 (ou MAX)
+   - BTC: 0.0001 (ou MAX)
+   - Ver preço calculado
+
+8️⃣ CLICAR "Create Pool"
+
+9️⃣ VER RESULTADO:
+   - Pool aparece na lista
+   - Logo da inscription (32x32)
+   - Badge "ORDINAL" laranja
+   - Inscription #12345
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 BENEFÍCIOS:
+
+✅ Pools únicos com identidade visual
+✅ Mais utilidade para Ordinals
+✅ Marketing orgânico
+✅ Compatível com KrayWallet
+✅ Opcional (pode criar sem inscription também)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 ARQUIVOS MODIFICADOS:
+
+✅ defi-swap.html (+137 linhas)
+✅ server/defi/poolManager.js (schema + createPool)
+✅ server/routes/defiSwap.js (POST /pools)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 VISUAL ESPERADO:
+
+POOL SEM INSCRIPTION:
+┌─────────────────────────────┐
+│ 🎯 DOG / BTC    0.001 BTC  │
+└─────────────────────────────┘
+
+POOL COM INSCRIPTION:
+┌────────────────────────────────────────┐
+│ [IMG] DOG / BTC [ORDINAL]  0.001 BTC  │
+│       Inscription #12345               │
+└────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 TESTE E ME DIGA O RESULTADO! 🎨
+

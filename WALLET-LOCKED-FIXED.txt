@@ -1,0 +1,153 @@
+✅ ERRO "No wallet found" CORRIGIDO!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 PROBLEMA:
+
+❌ Error: No wallet found (injected.js:36)
+❌ Wallet conectada mas depois perde conexão
+❌ Formulários aparecem e somem
+
+CAUSA:
+- KrayWallet estava BLOQUEADA (locked)
+- getAccounts() falha quando wallet está locked
+- Frontend não tratava esse erro
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO APLICADA:
+
+pool-create.html agora:
+1. Tenta getAccounts()
+2. Se falhar com "No wallet found":
+   - Detecta que wallet está locked
+   - Chama wallet.connect() automaticamente
+   - Pede para desbloquear
+3. Se connect() funcionar: continua normalmente
+4. Se falhar: mostra mensagem clara
+
+## CÓDIGO ADICIONADO:
+
+```javascript
+try {
+    const accounts = await wallet.getAccounts();
+    userAddress = accounts[0];
+} catch (error) {
+    if (error.message.includes('No wallet found') || 
+        error.message.includes('locked')) {
+        
+        console.log('🔓 Wallet locked, trying to connect...');
+        
+        const connectResult = await wallet.connect();
+        if (connectResult.success) {
+            userAddress = connectResult.address;
+            console.log('✅ Connected!');
+        }
+    }
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TABS TAMBÉM CORRIGIDAS:
+
+runes-swap.html agora:
+1. Remove event listeners antigos (cloneNode)
+2. Adiciona novos listeners com capture=true
+3. Usa stopImmediatePropagation()
+4. Executa 2x: imediatamente + após 100ms
+
+RESULTADO:
+✅ Tabs funcionam sempre
+✅ Não há conflito com app.js
+✅ Click sempre funciona
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+## PASSO A PASSO:
+
+1. ✅ Desbloquear KrayWallet (se estiver locked)
+   - Click no ícone da extensão
+   - Digitar senha
+   - Desbloquear
+
+2. ✅ Conectar wallet no navbar
+   - Click "Connect Wallet"
+   - Selecionar KrayWallet
+   - Aprovar conexão
+
+3. ✅ Ver tab "Swap" ativa
+   - Formulário de swap aparece
+   - Lista de tokens funciona
+
+4. ✅ Clicar "+ Create Pool"
+   - Tab fica verde
+   - Formulário de Create Pool aparece
+   - Runes carregam
+   - Inscriptions carregam
+
+5. ✅ Clicar "Swap" novamente
+   - Tab fica verde
+   - Formulário de swap volta
+   - SEM BUG!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGS ESPERADOS:
+
+```
+🎯 runes-swap.html: Configurando tabs...
+   Found 2 tab buttons
+   Setting up button 0 : swap
+   Setting up button 1 : create
+✅ Tabs configured successfully
+
+[CLICAR CREATE POOL]
+
+🖱️ Tab clicked: create
+✅ Tab content displayed: create
+📨 pool-create received message: {type: 'CONNECT_WALLET', ...}
+🎬 init() called
+✅ Found parent.krayWallet, getting address...
+✅ Address from wallet: bc1pvz02...
+💰 BTC Balance: 22612 sats
+🎯 Runes: 2
+✅ Runes loaded in custom dropdowns
+🖼️ Inscriptions: 5
+```
+
+SE WALLET ESTIVER LOCKED:
+```
+⚠️ getAccounts failed: No wallet found
+🔓 Wallet may be locked, trying to connect...
+[POPUP DA WALLET ABRE]
+✅ Connected! Address: bc1pvz02...
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST:
+
+[ ] Wallet desbloqueada?
+[ ] Hard refresh feito? (Ctrl+Shift+R)
+[ ] Tab Swap aparece?
+[ ] Click Create Pool funciona?
+[ ] Formulário aparece e FICA?
+[ ] Click Swap volta?
+[ ] SEM BUG ao trocar tabs?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 IMPORTANTE:
+
+1. SEMPRE desbloquear a KrayWallet ANTES de usar
+2. Se aparecer "No wallet found": desbloquear e tentar de novo
+3. Hard refresh é OBRIGATÓRIO após mudanças
+
+TESTE E CONFIRME! 🎯
+

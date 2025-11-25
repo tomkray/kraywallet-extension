@@ -1,0 +1,170 @@
+
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║                                                               ║
+   ║         ⚡ FEES DINÂMICAS IMPLEMENTADAS! ⚡                   ║
+   ║                                                               ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+
+   ✅ IMPLEMENTADO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Integração com mempool.space API
+   ✓ 4 níveis de prioridade (Economy, Normal, Fast, Priority)
+   ✓ Opção Custom para taxa manual
+   ✓ Valores atualizados em tempo real
+   ✓ Fallback automático se API offline
+   ✓ Implementado em Send Bitcoin E Send Runes
+
+
+   📊 FEES DISPONÍVEIS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🐢 Economy   → Mais barato  (~24 hours)
+   ⏱️  Normal    → Padrão       (~1 hour)
+   ⚡ Fast      → Rápido       (~30 min)   ← DEFAULT
+   🚀 Priority  → Prioritário  (~10 min)
+   ⚙️  Custom    → Você decide! (min: 1 sat/vB)
+
+
+   🧪 COMO TESTAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1️⃣  RECARREGAR EXTENSION
+   
+        chrome://extensions/ → MyWallet → 🔄 RELOAD
+
+   ────────────────────────────────────────────────────────────────
+
+   2️⃣  TESTAR SEND BITCOIN
+   
+        1. Abrir MyWallet
+        2. Tab "Bitcoin"
+        3. Clicar em "Send" ↑
+        4. ✅ Ver dropdown com fees dinâmicas
+        5. ✅ Valores reais da mempool.space
+        6. Selecionar "⚙️  Custom"
+        7. ✅ Input customizado aparece
+        8. Digitar taxa manual (ex: 50)
+
+   ────────────────────────────────────────────────────────────────
+
+   3️⃣  TESTAR SEND RUNES
+   
+        1. Tab "Runes" 🪙
+        2. Clicar em uma rune
+        3. Clicar em "Send" 📤
+        4. ✅ Ver dropdown com fees dinâmicas
+        5. ✅ Valores reais da mempool.space
+        6. Preencher endereço e quantidade
+        7. Escolher prioridade:
+           - 🐢 Economy   → pra economizar
+           - ⚡ Fast      → recomendado
+           - 🚀 Priority  → urgente
+           - ⚙️  Custom    → controle total
+
+   ────────────────────────────────────────────────────────────────
+
+   4️⃣  VERIFICAR LOGS (Console F12)
+   
+        📊 Loading mempool.space fees...
+        ✅ Fees loaded: { minimumFee: 1, hourFee: 5, ... }
+        
+        Ou se API offline:
+        
+        ❌ Error loading mempool fees: ...
+        ⚠️  Using default fee rates
+
+
+   💡 EXEMPLO DE FEES REAIS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Na mempool.space AGORA:
+   
+   🐢 Economy   → 1 sat/vB    (~24h)
+   ⏱️  Normal    → 5 sat/vB    (~1h)
+   ⚡ Fast      → 10 sat/vB   (~30min) ← Selecionado
+   🚀 Priority  → 15 sat/vB   (~10min)
+   
+   Ou você pode escolher:
+   
+   ⚙️  Custom    → 50 sat/vB  (prioridade máxima!)
+   ⚙️  Custom    → 2 sat/vB   (economia máxima)
+
+
+   🎯 CASOS DE USO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🐢 Economy
+      → Envio não urgente
+      → Quer economizar sats
+      → Pode esperar 1 dia
+
+   ⏱️  Normal
+      → Envio normal
+      → Balance entre custo e velocidade
+      → 1 hora é OK
+
+   ⚡ Fast (Recomendado)
+      → Envio rápido
+      → 30 minutos é ideal
+      → Custo moderado
+
+   🚀 Priority
+      → Urgente!
+      → Precisa confirmar logo
+      → Disposto a pagar mais
+
+   ⚙️  Custom
+      → Controle total
+      → Sabe exatamente o que quer
+      → Expert mode
+
+
+   🔒 SEGURANÇA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Taxa mínima validada (>= 1 sat/vB)
+   ✓ Valores da API sanitizados
+   ✓ Fallback automático se API offline
+   ✓ Notificação clara em caso de erro
+   ✓ Input numérico com validação
+
+
+   📚 API REFERENCE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Endpoint: https://mempool.space/api/v1/fees/recommended
+   
+   Response:
+   {
+     "fastestFee": 15,     // 🚀 Priority
+     "halfHourFee": 10,    // ⚡ Fast
+     "hourFee": 5,         // ⏱️  Normal
+     "minimumFee": 1       // 🐢 Economy
+   }
+
+
+   🎉 VANTAGENS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Mesma UX de Unisat, Xverse, Metamask
+   ✓ Usuário economiza quando rede está vazia
+   ✓ Usuário paga mais apenas quando urgente
+   ✓ Transparência total dos valores
+   ✓ Controle total com opção Custom
+   ✓ Funciona offline (fallback)
+
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   🔥 RECARREGUE E TESTE AGORA:
+   
+   chrome://extensions/ → MyWallet → 🔄 RELOAD
+   
+   Depois clique em Send (Bitcoin ou Runes) e veja a mágica! ⚡
+   
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+

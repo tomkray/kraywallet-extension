@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ KRAY STATION - Lightning DEX</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Lightning-specific styles */
+        .lightning-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .hub-info-banner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hub-info-icon {
+            font-size: 48px;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hub-info-content h3 {
+            margin: 0 0 8px 0;
+            color: #FFD700;
+            font-size: 20px;
+        }
+
+        .hub-info-content p {
+            margin: 0;
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .hub-pubkey {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #FFA500;
+            background: rgba(255, 165, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        .lightning-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .lightning-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .instant-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">⚡ Lightning DEX • Instant Swaps</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link">Runes (DeFi)</a>
+                <a href="lightning-hub.html" class="nav-link active">⚡ Lightning Hub</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="container">
+        <!-- Hub Info Banner -->
+        <div class="hub-info-banner" id="hubInfoBanner">
+            <div class="hub-info-icon">⚡</div>
+            <div class="hub-info-content" style="flex: 1;">
+                <h3>
+                    <span id="hubStatus">🔄 Connecting to Hub...</span>
+                    <span class="lightning-badge">LIGHTNING NETWORK</span>
+                </h3>
+                <p>
+                    Instant swaps with <strong>1 sat</strong> Lightning fee + <strong>0.3%</strong> pool fee<br>
+                    All swaps complete in <strong>&lt;1 second</strong> ⚡
+                </p>
+                <div class="hub-pubkey" id="hubPubkey" style="display: none;">
+                    Pubkey: <span id="hubPubkeyValue">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightning Stats -->
+        <div class="lightning-stats">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Hub Channels</span>
+                    <span class="lightning-badge">LIVE</span>
+                </div>
+                <div class="stat-value">
+                    <span class="stat-amount" id="hubChannels">0</span>
+                </div>
+                <div class="stat-subvalue">Active connections</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Lightning Pools</span>
+                    <span class="lightning-badge">LIVE</span>
+                </div>
+                <div class="stat-value">
+                    <span class="stat-amount" id="hubPools">0</span>
+                </div>
+                <div class="stat-subvalue">Available for swap</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Avg Swap Time</span>
+                    <span class="instant-badge">⚡ INSTANT</span>
+                </div>
+                <div class="stat-value">
+                    <span class="stat-amount">&lt;1s</span>
+                </div>
+                <div class="stat-subvalue">Lightning speed</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Fees</span>
+                    <span class="stat-badge">24h</span>
+                </div>
+                <div class="stat-value">
+                    <span class="stat-amount" id="hubFees">0 sats</span>
+                </div>
+                <div class="stat-subvalue">Pool + Lightning</div>
+            </div>
+        </div>
+
+        <!-- Swap Interface -->
+        <div class="swap-layout">
+            <!-- Main Swap Card -->
+            <div class="swap-card-modern">
+                <div class="swap-header">
+                    <h3>⚡ Lightning Swap</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="instant-badge">⚡ &lt;1s</span>
+                        <button class="settings-btn" id="settingsBtn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M16.25 10C16.25 10.625 16.875 11.25 17.5 11.25V13.75C16.875 13.75 16.25 14.375 16.25 15V17.5H13.75C13.75 16.875 13.125 16.25 12.5 16.25H10H7.5C6.875 16.25 6.25 16.875 6.25 17.5H3.75V15C3.75 14.375 3.125 13.75 2.5 13.75V11.25C3.125 11.25 3.75 10.625 3.75 10V7.5V5C3.75 4.375 3.125 3.75 2.5 3.75V1.25H5C5 1.875 5.625 2.5 6.25 2.5H10H12.5C13.125 2.5 13.75 1.875 13.75 1.25H16.25V3.75C16.25 4.375 16.875 5 17.5 5V7.5C16.875 7.5 16.25 8.125 16.25 8.75V10Z" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="noChannelWarning" class="swap-details-modern" style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); display: none;">
+                    <p style="margin: 0; color: #FFA500; font-size: 14px;">
+                        ⚠️ <strong>No Lightning channel found.</strong><br>
+                        Please open a channel with the Hub first from your MyWallet.
+                    </p>
+                </div>
+
+                <!-- From Token -->
+                <div class="swap-input-wrapper">
+                    <div class="swap-input-header">
+                        <label>From</label>
+                        <span class="balance-text">Channel: <span id="fromBalance">0</span></span>
+                    </div>
+                    <div class="swap-input-box">
+                        <input type="text" class="swap-amount-input" id="fromAmount" placeholder="0.0">
+                        <button class="token-select-btn" id="fromTokenBtn">
+                            <span class="token-icon">🪙</span>
+                            <span class="token-name" id="fromTokenName">Select token</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Swap Arrow -->
+                <div class="swap-arrow-wrapper">
+                    <button class="swap-arrow-btn" id="swapArrowBtn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- To Token -->
+                <div class="swap-input-wrapper">
+                    <div class="swap-input-header">
+                        <label>To (estimated)</label>
+                        <span class="balance-text">Channel: <span id="toBalance">0</span></span>
+                    </div>
+                    <div class="swap-input-box">
+                        <input type="text" class="swap-amount-input" id="toAmount" placeholder="0.0" readonly>
+                        <button class="token-select-btn" id="toTokenBtn">
+                            <span class="token-icon">₿</span>
+                            <span class="token-name" id="toTokenName">BTC</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Swap Details -->
+                <div class="swap-details-modern" id="swapDetails" style="display: none;">
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Rate</span>
+                        <span class="detail-value" id="rateValue">...</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Price Impact</span>
+                        <span class="detail-value impact-low" id="impactValue">...</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Pool Fee (0.3%)</span>
+                        <span class="detail-value" id="lpFeeValue">...</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">⚡ Lightning Fee</span>
+                        <span class="detail-value" style="color: #FFD700;">1 sat</span>
+                    </div>
+                    <div class="detail-row-modern" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 8px;">
+                        <span class="detail-label"><strong>You'll receive</strong></span>
+                        <span class="detail-value" id="finalAmountValue" style="color: #4ade80; font-weight: 600;">...</span>
+                    </div>
+                </div>
+
+                <!-- Swap Button -->
+                <button class="swap-btn-modern" id="swapBtn" disabled>
+                    <span id="swapBtnText">Connect wallet to swap</span>
+                </button>
+            </div>
+
+            <!-- Hub Stats -->
+            <div class="swap-stats">
+                <!-- Advantages Card -->
+                <div class="stat-card" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%); border: 2px solid rgba(255, 215, 0, 0.2);">
+                    <div class="stat-header">
+                        <span class="stat-title" style="color: #FFD700;">⚡ Why Lightning?</span>
+                    </div>
+                    <div style="color: #aaa; font-size: 13px; line-height: 1.6;">
+                        ✅ <strong style="color: #fff;">Instant</strong>: Swaps in &lt;1 second<br>
+                        ✅ <strong style="color: #fff;">Cheap</strong>: Only 1 sat Lightning fee<br>
+                        ✅ <strong style="color: #fff;">Secure</strong>: HTLCs guarantee safety<br>
+                        ✅ <strong style="color: #fff;">On-chain</strong>: Settlement anytime
+                    </div>
+                </div>
+
+                <!-- How it works -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">How it works</span>
+                    </div>
+                    <div style="color: #aaa; font-size: 13px; line-height: 1.6;">
+                        1. Open channel with Hub<br>
+                        2. Lock your Runes/BTC<br>
+                        3. Swap instantly off-chain<br>
+                        4. Close channel to settle
+                    </div>
+                </div>
+
+                <!-- Your Channels -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Your Channels</span>
+                        <span class="stat-badge" id="yourChannelsCount">0</span>
+                    </div>
+                    <div class="stat-value">
+                        <span class="stat-amount" id="yourChannelCapacity">0</span>
+                    </div>
+                    <div class="stat-subvalue">Total capacity (sats)</div>
+                    <button class="pool-btn primary" id="openChannelBtn" style="margin-top: 12px; width: 100%;">
+                        Open Channel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightning Pools Section -->
+        <section class="pools-section">
+            <div class="section-header">
+                <h3>⚡ Lightning Pools</h3>
+                <div class="section-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="high-tvl">High TVL</button>
+                    <button class="filter-btn" data-filter="new">New</button>
+                </div>
+            </div>
+
+            <div class="pools-grid" id="poolsGrid">
+                <!-- Loading state -->
+                <div id="poolsLoading" style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">
+                    <div class="loading-spinner" style="margin: 0 auto 16px;"></div>
+                    <p>Loading Lightning pools...</p>
+                </div>
+
+                <!-- Empty state (will be shown if no pools) -->
+                <div id="poolsEmpty" style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888; display: none;">
+                    <p style="font-size: 48px; margin: 0 0 16px 0;">🏊</p>
+                    <p style="font-size: 16px; margin: 0;">No Lightning pools yet</p>
+                    <p style="font-size: 14px; margin: 8px 0 0 0;">Pools will appear as users open channels with Runes</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h3>⚡ Lightning DEX Features</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Instant Swaps</h4>
+                    <p>Complete trades in less than 1 second using Lightning Network HTLCs</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h4>Ultra-Low Fees</h4>
+                    <p>Only 1 sat Lightning fee + 0.3% pool fee. No expensive on-chain TXs!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h4>Trustless & Secure</h4>
+                    <p>HTLCs ensure atomic swaps. Your funds are always safe.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🪙</div>
+                    <h4>Runes Support</h4>
+                    <p>First Lightning DEX with native Runes integration!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Wallet Modal (Same as marketplace) -->
+    <div id="walletModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeWalletModal()"></div>
+        <div class="modal-content wallet-modal">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <button class="modal-close" onclick="closeWalletModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Choose your preferred wallet to connect</p>
+                <div class="wallet-options">
+                    <!-- MyWallet -->
+                    <button class="wallet-option" onclick="connectMyWallet()">
+                        <img src="kraywallet/logotk.png" alt="MyWallet" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">MyWallet</span>
+                            <span class="wallet-tag recommended">Recommended</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Unisat -->
+                    <button class="wallet-option" onclick="connectUnisat()">
+                        <img src="public/images/unisat.png" alt="Unisat" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Unisat</span>
+                            <span class="wallet-tag">Popular</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Xverse -->
+                    <button class="wallet-option" onclick="connectXverse()">
+                        <img src="public/images/xverse.png" alt="Xverse" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Xverse</span>
+                            <span class="wallet-tag">Trusted</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                </div>
+                <div class="wallet-help">
+                    <p>Don't have a wallet? <a href="https://chrome.google.com/webstore" target="_blank">Get one here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Wallet Connect System -->
+    <script src="public/js/wallet-connect.js"></script>
+    <script src="lightning-hub.js"></script>
+</body>
+</html>
+

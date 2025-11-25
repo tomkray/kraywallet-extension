@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 KRAY DEFI - Unified Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.5s ease;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.8) 0%, rgba(30, 30, 40, 0.8) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease 0.1s both;
+        }
+
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #FFD700;
+        }
+
+        .balance-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .balance-item {
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .balance-item:hover {
+            background: rgba(40, 40, 50, 0.8);
+            transform: translateX(4px);
+        }
+
+        .balance-rune {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .rune-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+
+        .rune-symbol {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .balance-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            text-align: right;
+        }
+
+        .balance-value-usd {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+        }
+
+        /* Swap Card */
+        .swap-card {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.8) 0%, rgba(30, 30, 40, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            animation: fadeIn 0.5s ease 0.2s both;
+        }
+
+        .swap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .swap-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .swap-settings {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .swap-settings:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* Token Input */
+        .token-input-container {
+            background: rgba(30, 30, 40, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .token-input-container:focus-within {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .token-input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .token-input-label {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        .token-input-balance {
+            font-size: 12px;
+            color: #FFD700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .token-input-balance:hover {
+            text-decoration: underline;
+        }
+
+        .token-input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .token-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            outline: none;
+            width: 100%;
+        }
+
+        .token-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .token-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(40, 40, 50, 0.8);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .token-selector:hover {
+            background: rgba(50, 50, 60, 0.9);
+        }
+
+        .token-icon {
+            font-size: 20px;
+        }
+
+        .token-symbol {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .token-arrow {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* Swap Arrow */
+        .swap-arrow-container {
+            display: flex;
+            justify-content: center;
+            margin: -6px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .swap-arrow-btn {
+            background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(40, 40, 50, 0.95) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+
+        .swap-arrow-btn:hover {
+            transform: rotate(180deg);
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Swap Details */
+        .swap-details {
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .swap-details.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .detail-value.highlight {
+            color: #FFD700;
+        }
+
+        .route-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Swap Button */
+        .swap-button {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .swap-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+        }
+
+        .swap-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .swap-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .swap-button.loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        /* Messages */
+        .message {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+        }
+
+        .message.error {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            color: #ff6b6b;
+        }
+
+        .message.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+        }
+
+        .message.warning {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            color: #fbbf24;
+            white-space: pre-line;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 12px;
+            }
+
+            .header-title {
+                font-size: 24px;
+            }
+
+            .token-input {
+                font-size: 24px;
+            }
+
+            .swap-button {
+                padding: 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">🎯 KRAY DEFI</div>
+            <div class="header-subtitle">
+                <span class="badge">⚡ Instant</span>
+                <span class="badge">🔒 Secure</span>
+                <span class="badge">💸 Low Fee</span>
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-header">
+                <div class="balance-label">💎 Your Assets</div>
+                <button class="refresh-btn" id="refreshBtn" onclick="loadBalances()">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div class="balance-list" id="balanceList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💰</div>
+                    <div class="empty-state-text">Connect wallet to see your assets</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Swap Card -->
+        <div class="swap-card">
+            <div class="swap-header">
+                <div class="swap-title">🔄 Swap</div>
+                <button class="swap-settings" onclick="toggleSettings()">⚙️ Settings</button>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages"></div>
+
+            <!-- From Token -->
+            <div class="token-input-container">
+                <div class="token-input-header">
+                    <div class="token-input-label">You Pay</div>
+                    <div class="token-input-balance" id="fromBalance" onclick="setMaxFrom()">
+                        Balance: ...
+                    </div>
+                </div>
+                <div class="token-input-row">
+                    <input 
+                        type="number" 
+                        class="token-input" 
+                        id="fromAmount"
+                        placeholder="0.0"
+                        step="any"
+                        min="0"
+                    >
+                    <div class="token-selector" onclick="selectFromToken()">
+                        <span class="token-icon" id="fromIcon">💎</span>
+                        <span class="token-symbol" id="fromSymbol">Select</span>
+                        <span class="token-arrow">▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swap Arrow -->
+            <div class="swap-arrow-container">
+                <button class="swap-arrow-btn" onclick="swapTokens()">
+                    ⇅
+                </button>
+            </div>
+
+            <!-- To Token -->
+            <div class="token-input-container">
+                <div class="token-input-header">
+                    <div class="token-input-label">You Receive (estimated)</div>
+                    <div class="token-input-balance" id="toBalance">
+                        Balance: ...
+                    </div>
+                </div>
+                <div class="token-input-row">
+                    <input 
+                        type="text" 
+                        class="token-input" 
+                        id="toAmount"
+                        placeholder="0.0"
+                        readonly
+                    >
+                    <div class="token-selector" onclick="selectToToken()">
+                        <span class="token-icon" id="toIcon">₿</span>
+                        <span class="token-symbol" id="toSymbol">BTC</span>
+                        <span class="token-arrow">▼</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swap Details (Hidden by default) -->
+            <div class="swap-details" id="swapDetails">
+                <div class="detail-row">
+                    <div class="detail-label">
+                        🚀 Route
+                    </div>
+                    <div class="detail-value">
+                        <span class="route-badge" id="routeBadge">⚡ Lightning</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">📊 Price</div>
+                    <div class="detail-value" id="priceValue">-</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">💸 Fee</div>
+                    <div class="detail-value highlight" id="feeValue">~1 sat</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">⏱️ Speed</div>
+                    <div class="detail-value highlight" id="speedValue">Instant</div>
+                </div>
+            </div>
+
+            <!-- Swap Button -->
+            <button class="swap-button" id="swapBtn" onclick="executeSwap()" disabled>
+                Connect Wallet to Start
+            </button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎯 Unified DeFi Interface loaded!');
+
+        // State
+        let userAddress = null;
+        let balances = [];
+        let fromToken = null;
+        let toToken = { id: 'BTC', symbol: 'BTC', name: 'Bitcoin', icon: '₿' };
+        let quoteData = null;
+
+        // Initialize
+        async function init() {
+            console.log('🎬 Initializing Unified DeFi...');
+            
+            // Check wallet from parent (when in iframe)
+            if (window.parent && window.parent !== window && window.parent.connectedAddress) {
+                userAddress = window.parent.connectedAddress;
+                console.log('✅ Wallet connected from parent:', userAddress);
+                await loadBalances();
+                updateUI();
+            } 
+            // Check wallet from KrayWallet directly (when opened directly)
+            else if (window.krayWallet) {
+                console.log('🔍 Checking KrayWallet directly...');
+                try {
+                    const accounts = await window.krayWallet.getAccounts();
+                    if (accounts && accounts.length > 0) {
+                        userAddress = accounts[0];
+                        console.log('✅ Wallet connected from KrayWallet:', userAddress);
+                        await loadBalances();
+                        updateUI();
+                    } else {
+                        console.log('⚠️  No wallet connected');
+                        showWalletConnectPrompt();
+                    }
+                } catch (error) {
+                    console.error('❌ Error checking wallet:', error);
+                    console.log('⚠️  No wallet connected');
+                    showWalletConnectPrompt();
+                }
+            } else {
+                console.log('⚠️  No wallet connected (waiting for KrayWallet...)');
+                // Wait for KrayWallet to inject
+                setTimeout(init, 1000);
+            }
+
+            // Setup event listeners
+            setupEventListeners();
+        }
+        
+        // Show wallet connect prompt
+        function showWalletConnectPrompt() {
+            document.getElementById('balanceList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔌</div>
+                    <div class="empty-state-text">
+                        Conecte sua carteira para começar!<br>
+                        <small style="color: #888; font-size: 12px; margin-top: 8px; display: block;">
+                            Clique no ícone da KrayWallet Extension
+                        </small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load balances (aggregated L1 + L2)
+        async function loadBalances() {
+            if (!userAddress) return;
+
+            console.log('💰 Loading aggregated balances...');
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.textContent = '⌛ Loading...';
+            refreshBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/unified-defi/balance/${userAddress}`);
+                const data = await response.json();
+                
+                if (data.success && data.balances) {
+                    balances = data.balances;
+                    renderBalances(balances);
+                    console.log('✅ Balances loaded:', balances.length);
+                } else {
+                    showEmptyBalances();
+                }
+            } catch (error) {
+                console.error('❌ Error loading balances:', error);
+                showEmptyBalances();
+            } finally {
+                refreshBtn.textContent = '🔄 Refresh';
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Render balances
+        function renderBalances(balances) {
+            const list = document.getElementById('balanceList');
+            
+            if (balances.length === 0) {
+                showEmptyBalances();
+                return;
+            }
+
+            list.innerHTML = balances.map(b => {
+                const thumbnail = b.thumbnail || null;
+                const icon = b.runeSymbol || '💎';
+                const divisibility = b.divisibility || 0; // ✅ Usar divisibility específica de cada rune!
+                const formattedBalance = b.balance.toFixed(divisibility); // ✅ Não forçar 8 decimais!
+                
+                return `
+                <div class="balance-item" onclick="selectFromTokenDirect('${b.runeId}', '${b.runeSymbol}', '${b.runeName}', ${thumbnail ? `'${thumbnail}'` : 'null'}, ${divisibility})">
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                        ${thumbnail ? 
+                            `<img src="${thumbnail}" 
+                                  style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #222;" 
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                  alt="${b.runeName}">
+                             <div style="font-size: 24px; display: none;">${icon}</div>` 
+                            : 
+                            `<div style="font-size: 24px;">${icon}</div>`
+                        }
+                        <div class="balance-rune">
+                            <div class="rune-name">${b.runeName || b.runeSymbol}</div>
+                            <div class="rune-symbol">${b.runeSymbol}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="balance-amount">${formattedBalance}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Show empty state
+        function showEmptyBalances() {
+            document.getElementById('balanceList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">💰</div>
+                    <div class="empty-state-text">
+                        No runes found.<br>
+                        Get some runes to start trading!
+                    </div>
+                </div>
+            `;
+        }
+
+        // Select from token (from balance click)
+        function selectFromTokenDirect(runeId, symbol, name, thumbnail = null, divisibility = 0) {
+            fromToken = { id: runeId, symbol, name, icon: symbol || '💎', thumbnail, divisibility };
+            
+            // Update icon/thumbnail
+            const fromIconEl = document.getElementById('fromIcon');
+            if (thumbnail) {
+                fromIconEl.innerHTML = `<img src="${thumbnail}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;" onerror="this.outerHTML='💎';" alt="${name}">`;
+            } else {
+                fromIconEl.textContent = symbol || '💎';
+            }
+            
+            document.getElementById('fromSymbol').textContent = symbol;
+            
+            const balance = balances.find(b => b.runeId === runeId);
+            if (balance) {
+                // ✅ Usar divisibility específica, não forçar 8 decimais!
+                const div = balance.divisibility || 0;
+                document.getElementById('fromBalance').textContent = `Balance: ${balance.balance.toFixed(div)}`;
+            }
+            
+            updateUI();
+            console.log('✅ Selected from token:', fromToken);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // From amount input
+            document.getElementById('fromAmount').addEventListener('input', debounce(async (e) => {
+                const amount = parseFloat(e.target.value);
+                if (amount && fromToken && toToken) {
+                    await getQuote(amount);
+                } else {
+                    clearQuote();
+                }
+            }, 500));
+        }
+
+        // Get quote
+        async function getQuote(amount) {
+            if (!userAddress || !fromToken || !toToken) return;
+
+            console.log('💭 Getting quote...');
+
+            try {
+                const response = await fetch('/api/unified-defi/quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userAddress,
+                        fromAsset: fromToken.id,
+                        toAsset: toToken.id,
+                        amount
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    quoteData = data;
+                    displayQuote(data);
+                } else {
+                    // ✅ Check if it's a "no pool" error
+                    if (data.error === 'NO_POOL_AVAILABLE') {
+                        showMessage('warning', '🏊 No pool available!\n\n💡 Create a liquidity pool first to enable swaps for this rune.');
+                        clearQuote();
+                    } else {
+                        throw new Error(data.message || data.error || 'Failed to get quote');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error getting quote:', error);
+                showMessage('error', error.message);
+                clearQuote();
+            }
+        }
+
+        // Display quote
+        function displayQuote(data) {
+            document.getElementById('toAmount').value = data.amountOut.toFixed(8);
+            document.getElementById('priceValue').textContent = `${data.price.toFixed(2)} sats/${fromToken.symbol}`;
+            document.getElementById('feeValue').textContent = `${data.fee} sats`;
+            document.getElementById('speedValue').textContent = data.estimatedTime;
+            
+            // Route badge
+            const routeBadge = document.getElementById('routeBadge');
+            if (data.route === 'L1') {
+                routeBadge.innerHTML = '🐢 Traditional';
+                routeBadge.style.background = 'rgba(255, 165, 0, 0.2)';
+            } else {
+                routeBadge.innerHTML = '⚡ Lightning';
+                routeBadge.style.background = 'rgba(255, 215, 0, 0.2)';
+            }
+            
+            document.getElementById('swapDetails').classList.add('show');
+            document.getElementById('swapBtn').disabled = false;
+            document.getElementById('swapBtn').textContent = '🚀 EXECUTE SWAP';
+        }
+
+        // Clear quote
+        function clearQuote() {
+            document.getElementById('toAmount').value = '';
+            document.getElementById('swapDetails').classList.remove('show');
+            quoteData = null;
+        }
+
+        // Execute swap
+        async function executeSwap() {
+            if (!userAddress || !fromToken || !toToken || !quoteData) return;
+
+            const amount = parseFloat(document.getElementById('fromAmount').value);
+            if (!amount) return;
+
+            const btn = document.getElementById('swapBtn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+
+            clearMessages();
+
+            try {
+                const response = await fetch('/api/unified-defi/swap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userAddress,
+                        fromAsset: fromToken.id,
+                        toAsset: toToken.id,
+                        amount,
+                        minAmountOut: quoteData.amountOut * 0.95 // 5% slippage tolerance
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('success', `✅ Swap completed! ${data.message}`);
+                    
+                    // Reload balances
+                    await loadBalances();
+                    
+                    // Clear form
+                    document.getElementById('fromAmount').value = '';
+                    clearQuote();
+                } else {
+                    throw new Error(data.error || 'Swap failed');
+                }
+            } catch (error) {
+                console.error('❌ Error executing swap:', error);
+                showMessage('error', `❌ Error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.textContent = '🚀 EXECUTE SWAP';
+            }
+        }
+
+        // UI helpers
+        function updateUI() {
+            const btn = document.getElementById('swapBtn');
+            
+            if (!userAddress) {
+                btn.disabled = true;
+                btn.textContent = 'Connect Wallet to Start';
+            } else if (!fromToken) {
+                btn.disabled = true;
+                btn.textContent = 'Select Token to Swap';
+            } else {
+                btn.disabled = !quoteData;
+                btn.textContent = quoteData ? '🚀 EXECUTE SWAP' : 'Enter Amount';
+            }
+        }
+
+        function showMessage(type, text) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+            
+            // Auto-hide after 5s
+            setTimeout(() => {
+                messagesDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function setMaxFrom() {
+            if (!fromToken) return;
+            const balance = balances.find(b => b.runeId === fromToken.id);
+            if (balance) {
+                document.getElementById('fromAmount').value = balance.balance;
+                getQuote(balance.balance);
+            }
+        }
+
+        // Swap tokens
+        function swapTokens() {
+            const temp = fromToken;
+            fromToken = toToken;
+            toToken = temp;
+            
+            // Update UI
+            document.getElementById('fromIcon').textContent = fromToken.icon;
+            document.getElementById('fromSymbol').textContent = fromToken.symbol;
+            document.getElementById('toIcon').textContent = toToken.icon;
+            document.getElementById('toSymbol').textContent = toToken.symbol;
+            
+            // Clear and re-quote
+            clearQuote();
+            const amount = parseFloat(document.getElementById('fromAmount').value);
+            if (amount) {
+                getQuote(amount);
+            }
+        }
+
+        // Utility: Debounce
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Token selection functions
+        function selectFromToken() {
+            // ✅ Usuário clica no balance para selecionar
+            console.log('💡 Click on a balance above to select a token');
+        }
+
+        function selectToToken() {
+            // ✅ Por enquanto só BTC é suportado como destino
+            console.log('💡 Currently only BTC is supported as destination token');
+        }
+
+        function toggleSettings() {
+            // ✅ Settings padrão (5% slippage, auto routing)
+            console.log('⚙️ Settings: Slippage 5%, Auto Routing Enabled');
+        }
+
+        // Listen for wallet connection from parent
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'CONNECT_WALLET') {
+                console.log('📡 Wallet connected from parent:', event.data.address);
+                userAddress = event.data.address;
+                init();
+            }
+        });
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+</html>
+

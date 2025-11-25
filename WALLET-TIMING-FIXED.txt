@@ -1,0 +1,61 @@
+✅ TIMING PROBLEM FIXED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 PROBLEMA:
+
+❌ ANTES:
+   Script tentava usar window.krayWallet IMEDIATAMENTE
+   → Wallet ainda não estava injetada
+   → TypeError: Cannot read properties of undefined
+
+⏱️ ORDEM ERRADA:
+   1. pool-create.html carrega
+   2. init() executa (ERRO aqui!)
+   3. KrayWallet injeta depois
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO:
+
+✅ AGORA:
+   Adicionado waitForWallet() que espera a wallet ser injetada
+   → Checa a cada 100ms se window.krayWallet existe
+   → Timeout de 10s para segurança
+   → Só então tenta conectar
+
+⏱️ ORDEM CORRETA:
+   1. pool-create.html carrega
+   2. waitForWallet() espera...
+   3. KrayWallet injeta
+   4. waitForWallet() detecta ✅
+   5. init() conecta com sucesso!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 LOGS ESPERADOS:
+
+⏳ Waiting for KrayWallet...
+✅ KrayWallet detected!
+🔌 Connecting wallet...
+✅ Address: bc1q...
+💰 BTC Balance: 1000000 sats
+🎯 Runes: 3 [...]
+🖼️ Inscriptions: 5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Abrir página
+2. Ver logs no console
+3. Ver runes nos dropdowns
+4. Selecionar rune → ver balance
+5. Marcar inscription → ver lista
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ PROBLEMA RESOLVIDO!
+   Agora espera a wallet ser injetada antes de usar.
+

@@ -1,0 +1,194 @@
+🔍 DEBUG - CONEXÃO DE CARTEIRA E DADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CORREÇÕES APLICADAS:
+
+1. ✅ Corrigido updateUI() → updateWalletUI()
+2. ✅ Adicionado logs detalhados em todas as funções
+3. ✅ Corrigido updateWalletUI() (não usa mais connectBtn)
+4. ✅ Message listener agora usa address diretamente
+5. ✅ Adicionado setTimeout(1s) para check de conexão
+6. ✅ Adicionado loadTokenList() após conectar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE PASSO A PASSO:
+
+1. ABRIR CONSOLE (F12)
+   ✅ Ver todos os logs
+
+2. ABRIR PÁGINA:
+   http://localhost:3000/runes-swap.html
+
+3. LOGS ESPERADOS (inicial):
+   ```
+   🚀 Runes Swap DeFi loaded
+   🔄 DeFi Swap initializing...
+   ⏰ Checking parent connection after 1s...
+   ⏳ Waiting for window.krayWallet...
+   ```
+
+4. CLICAR "Connect Wallet" (navbar)
+   ✅ Modal abre
+
+5. CLICAR "KrayWallet"
+   ✅ Extension popup abre
+
+6. DESBLOQUEAR E APROVAR
+   ✅ Extension autoriza conexão
+
+7. LOGS ESPERADOS (após conectar):
+   ```
+   PARENT (runes-swap.html):
+   🔺 Connecting KrayWallet...
+   ✅ Wallet connected: bc1p...
+   💾 Wallet type: kraywallet
+   🔄 Updated wallet UI
+   📡 Notified iframe about wallet connection
+   
+   IFRAME (defi-swap.html):
+   📨 Received message from parent: {type: 'CONNECT_WALLET', address: 'bc1p...'}
+   📡 Received connect wallet message from parent
+      Address: bc1p...
+   ✅ Synced with parent wallet: bc1p...
+   🔄 updateWalletUI called
+      isConnected: true
+      userAddress: bc1p...
+   ✅ Wallet UI updated
+   🪙 Loading runes from wallet...
+   📦 Runes result: {success: true, runes: Array(1)}
+   ✅ Runes loaded: 1 runes
+   ✅ Balance loaded: 2053
+   📋 Loading token list...
+   ```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 DIAGNÓSTICO DE PROBLEMAS:
+
+PROBLEMA 1: "Please connect your wallet first"
+CAUSA: userAddress ou isConnected está false
+DEBUG:
+  1. Abrir console
+  2. Digitar: window.frames[0].userAddress
+  3. Digitar: window.frames[0].isConnected
+  4. Se undefined ou false → não sincronizou
+
+PROBLEMA 2: Não aparece balance/runes
+CAUSA: window.krayWallet não tem métodos
+DEBUG:
+  1. No console do iframe:
+  2. Digitar: window.krayWallet
+  3. Digitar: window.krayWallet.getBalance
+  4. Digitar: window.krayWallet.getRunes
+  5. Se undefined → extension não injetou API
+
+PROBLEMA 3: Mensagem não chega no iframe
+CAUSA: postMessage não está sendo enviado
+DEBUG:
+  1. Buscar no console: "📡 Notified iframe"
+  2. Se não aparecer → app.js não está enviando
+  3. Verificar se app.js foi modificado corretamente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 COMANDOS DE DEBUG NO CONSOLE:
+
+// Verificar parent (runes-swap.html)
+isWalletConnected
+connectedAddress
+currentWallet
+
+// Verificar iframe (defi-swap.html)
+// Primeiro, entrar no iframe:
+cd(frames[0])
+
+// Depois:
+userAddress
+isConnected
+userBalance
+userRunes
+window.krayWallet
+
+// Testar métodos da wallet:
+await window.krayWallet.getBalance()
+await window.krayWallet.getRunes()
+await window.krayWallet.getInscriptions()
+
+// Forçar sincronização manual:
+window.postMessage({
+    type: 'CONNECT_WALLET',
+    wallet: 'kraywallet',
+    address: parent.connectedAddress
+}, '*')
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 FLUXO ESPERADO:
+
+1. User conecta no navbar
+   ↓
+2. app.js: isWalletConnected = true
+   ↓
+3. app.js: connectedAddress = "bc1p..."
+   ↓
+4. app.js: postMessage para iframe
+   ↓
+5. iframe: Recebe mensagem
+   ↓
+6. iframe: userAddress = event.data.address
+   ↓
+7. iframe: isConnected = true
+   ↓
+8. iframe: updateWalletUI()
+   ↓
+9. iframe: loadUserBalance()
+   ↓
+10. iframe: loadUserRunes()
+   ↓
+11. iframe: loadTokenList()
+   ↓
+12. ✅ Dados aparecem!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 SE AINDA NÃO FUNCIONAR:
+
+1. LIMPAR CACHE:
+   Ctrl+Shift+Delete
+   ✅ Limpar cache e cookies
+   ✅ Recarregar página
+
+2. VERIFICAR EXTENSION:
+   chrome://extensions
+   ✅ KrayWallet instalada?
+   ✅ KrayWallet ativada?
+   ✅ Abrir popup e desbloquear
+
+3. VERIFICAR ARQUIVOS:
+   ✅ app.js tem postMessage?
+   ✅ defi-swap.html tem message listener?
+   ✅ Ambos estão na versão corrigida?
+
+4. TESTAR CONEXÃO DIRETA:
+   Abrir: http://localhost:3000/backups/defi-working-version/defi-swap.html
+   ✅ Conectar wallet diretamente
+   ✅ Ver se funciona sem iframe
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 PRÓXIMOS PASSOS (se funcionar):
+
+✅ Wallet conecta
+✅ Balance aparece
+✅ Runes aparecem
+✅ Pode selecionar tokens
+✅ Pode fazer swap
+
+Se NÃO funcionar:
+→ Me envie os logs do console
+→ Me envie resultado dos comandos de debug
+→ Vou investigar mais a fundo
+
+TESTE AGORA E ME DIGA O QUE APARECE! 🔍
+

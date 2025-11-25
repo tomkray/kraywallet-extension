@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAY DeFi - Runes Swap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .wallet-status {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .wallet-status.connected {
+            border-color: #34c759;
+        }
+        
+        .btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .swap-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-wrapper {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .input-wrapper input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            outline: none;
+        }
+        
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .max-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        
+        .max-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .token-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .token-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+        
+        .token-btn-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+            flex-shrink: 0;
+        }
+        
+        .token-btn-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .balance {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .swap-arrow {
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        .swap-arrow button {
+            background: #222;
+            border: 1px solid #333;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .swap-arrow button:hover {
+            background: #333;
+            transform: rotate(180deg);
+        }
+        
+        .quote-box {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .quote-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .quote-row.highlight {
+            font-weight: 600;
+            font-size: 16px;
+            border-top: 1px solid #222;
+            margin-top: 8px;
+            padding-top: 16px;
+        }
+        
+        .quote-label {
+            color: #888;
+        }
+        
+        .quote-value {
+            color: #fff;
+        }
+        
+        .quote-value.green {
+            color: #34c759;
+        }
+        
+        .quote-value.red {
+            color: #ff3b30;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+            background: #222;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: #fff;
+        }
+        
+        .token-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .token-item:hover {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+        
+        .token-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .token-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .token-icon-fallback {
+            font-size: 24px;
+        }
+        
+        .token-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .token-info p {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .token-balance {
+            text-align: right;
+        }
+        
+        .token-balance-amount {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error {
+            background: #ff3b3020;
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .success {
+            background: #34c75920;
+            border: 1px solid #34c759;
+            color: #34c759;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .pools-info {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .pools-info h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .pool-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .pool-label {
+            color: #888;
+        }
+        
+        .pool-value {
+            color: #fff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 KRAY DeFi</h1>
+            <p>Swap Runes with deep liquidity pools</p>
+        </div>
+        
+        <div class="wallet-status" id="walletStatus">
+            <button class="btn" id="connectBtn">Connect Wallet</button>
+            <div id="walletInfo" style="display: none;">
+                <p style="font-size: 12px; color: #888; margin-bottom: 8px;">Connected</p>
+                <p id="walletAddress" style="font-family: monospace; font-size: 14px;"></p>
+            </div>
+        </div>
+        
+        <div class="swap-card">
+            <div class="input-group">
+                <label>From</label>
+                <div class="input-wrapper">
+                    <input type="number" id="fromAmount" placeholder="0.0" step="any">
+                    <div class="input-actions">
+                        <button class="max-btn" id="maxBtn" style="display: none;">MAX</button>
+                        <button class="token-btn" id="fromTokenBtn">Select token</button>
+                    </div>
+                </div>
+                <div class="balance" id="fromBalance">Balance: -</div>
+            </div>
+            
+            <div class="swap-arrow">
+                <button id="flipBtn">⇅</button>
+            </div>
+            
+            <div class="input-group">
+                <label>To</label>
+                <div class="input-wrapper">
+                    <input type="number" id="toAmount" placeholder="0.0" readonly>
+                    <button class="token-btn" id="toTokenBtn">Select token</button>
+                </div>
+                <div class="balance" id="toBalance">Balance: -</div>
+            </div>
+            
+            <div id="quoteBox" style="display: none;" class="quote-box">
+                <div class="quote-row">
+                    <span class="quote-label">Rate</span>
+                    <span class="quote-value" id="quoteRate">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">Price Impact</span>
+                    <span class="quote-value" id="quotePriceImpact">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">LP Fee (0.7%)</span>
+                    <span class="quote-value" id="quoteLpFee">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">Protocol Fee (0.2%)</span>
+                    <span class="quote-value" id="quoteProtocolFee">-</span>
+                </div>
+                <div class="quote-row highlight">
+                    <span class="quote-label">Minimum Received</span>
+                    <span class="quote-value green" id="quoteMinReceived">-</span>
+                </div>
+            </div>
+            
+            <div id="errorBox" style="display: none;"></div>
+            
+            <button class="btn-primary" id="swapBtn" disabled>Connect Wallet to Swap</button>
+        </div>
+        
+        <div class="pools-info" id="poolsInfo">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0;">📊 Active Pools</h3>
+                <button class="btn" id="createPoolBtn" style="padding: 8px 16px; font-size: 13px;">+ Create Pool</button>
+            </div>
+            <div id="poolsList">
+                <p class="loading">Loading pools...</p>
+            </div>
+        </div>
+        
+        <!-- Create Pool Modal -->
+        <div class="modal" id="createPoolModal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Create Liquidity Pool</h3>
+                    <button class="modal-close" id="createPoolClose">×</button>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Pool Symbol/Logo -->
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <input type="checkbox" id="useInscriptionCheck" style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="useInscriptionCheck" style="font-size: 14px; font-weight: 600; cursor: pointer; margin: 0;">
+                                🎨 Use Ordinal Inscription as Pool Logo
+                            </label>
+                        </div>
+                        <div id="inscriptionSelect" style="display: none;">
+                            <label style="font-size: 13px; color: #888; margin-bottom: 8px; display: block;">Select Your Inscription</label>
+                            <select id="poolInscriptionSelect" style="width: 100%; padding: 10px; background: #000; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 13px;">
+                                <option value="">Loading inscriptions...</option>
+                            </select>
+                            <div id="inscriptionPreview" style="display: none; margin-top: 12px; padding: 12px; background: #0a0a0a; border: 1px solid #f59e0b; border-radius: 8px;">
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <img id="inscriptionPreviewImg" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #f59e0b;">
+                                    <div>
+                                        <div id="inscriptionPreviewNumber" style="font-weight: 600; color: #f59e0b; font-size: 13px;">#0</div>
+                                        <div id="inscriptionPreviewId" style="font-size: 10px; color: #888; margin-top: 4px; word-break: break-all;">ID: ...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #f59e0b; margin-top: 8px;">
+                            💡 Make your pool unique! Your inscription will be the pool's logo forever.
+                        </div>
+                    </div>
+                    
+                    <!-- Rune Selection -->
+                    <div class="input-group">
+                        <label>Select Rune</label>
+                        <button class="token-btn" id="poolRuneBtn" style="width: 100%; justify-content: space-between;">
+                            <span>Select rune...</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="balance" id="poolRuneBalance">Balance: -</div>
+                    </div>
+                    
+                    <!-- Rune Amount -->
+                    <div class="input-group">
+                        <label>Rune Amount</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="poolRuneAmount" placeholder="0.0" step="any">
+                            <button class="max-btn" id="poolRuneMaxBtn" style="display: none;">MAX</button>
+                        </div>
+                    </div>
+                    
+                    <!-- BTC Amount -->
+                    <div class="input-group">
+                        <label>BTC Amount (Initial Liquidity)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="poolBtcAmount" placeholder="0.0" step="any">
+                            <button class="max-btn" id="poolBtcMaxBtn">MAX</button>
+                        </div>
+                        <div class="balance">Balance: <span id="poolBtcBalance">-</span></div>
+                    </div>
+                    
+                    <!-- Initial Price Display -->
+                    <div style="background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 12px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Initial Price</div>
+                        <div id="initialPrice" style="font-size: 16px; font-weight: 600; color: #fff;">-</div>
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div style="background: rgba(52, 199, 89, 0.1); border: 1px solid rgba(52, 199, 89, 0.3); border-radius: 8px; padding: 12px; font-size: 13px; color: #34c759;">
+                        ℹ️ You will receive LP tokens representing your share of the pool. Earn 0.7% fee on all swaps!
+                    </div>
+                    
+                    <button class="btn-primary" id="createPoolSubmitBtn" disabled>Create Pool</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Token Selection Modal -->
+    <div class="modal" id="tokenModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Token</h3>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div class="token-list" id="tokenList">
+                <p class="loading">Loading tokens...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let isConnected = false;
+        let userAddress = null;
+        let userBalance = 0;
+        let userRunes = [];
+        let fromToken = null;
+        let toToken = null;
+        let poolRune = null;
+        let currentQuote = null;
+        let activePools = [];
+        let selectingFor = null; // 'from', 'to', ou 'pool'
+        
+        const API_BASE = '/api/defi';
+        
+        // DOM elements
+        const connectBtn = document.getElementById('connectBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const walletStatus = document.getElementById('walletStatus');
+        const fromTokenBtn = document.getElementById('fromTokenBtn');
+        const toTokenBtn = document.getElementById('toTokenBtn');
+        const fromAmount = document.getElementById('fromAmount');
+        const toAmount = document.getElementById('toAmount');
+        const fromBalance = document.getElementById('fromBalance');
+        const toBalance = document.getElementById('toBalance');
+        const flipBtn = document.getElementById('flipBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const quoteBox = document.getElementById('quoteBox');
+        const tokenModal = document.getElementById('tokenModal');
+        const modalClose = document.getElementById('modalClose');
+        const tokenList = document.getElementById('tokenList');
+        const poolsList = document.getElementById('poolsList');
+        const errorBox = document.getElementById('errorBox');
+        const maxBtn = document.getElementById('maxBtn');
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔄 DeFi Swap initializing...');
+            setupEventListeners();
+            loadPools();
+            checkWalletConnection();
+        });
+        
+        function setupEventListeners() {
+            connectBtn.addEventListener('click', connectWallet);
+            fromTokenBtn.addEventListener('click', () => openTokenModal('from'));
+            toTokenBtn.addEventListener('click', () => openTokenModal('to'));
+            fromAmount.addEventListener('input', calculateQuote);
+            flipBtn.addEventListener('click', flipTokens);
+            swapBtn.addEventListener('click', executeSwap);
+            maxBtn.addEventListener('click', setMaxAmount);
+            modalClose.addEventListener('click', closeTokenModal);
+            tokenModal.addEventListener('click', (e) => {
+                if (e.target === tokenModal) closeTokenModal();
+            });
+        }
+        
+        function setMaxAmount() {
+            if (!fromToken) {
+                showError('Please select a token first');
+                return;
+            }
+            
+            let maxAmount = 0;
+            
+            if (fromToken.type === 'btc') {
+                // Para BTC, deixar 1000 sats para fee
+                const feeReserve = 1000;
+                maxAmount = Math.max(0, (fromToken.balance - feeReserve) / 100000000);
+            } else {
+                // Para Runes, pode usar tudo (o amount já está formatado)
+                maxAmount = fromToken.balance;
+            }
+            
+            fromAmount.value = maxAmount;
+            calculateQuote();
+        }
+        
+        async function checkWalletConnection() {
+            if (window.krayWallet) {
+                try {
+                    const result = await window.krayWallet.getAccounts();
+                    console.log('🔍 Checking existing connection:', result);
+                    
+                    // Handle different response formats
+                    let address = null;
+                    if (Array.isArray(result) && result.length > 0) {
+                        address = result[0];
+                    } else if (result && result.address) {
+                        address = result.address;
+                    } else if (typeof result === 'string') {
+                        address = result;
+                    }
+                    
+                    if (address) {
+                        userAddress = address;
+                        isConnected = true;
+                        console.log('✅ Auto-connected:', userAddress);
+                        updateWalletUI();
+                        await loadUserBalance();
+                    }
+                } catch (e) {
+                    console.log('ℹ️ Wallet not connected yet');
+                }
+            }
+        }
+        
+        async function connectWallet() {
+            if (!window.krayWallet) {
+                showError('MyWallet extension not found!');
+                return;
+            }
+            
+            try {
+                console.log('🔌 Connecting wallet...');
+                const result = await window.krayWallet.requestAccounts();
+                console.log('📱 Wallet result:', result);
+                
+                // Handle different response formats
+                if (Array.isArray(result)) {
+                    userAddress = result[0];
+                } else if (result && result.address) {
+                    userAddress = result.address;
+                } else if (typeof result === 'string') {
+                    userAddress = result;
+                } else {
+                    throw new Error('Invalid wallet response format');
+                }
+                
+                if (!userAddress) {
+                    throw new Error('No address returned from wallet');
+                }
+                
+                console.log('✅ Connected:', userAddress);
+                isConnected = true;
+                updateWalletUI();
+                await loadUserBalance();
+            } catch (e) {
+                console.error('❌ Connect error:', e);
+                showError('Failed to connect wallet: ' + e.message);
+            }
+        }
+        
+        function updateWalletUI() {
+            if (isConnected) {
+                connectBtn.style.display = 'none';
+                walletInfo.style.display = 'block';
+                walletAddress.textContent = userAddress.substring(0, 12) + '...' + userAddress.substring(userAddress.length - 8);
+                walletStatus.classList.add('connected');
+                swapBtn.textContent = 'Select tokens to swap';
+                swapBtn.disabled = true;
+            }
+        }
+        
+        async function loadUserBalance() {
+            try {
+                const balance = await window.krayWallet.getBalance();
+                userBalance = balance.total || 0;
+                console.log('✅ Balance loaded:', userBalance);
+                
+                // Load runes from backend
+                await loadUserRunes();
+            } catch (e) {
+                console.error('❌ Failed to load balance:', e);
+            }
+        }
+        
+        async function loadUserRunes() {
+            try {
+                console.log('🪙 Loading runes from wallet...');
+                
+                // Use wallet's getRunes method
+                if (window.krayWallet && window.krayWallet.getRunes) {
+                    const result = await window.krayWallet.getRunes();
+                    console.log('📦 Runes result:', result);
+                    
+                    if (result && result.runes) {
+                        userRunes = result.runes;
+                        console.log('✅ Runes loaded:', userRunes.length, 'runes');
+                        console.log('📋 Runes:', userRunes);
+                    } else if (Array.isArray(result)) {
+                        userRunes = result;
+                        console.log('✅ Runes loaded:', userRunes.length, 'runes (array)');
+                    } else {
+                        console.log('ℹ️ No runes found');
+                        userRunes = [];
+                    }
+                } else {
+                    console.warn('⚠️ getRunes not available in wallet');
+                    userRunes = [];
+                }
+            } catch (e) {
+                console.error('❌ Failed to load runes:', e);
+                userRunes = [];
+            }
+        }
+        
+        async function loadPools() {
+            try {
+                const response = await fetch(API_BASE + '/pools');
+                const data = await response.json();
+                
+                if (data.success) {
+                    activePools = data.pools;
+                    displayPools();
+                }
+            } catch (e) {
+                poolsList.innerHTML = '<p class="error">Failed to load pools</p>';
+            }
+        }
+        
+        function displayPools() {
+            if (activePools.length === 0) {
+                poolsList.innerHTML = '<p style="color: #888; font-size: 14px;">No active pools yet</p>';
+                return;
+            }
+            
+            poolsList.innerHTML = activePools.map(pool => {
+                const hasInscription = pool.use_inscription && pool.pool_image;
+                const poolImage = hasInscription 
+                    ? `<img src="${pool.pool_image}" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #f59e0b;">`
+                    : '🎯';
+                
+                const inscriptionBadge = hasInscription 
+                    ? `<span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px; font-weight: 600; margin-left: 6px;">ORDINAL</span>`
+                    : '';
+                
+                return `
+                    <div class="pool-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                                ${poolImage}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center;">
+                                    <span class="pool-label" style="font-weight: 600; font-size: 14px;">${pool.runeName || pool.runeId}</span>
+                                    ${inscriptionBadge}
+                                </div>
+                                ${hasInscription && pool.pool_inscription_number ? `<div style="font-size: 10px; color: #f59e0b; margin-top: 2px;">Inscription #${pool.pool_inscription_number}</div>` : ''}
+                            </div>
+                        </div>
+                        <span class="pool-value" style="font-size: 13px; color: #10b981;">${(pool.reserve_btc / 100000000).toFixed(8)} BTC</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openTokenModal(type) {
+            if (!isConnected) {
+                showError('Please connect your wallet first');
+                return;
+            }
+            
+            selectingFor = type;
+            tokenModal.classList.add('show');
+            loadTokenList();
+        }
+        
+        function closeTokenModal() {
+            tokenModal.classList.remove('show');
+            selectingFor = null;
+        }
+        
+        function loadTokenList() {
+            console.log('📋 Loading token list...');
+            console.log('   User runes:', userRunes.length);
+            console.log('   Active pools:', activePools.length);
+            
+            const tokens = [
+                {
+                    id: 'BTC',
+                    symbol: 'BTC',
+                    name: 'Bitcoin',
+                    icon: '₿',
+                    balance: (userBalance / 100000000).toFixed(8),
+                    balanceRaw: userBalance,
+                    type: 'btc'
+                }
+            ];
+            
+            // Add user's runes
+            userRunes.forEach(rune => {
+                tokens.push({
+                    id: rune.runeId || rune.runeid || rune.rune_id,
+                    symbol: rune.symbol || rune.runeName || rune.rune || rune.spacedRune || 'RUNE',
+                    name: rune.name || rune.runeName || rune.spacedRune || `Rune ${rune.runeId}`,
+                    icon: '🎯',
+                    thumbnail: rune.thumbnail || rune.parentPreview,
+                    balance: formatAmount(rune.amount || 0, rune.divisibility || 0),
+                    balanceRaw: rune.amount || 0,
+                    type: 'rune',
+                    divisibility: rune.divisibility || 0
+                });
+            });
+            
+            // Add pools that user doesn't have
+            activePools.forEach(pool => {
+                const exists = tokens.find(t => t.id === pool.runeId || t.id === pool.poolId);
+                if (!exists) {
+                    tokens.push({
+                        id: pool.poolId,
+                        symbol: pool.runeName || pool.runeId,
+                        name: pool.runeName || `Rune ${pool.runeId}`,
+                        icon: '🏊',
+                        balance: '0',
+                        balanceRaw: 0,
+                        type: 'rune'
+                    });
+                }
+            });
+            
+            console.log('   Total tokens:', tokens.length);
+            
+            tokenList.innerHTML = tokens.map(token => {
+                const iconHtml = token.thumbnail 
+                    ? `<img src="${escapeHtml(token.thumbnail)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=token-icon-fallback>${token.icon}</span>';">`
+                    : `<span class="token-icon-fallback">${token.icon}</span>`;
+                
+                return `
+                    <div class="token-item" onclick="selectToken('${escapeHtml(token.id)}')">
+                        <div class="token-left">
+                            <div class="token-icon">${iconHtml}</div>
+                            <div class="token-info">
+                                <h4>${escapeHtml(token.symbol)}</h4>
+                                <p>${escapeHtml(token.name)}</p>
+                            </div>
+                        </div>
+                        <div class="token-balance">
+                            <div class="token-balance-amount">${token.balance}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatAmount(amount, divisibility = 0) {
+            if (!amount) return '0';
+            
+            // ✅ IMPORTANTE: O amount da wallet JÁ VEM com divisibility aplicada!
+            // Não dividir novamente! Apenas formatar para exibição.
+            
+            const num = parseFloat(amount);
+            
+            // Formato com K/M para números grandes
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + 'K';
+            }
+            
+            // Se for inteiro, mostrar sem decimais
+            if (num % 1 === 0) {
+                return num.toLocaleString();
+            }
+            
+            // Se tiver decimais, mostrar com até 8 casas (removendo zeros à direita)
+            return num.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 8
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        window.selectToken = function(tokenId) {
+            console.log('🎯 Selecting token:', tokenId);
+            
+            // Build full token list
+            const allTokens = [
+                { 
+                    id: 'BTC', 
+                    symbol: 'BTC', 
+                    name: 'Bitcoin', 
+                    icon: '₿', 
+                    balance: userBalance,
+                    balanceRaw: userBalance,
+                    type: 'btc' 
+                }
+            ];
+            
+            // Add user runes
+            userRunes.forEach(rune => {
+                allTokens.push({
+                    id: rune.runeId || rune.runeid || rune.rune_id,
+                    symbol: rune.symbol || rune.runeName || rune.rune || rune.spacedRune || 'RUNE',
+                    name: rune.name || rune.runeName || rune.spacedRune || `Rune ${rune.runeId}`,
+                    icon: '🎯',
+                    thumbnail: rune.thumbnail || rune.parentPreview,
+                    balance: rune.amount || 0,
+                    balanceRaw: rune.amount || 0,
+                    type: 'rune',
+                    divisibility: rune.divisibility || 0
+                });
+            });
+            
+            // Add pool tokens
+            activePools.forEach(pool => {
+                const exists = allTokens.find(t => t.id === pool.runeId || t.id === pool.poolId);
+                if (!exists) {
+                    allTokens.push({
+                        id: pool.poolId,
+                        symbol: pool.runeName || pool.runeId,
+                        name: pool.runeName || `Rune ${pool.runeId}`,
+                        icon: '🏊',
+                        balance: 0,
+                        balanceRaw: 0,
+                        type: 'rune'
+                    });
+                }
+            });
+            
+            const token = allTokens.find(t => t.id === tokenId);
+            
+            if (!token) {
+                console.error('❌ Token not found:', tokenId);
+                return;
+            }
+            
+            console.log('✅ Token found:', token);
+            
+            if (selectingFor === 'from') {
+                fromToken = token;
+                updateTokenButton(fromTokenBtn, token);
+                const balanceDisplay = token.type === 'btc' 
+                    ? (token.balance / 100000000).toFixed(8)
+                    : formatAmount(token.balance, token.divisibility);
+                fromBalance.textContent = `Balance: ${balanceDisplay}`;
+                
+                // Mostrar botão MAX
+                maxBtn.style.display = 'block';
+            } else {
+                toToken = token;
+                updateTokenButton(toTokenBtn, token);
+                const balanceDisplay = token.type === 'btc' 
+                    ? (token.balance / 100000000).toFixed(8)
+                    : formatAmount(token.balance, token.divisibility);
+                toBalance.textContent = `Balance: ${balanceDisplay}`;
+            }
+            
+            finalizeTokenSelection();
+        };
+        
+        function updateTokenButton(button, token) {
+            button.innerHTML = '';
+            
+            // Create icon element
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'token-btn-icon';
+            
+            if (token.thumbnail) {
+                const img = document.createElement('img');
+                img.src = token.thumbnail;
+                img.onerror = () => {
+                    iconDiv.innerHTML = token.icon;
+                };
+                iconDiv.appendChild(img);
+            } else {
+                iconDiv.textContent = token.icon;
+            }
+            
+            // Create text element
+            const textSpan = document.createElement('span');
+            textSpan.textContent = token.symbol;
+            
+            button.appendChild(iconDiv);
+            button.appendChild(textSpan);
+        }
+        
+        // Após selecionar token, fechar modal e atualizar
+        function finalizeTokenSelection() {
+            closeTokenModal();
+            updateSwapButton();
+            calculateQuote();
+        }
+        
+        function flipTokens() {
+            const temp = fromToken;
+            fromToken = toToken;
+            toToken = temp;
+            
+            if (fromToken) {
+                fromTokenBtn.textContent = fromToken.icon + ' ' + fromToken.symbol;
+                fromBalance.textContent = `Balance: ${(fromToken.balance / 100000000).toFixed(8)}`;
+            }
+            
+            if (toToken) {
+                toTokenBtn.textContent = toToken.icon + ' ' + toToken.symbol;
+                toBalance.textContent = `Balance: ${(toToken.balance / 100000000).toFixed(8)}`;
+            }
+            
+            const tempAmount = fromAmount.value;
+            fromAmount.value = toAmount.value;
+            toAmount.value = tempAmount;
+            
+            calculateQuote();
+        }
+        
+        async function calculateQuote() {
+            if (!fromToken || !toToken || !fromAmount.value || parseFloat(fromAmount.value) <= 0) {
+                quoteBox.style.display = 'none';
+                toAmount.value = '';
+                return;
+            }
+            
+            try {
+                const inputAmount = Math.floor(parseFloat(fromAmount.value) * 100000000);
+                const pool = activePools.find(p => 
+                    (p.poolId.includes(fromToken.id) || p.poolId.includes(toToken.id))
+                );
+                
+                if (!pool) {
+                    showError('No pool found for this token pair');
+                    return;
+                }
+                
+                const response = await fetch(API_BASE + '/quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: pool.poolId,
+                        inputCoinId: fromToken.type === 'btc' ? '0:0' : fromToken.id,
+                        inputAmount: inputAmount,
+                        slippageTolerance: 0.05
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentQuote = data.quote;
+                    displayQuote();
+                } else {
+                    showError(data.error || 'Failed to get quote');
+                }
+            } catch (e) {
+                showError('Failed to calculate quote: ' + e.message);
+            }
+        }
+        
+        function displayQuote() {
+            if (!currentQuote) return;
+            
+            quoteBox.style.display = 'block';
+            toAmount.value = (currentQuote.outputAmount / 100000000).toFixed(8);
+            
+            document.getElementById('quoteRate').textContent = `1 ${fromToken.symbol} = ${(currentQuote.outputAmount / currentQuote.inputAmount).toFixed(2)} ${toToken.symbol}`;
+            
+            const priceImpact = (currentQuote.priceImpact * 100).toFixed(2);
+            const impactEl = document.getElementById('quotePriceImpact');
+            impactEl.textContent = priceImpact + '%';
+            impactEl.className = 'quote-value ' + (parseFloat(priceImpact) < 1 ? 'green' : parseFloat(priceImpact) < 5 ? '' : 'red');
+            
+            document.getElementById('quoteLpFee').textContent = (currentQuote.lpFee / 100000000).toFixed(8) + ' sats';
+            document.getElementById('quoteProtocolFee').textContent = (currentQuote.protocolFee / 100000000).toFixed(8) + ' sats';
+            document.getElementById('quoteMinReceived').textContent = (currentQuote.minOutput / 100000000).toFixed(8) + ' ' + toToken.symbol;
+            
+            updateSwapButton();
+        }
+        
+        function updateSwapButton() {
+            if (!isConnected) {
+                swapBtn.textContent = 'Connect Wallet to Swap';
+                swapBtn.disabled = true;
+            } else if (!fromToken || !toToken) {
+                swapBtn.textContent = 'Select tokens to swap';
+                swapBtn.disabled = true;
+            } else if (!fromAmount.value || parseFloat(fromAmount.value) <= 0) {
+                swapBtn.textContent = 'Enter amount';
+                swapBtn.disabled = true;
+            } else if (!currentQuote) {
+                swapBtn.textContent = 'Loading quote...';
+                swapBtn.disabled = true;
+            } else {
+                swapBtn.textContent = `Swap ${fromToken.symbol} → ${toToken.symbol}`;
+                swapBtn.disabled = false;
+            }
+        }
+        
+        async function executeSwap() {
+            if (!currentQuote) {
+                showError('No quote available');
+                return;
+            }
+            
+            try {
+                swapBtn.textContent = 'Swapping...';
+                swapBtn.disabled = true;
+                
+                // TODO: Implement PSBT creation and signing
+                showError('Swap execution coming soon! Backend integration needed.');
+                
+            } catch (e) {
+                showError('Swap failed: ' + e.message);
+            } finally {
+                updateSwapButton();
+            }
+        }
+        
+        function showError(message) {
+            errorBox.className = 'error';
+            errorBox.textContent = '❌ ' + message;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            errorBox.className = 'success';
+            errorBox.textContent = '✅ ' + message;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 5000);
+        }
+        
+        // ═══════════════════════════════════════════════════════════
+        // CREATE POOL
+        // ═══════════════════════════════════════════════════════════
+        
+        const createPoolModal = document.getElementById('createPoolModal');
+        const createPoolBtn = document.getElementById('createPoolBtn');
+        const createPoolClose = document.getElementById('createPoolClose');
+        const poolRuneBtn = document.getElementById('poolRuneBtn');
+        const poolRuneAmount = document.getElementById('poolRuneAmount');
+        const poolBtcAmount = document.getElementById('poolBtcAmount');
+        const poolRuneMaxBtn = document.getElementById('poolRuneMaxBtn');
+        const poolBtcMaxBtn = document.getElementById('poolBtcMaxBtn');
+        const createPoolSubmitBtn = document.getElementById('createPoolSubmitBtn');
+        const initialPrice = document.getElementById('initialPrice');
+        const poolRuneBalance = document.getElementById('poolRuneBalance');
+        const poolBtcBalance = document.getElementById('poolBtcBalance');
+        
+        // Inscription elements
+        const useInscriptionCheck = document.getElementById('useInscriptionCheck');
+        const inscriptionSelect = document.getElementById('inscriptionSelect');
+        const poolInscriptionSelect = document.getElementById('poolInscriptionSelect');
+        const inscriptionPreview = document.getElementById('inscriptionPreview');
+        const inscriptionPreviewImg = document.getElementById('inscriptionPreviewImg');
+        const inscriptionPreviewNumber = document.getElementById('inscriptionPreviewNumber');
+        const inscriptionPreviewId = document.getElementById('inscriptionPreviewId');
+        
+        let selectedInscription = null;
+        let userInscriptions = [];
+        
+        createPoolBtn.addEventListener('click', async () => {
+            if (!isConnected) {
+                showError('Please connect wallet first');
+                return;
+            }
+            createPoolModal.style.display = 'flex';
+            poolBtcBalance.textContent = (userBalance / 100000000).toFixed(8) + ' BTC';
+            
+            // Load user inscriptions
+            await loadUserInscriptions();
+        });
+        
+        async function loadUserInscriptions() {
+            try {
+                const inscriptions = await window.krayWallet.getInscriptions();
+                userInscriptions = inscriptions || [];
+                
+                poolInscriptionSelect.innerHTML = '<option value="">Select inscription...</option>';
+                
+                userInscriptions.forEach(ins => {
+                    const option = document.createElement('option');
+                    option.value = ins.id;
+                    option.textContent = `#${ins.number || '?'} - ${ins.id.substring(0, 8)}...`;
+                    option.dataset.inscription = JSON.stringify(ins);
+                    poolInscriptionSelect.appendChild(option);
+                });
+                
+                if (userInscriptions.length === 0) {
+                    poolInscriptionSelect.innerHTML = '<option value="">No inscriptions found</option>';
+                }
+            } catch (e) {
+                console.error('Failed to load inscriptions:', e);
+                poolInscriptionSelect.innerHTML = '<option value="">Failed to load</option>';
+            }
+        }
+        
+        useInscriptionCheck.addEventListener('change', () => {
+            if (useInscriptionCheck.checked) {
+                inscriptionSelect.style.display = 'block';
+            } else {
+                inscriptionSelect.style.display = 'none';
+                inscriptionPreview.style.display = 'none';
+                selectedInscription = null;
+            }
+        });
+        
+        poolInscriptionSelect.addEventListener('change', () => {
+            const option = poolInscriptionSelect.options[poolInscriptionSelect.selectedIndex];
+            if (option && option.dataset.inscription) {
+                selectedInscription = JSON.parse(option.dataset.inscription);
+                
+                // Show preview
+                inscriptionPreview.style.display = 'block';
+                inscriptionPreviewNumber.textContent = `#${selectedInscription.number || '?'}`;
+                inscriptionPreviewId.textContent = `ID: ${selectedInscription.id}`;
+                
+                // Load image
+                const imageUrl = `http://localhost:3005/content/${selectedInscription.id}`;
+                inscriptionPreviewImg.src = imageUrl;
+                inscriptionPreviewImg.onerror = () => {
+                    inscriptionPreviewImg.style.display = 'none';
+                };
+            } else {
+                inscriptionPreview.style.display = 'none';
+                selectedInscription = null;
+            }
+        });
+        
+        createPoolClose.addEventListener('click', () => {
+            createPoolModal.style.display = 'none';
+        });
+        
+        poolRuneBtn.addEventListener('click', () => {
+            selectingFor = 'pool';
+            openTokenModal('pool');
+        });
+        
+        poolRuneAmount.addEventListener('input', calculateInitialPrice);
+        poolBtcAmount.addEventListener('input', calculateInitialPrice);
+        
+        poolBtcMaxBtn.addEventListener('click', () => {
+            const feeReserve = 2000;
+            const max = Math.max(0, (userBalance - feeReserve) / 100000000);
+            poolBtcAmount.value = max;
+            calculateInitialPrice();
+        });
+        
+        poolRuneMaxBtn.addEventListener('click', () => {
+            if (!poolRune) return;
+            poolRuneAmount.value = poolRune.balance;
+            calculateInitialPrice();
+        });
+        
+        // Handle pool rune selection
+        window.originalSelectToken = window.selectToken;
+        window.selectToken = function(tokenId) {
+            if (selectingFor === 'pool') {
+                const token = [...userRunes.map(r => ({
+                    id: r.runeId,
+                    symbol: r.symbol || r.name,
+                    name: r.name,
+                    balance: r.amount,
+                    type: 'rune',
+                    thumbnail: r.thumbnail
+                }))].find(t => t.id === tokenId);
+                
+                if (token && token.type === 'rune') {
+                    poolRune = token;
+                    poolRuneBtn.innerHTML = '';
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'token-btn-icon';
+                    if (token.thumbnail) {
+                        iconDiv.innerHTML = `<img src="${token.thumbnail}">`;
+                    } else {
+                        iconDiv.textContent = '🎯';
+                    }
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = token.symbol;
+                    poolRuneBtn.appendChild(iconDiv);
+                    poolRuneBtn.appendChild(textSpan);
+                    
+                    poolRuneBalance.textContent = `Balance: ${formatAmount(token.balance)}`;
+                    poolRuneMaxBtn.style.display = 'block';
+                    closeTokenModal();
+                }
+            } else {
+                window.originalSelectToken(tokenId);
+            }
+        };
+        
+        function calculateInitialPrice() {
+            const runeAmt = parseFloat(poolRuneAmount.value) || 0;
+            const btcAmt = parseFloat(poolBtcAmount.value) || 0;
+            
+            if (runeAmt > 0 && btcAmt > 0) {
+                const pricePerRune = btcAmt / runeAmt;
+                initialPrice.textContent = `1 ${poolRune ? poolRune.symbol : 'RUNE'} = ${pricePerRune.toFixed(8)} BTC`;
+                createPoolSubmitBtn.disabled = false;
+            } else {
+                initialPrice.textContent = '-';
+                createPoolSubmitBtn.disabled = true;
+            }
+        }
+        
+        createPoolSubmitBtn.addEventListener('click', async () => {
+            if (!poolRune) {
+                showError('Please select a rune');
+                return;
+            }
+            
+            const runeAmt = parseFloat(poolRuneAmount.value) || 0;
+            const btcAmt = parseFloat(poolBtcAmount.value) || 0;
+            
+            if (runeAmt <= 0 || btcAmt < 0.00001) {
+                showError('Invalid amounts');
+                return;
+            }
+            
+            try {
+                createPoolSubmitBtn.textContent = 'Creating pool...';
+                createPoolSubmitBtn.disabled = true;
+                
+                const poolData = {
+                    runeId: poolRune.id,
+                    runeName: poolRune.name,
+                    initialRuneAmount: Math.floor(runeAmt * 1e8),
+                    initialBtcAmount: Math.floor(btcAmt * 1e8),
+                    creatorAddress: userAddress
+                };
+                
+                // Add inscription data if selected
+                if (useInscriptionCheck.checked && selectedInscription) {
+                    poolData.useInscription = true;
+                    poolData.poolInscriptionId = selectedInscription.id;
+                    poolData.poolInscriptionNumber = selectedInscription.number;
+                    poolData.poolImage = `http://localhost:3005/content/${selectedInscription.id}`;
+                }
+                
+                const response = await fetch(API_BASE + '/pools', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(poolData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Pool created successfully! 🎨');
+                    createPoolModal.style.display = 'none';
+                    loadPools();
+                    
+                    // Reset form
+                    poolRuneAmount.value = '';
+                    poolBtcAmount.value = '';
+                    poolRune = null;
+                    useInscriptionCheck.checked = false;
+                    inscriptionSelect.style.display = 'none';
+                    inscriptionPreview.style.display = 'none';
+                    selectedInscription = null;
+                } else {
+                    showError(data.error || 'Failed to create pool');
+                }
+            } catch (e) {
+                showError('Error creating pool: ' + e.message);
+            } finally {
+                createPoolSubmitBtn.textContent = 'Create Pool';
+                calculateInitialPrice();
+            }
+        });
+    </script>
+</body>
+</html>
+

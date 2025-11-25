@@ -1,0 +1,61 @@
+🎯 FEATURES FALTANTES NO CREATE POOL (vs KrayWallet)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ FALTANDO:
+
+1. **Pool Name** (campo de texto)
+   - Input para nome personalizado da pool
+
+2. **Pair Type Toggle**
+   - Checkbox "Pair with BTC"
+   - Se desmarcado → mostra Second Token (Rune/Rune pair)
+
+3. **Second Token (Rune B)** - para Rune/Rune pairs
+   - Dropdown de runes
+   - Info de balance
+   - MAX button
+
+4. **Fee Rate Selector**
+   - Dropdown com opções:
+     - 0.05%
+     - 0.10%
+     - 0.30% (padrão)
+     - 1.00%
+
+5. **Inscription Features Completas**
+   - Search bar funcionando
+   - Lista visual com thumbnails (40x40)
+   - Preview grande (80x80)
+   - Contador "Showing X of Y"
+   - Fallback para diferentes content types
+
+6. **Pool Image URL Input**
+   - Alternativa à inscription
+   - Desabilitado quando inscription selecionada
+
+7. **Amount Warnings**
+   - "⚠️ Amount exceeds your balance!"
+   - Validação em tempo real
+
+8. **Initial Price Calculator**
+   - Mostrar: "1 RUNE = X BTC" ou "1 RUNE_A = X RUNE_B"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ JÁ TEMOS:
+
+✅ Checkbox inscription
+✅ Dropdown inscription básico
+✅ Preview básico
+✅ First token selection
+✅ Amount inputs básicos
+✅ MAX buttons básicos
+✅ Create pool button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 PRÓXIMA AÇÃO:
+
+Implementar TODAS as features faltantes para ficar
+igual à KrayWallet (mesma experiência, mesmo código).
+

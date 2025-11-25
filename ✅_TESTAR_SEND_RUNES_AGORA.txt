@@ -1,0 +1,155 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║               🚀 SEND RUNES - PRONTO PARA TESTAR! 🚀                    ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+✅ IMPLEMENTAÇÕES CONCLUÍDAS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ runesDecoder.getRuneUtxos() - Busca UTXOs que contêm runes específicas
+2. ✅ runesDecoderOfficial.getRuneIdByName() - Busca Rune ID no ORD server
+3. ✅ psbtBuilderRunes.buildRuneSendPSBT() - Constrói PSBT corretamente
+4. ✅ Regex corrigido para encontrar outputs no ORD server HTML
+
+📋 O QUE FOI CORRIGIDO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANTES:
+❌ Erro: "Rune not found in address"
+❌ Não encontrava UTXOs com runes
+❌ Regex não pegava outputs do ORD server
+
+AGORA:
+✅ Busca UTXOs diretamente no ORD server
+✅ Verifica cada output para encontrar a rune específica
+✅ Obtém Rune ID correto para construir Runestone
+✅ Constrói PSBT com OP_RETURN correto
+
+🔧 COMO TESTAR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  ABRA UM TERMINAL (NÃO O DO CURSOR):
+   Terminal → cd /Users/tomkray/Desktop/PSBT-Ordinals
+
+2️⃣  INICIE O BACKEND (se não estiver rodando):
+   node server/index.js
+
+3️⃣  EM OUTRO TERMINAL, EXECUTE O TESTE:
+   ./TEST-SEND-RUNES.sh
+
+4️⃣  OU TESTE DIRETO COM CURL:
+   
+   # 1. Verificar runes no endereço:
+   curl "http://localhost:3000/api/runes/by-address/bc1pvz02d8z6c4d7r2m4zvx83z5ng5ggx7pkhx796hdtd9aef85hlk9q3m36gx"
+   
+   # 2. Tentar criar PSBT para envio:
+   curl -X POST http://localhost:3000/api/runes/build-send-psbt \
+     -H "Content-Type: application/json" \
+     -d '{
+       "fromAddress": "bc1pvz02d8z6c4d7r2m4zvx83z5ng5ggx7pkhx796hdtd9aef85hlk9q3m36gx",
+       "toAddress": "bc1pggclc3c6u4xa4u00js0hey4fmq6h8kx93ltapwgqn03kz0pk3n8q5nchag",
+       "runeName": "DOG•GO•TO•THE•MOON",
+       "amount": "1000",
+       "feeRate": 1
+     }'
+
+5️⃣  TESTAR NA MYWALLET EXTENSION:
+   
+   a) Chrome → chrome://extensions/
+   b) Recarregar extensão MyWallet
+   c) Abrir wallet → Tab "Runes"
+   d) Clicar em "DOG•GO•TO•THE•MOON"
+   e) Clicar em "Send"
+   f) Preencher:
+      - Recipient: bc1pggclc3c6u4xa4u00js0hey4fmq6h8kx93ltapwgqn03kz0pk3n8q5nchag
+      - Amount: 1000
+      - Fee Rate: 1 sat/vB
+   g) Clicar em "Send Rune"
+
+📊 O QUE ESPERAR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Backend deve mostrar logs:
+   🚀 ========== BUILD RUNE SEND PSBT ==========
+   📡 Step 1: Getting Rune ID from ORD server...
+   ✅ Rune ID: 840000:3
+   📡 Step 2: Fetching runes from address...
+   ✅ Found 1 runes
+   📡 Step 2.5: Fetching UTXOs with this rune via ORD server...
+   Found 2 outputs for this address
+   ✅ Found rune in output TXID:VOUT - Amount: 1000
+   ✅ Found 1 UTXOs containing "DOG•GO•TO•THE•MOON"
+   🔨 Step 3: Building Runestone...
+   ✅ PSBT created successfully!
+
+✅ API deve retornar:
+   {
+     "success": true,
+     "psbt": "<BASE64_PSBT_HERE>",
+     "fee": <FEE_AMOUNT>,
+     "summary": {
+       "from": "bc1pvz...",
+       "to": "bc1pggc...",
+       "rune": "DOG•GO•TO•THE•MOON",
+       "amount": "1000"
+     }
+   }
+
+✅ Extension deve:
+   1. Enviar PSBT para backend
+   2. Backend retorna PSBT construído
+   3. Extension assina PSBT localmente
+   4. Extension envia PSBT assinado para backend
+   5. Backend faz broadcast
+   6. Retorna TXID de sucesso
+
+🎯 ARQUITETURA CORRETA PARA EXTENSÃO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────┐
+│  👤 USUÁRIO (Browser)                   │
+│  ┌────────────────────────────────────┐ │
+│  │  MyWallet Extension                 │ │
+│  │  • Private key no navegador ✅     │ │
+│  │  • Assina PSBT localmente ✅       │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+              ↓
+       Pede PSBT para:
+              ↓
+┌─────────────────────────────────────────┐
+│  🖥️  SEU BACKEND (localhost:3000)      │
+│  ┌────────────────────────────────────┐ │
+│  │  • ORD Server consulta ✅          │ │
+│  │  • Bitcoin Core RPC ✅             │ │
+│  │  • Constrói PSBT ✅                │ │
+│  │  • Faz broadcast ✅                │ │
+│  │  • SEM acesso a private keys ✅    │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+              ↓
+       Bitcoin Network
+
+💡 PRÓXIMOS PASSOS APÓS TESTAR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Verificar se PSBT está sendo criado corretamente
+2. ⏳ Testar assinatura no extension (já implementado)
+3. ⏳ Testar broadcast (já implementado)
+4. ⏳ Ver TX no mempool
+5. ⏳ Ver rune sendo transferida no ORD server
+
+🔍 LOGS IMPORTANTES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Backend logs: /tmp/backend.log ou direto no terminal
+Extension logs: Chrome DevTools Console (F12)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎉 VOCÊ ESTÁ A UM PASSO DE ENVIAR RUNES NA MYWALLET! 🎉
+
+═══════════════════════════════════════════════════════════════════════════
+
+

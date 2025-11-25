@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAY DeFi - Runes Swap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .wallet-status {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .wallet-status.connected {
+            border-color: #34c759;
+        }
+        
+        .btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .swap-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-wrapper {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .input-wrapper input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            outline: none;
+        }
+        
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .max-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        
+        .max-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .token-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .token-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+        
+        .token-btn-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+            flex-shrink: 0;
+        }
+        
+        .token-btn-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .balance {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .swap-arrow {
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        .swap-arrow button {
+            background: #222;
+            border: 1px solid #333;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .swap-arrow button:hover {
+            background: #333;
+            transform: rotate(180deg);
+        }
+        
+        .quote-box {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .quote-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .quote-row.highlight {
+            font-weight: 600;
+            font-size: 16px;
+            border-top: 1px solid #222;
+            margin-top: 8px;
+            padding-top: 16px;
+        }
+        
+        .quote-label {
+            color: #888;
+        }
+        
+        .quote-value {
+            color: #fff;
+        }
+        
+        .quote-value.green {
+            color: #34c759;
+        }
+        
+        .quote-value.red {
+            color: #ff3b30;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+            background: #222;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: #fff;
+        }
+        
+        .token-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .token-item:hover {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+        
+        .token-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .token-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .token-icon-fallback {
+            font-size: 24px;
+        }
+        
+        .token-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .token-info p {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .token-balance {
+            text-align: right;
+        }
+        
+        .token-balance-amount {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error {
+            background: #ff3b3020;
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .success {
+            background: #34c75920;
+            border: 1px solid #34c759;
+            color: #34c759;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .pools-info {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .pools-info h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .pool-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .pool-label {
+            color: #888;
+        }
+        
+        .pool-value {
+            color: #fff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 KRAY DeFi</h1>
+            <p>Swap Runes with deep liquidity pools</p>
+        </div>
+        
+        <div class="wallet-status connected" id="walletStatus" style="display: none;">
+            <div id="walletInfo">
+                <p style="font-size: 12px; color: #888; margin-bottom: 8px;">✅ Wallet Connected (from navbar)</p>
+                <p id="walletAddress" style="font-family: monospace; font-size: 14px;"></p>
+            </div>
+        </div>
+        
+        <div class="swap-card">
+            <div class="input-group">
+                <label>From</label>
+                <div class="input-wrapper">
+                    <input type="number" id="fromAmount" placeholder="0.0" step="any">
+                    <div class="input-actions">
+                        <button class="max-btn" id="maxBtn" style="display: none;">MAX</button>
+                        <button class="token-btn" id="fromTokenBtn">Select token</button>
+                    </div>
+                </div>
+                <div class="balance" id="fromBalance">Balance: -</div>
+            </div>
+            
+            <div class="swap-arrow">
+                <button id="flipBtn">⇅</button>
+            </div>
+            
+            <div class="input-group">
+                <label>To</label>
+                <div class="input-wrapper">
+                    <input type="number" id="toAmount" placeholder="0.0" readonly>
+                    <button class="token-btn" id="toTokenBtn">Select token</button>
+                </div>
+                <div class="balance" id="toBalance">Balance: -</div>
+            </div>
+            
+            <div id="quoteBox" style="display: none;" class="quote-box">
+                <div class="quote-row">
+                    <span class="quote-label">Rate</span>
+                    <span class="quote-value" id="quoteRate">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">Price Impact</span>
+                    <span class="quote-value" id="quotePriceImpact">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">LP Fee (0.7%)</span>
+                    <span class="quote-value" id="quoteLpFee">-</span>
+                </div>
+                <div class="quote-row">
+                    <span class="quote-label">Protocol Fee (0.2%)</span>
+                    <span class="quote-value" id="quoteProtocolFee">-</span>
+                </div>
+                <div class="quote-row highlight">
+                    <span class="quote-label">Minimum Received</span>
+                    <span class="quote-value green" id="quoteMinReceived">-</span>
+                </div>
+            </div>
+            
+            <div id="errorBox" style="display: none;"></div>
+            
+            <button class="btn-primary" id="swapBtn" disabled>Connect Wallet to Swap</button>
+        </div>
+        
+        <div class="pools-info" id="poolsInfo">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0;">📊 Active Pools</h3>
+                <button class="btn" onclick="window.location.href='/pool-create.html'" style="padding: 8px 16px; font-size: 13px;">+ Create Pool</button>
+            </div>
+            <div id="poolsList">
+                <p class="loading">Loading pools...</p>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Token Selection Modal -->
+    <div class="modal" id="tokenModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Token</h3>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div class="token-list" id="tokenList">
+                <p class="loading">Loading tokens...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let isConnected = false;
+        let userAddress = null;
+        let userBalance = 0;
+        let userRunes = [];
+        let fromToken = null;
+        let toToken = null;
+        let currentQuote = null;
+        let activePools = [];
+        let selectingFor = null; // 'from', 'to', ou 'pool'
+        
+        const API_BASE = '/api/defi';
+        
+        // DOM elements
+        // connectBtn removed - using parent window connection
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const walletStatus = document.getElementById('walletStatus');
+        const fromTokenBtn = document.getElementById('fromTokenBtn');
+        const toTokenBtn = document.getElementById('toTokenBtn');
+        const fromAmount = document.getElementById('fromAmount');
+        const toAmount = document.getElementById('toAmount');
+        const fromBalance = document.getElementById('fromBalance');
+        const toBalance = document.getElementById('toBalance');
+        const flipBtn = document.getElementById('flipBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const quoteBox = document.getElementById('quoteBox');
+        const tokenModal = document.getElementById('tokenModal');
+        const modalClose = document.getElementById('modalClose');
+        const tokenList = document.getElementById('tokenList');
+        const poolsList = document.getElementById('poolsList');
+        const errorBox = document.getElementById('errorBox');
+        const maxBtn = document.getElementById('maxBtn');
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔄 DeFi Swap initializing...');
+            setupEventListeners();
+            loadPools();
+            checkWalletConnection();
+        });
+        
+        function setupEventListeners() {
+            // connectBtn removed - using parent window connection
+            fromTokenBtn.addEventListener('click', () => openTokenModal('from'));
+            toTokenBtn.addEventListener('click', () => openTokenModal('to'));
+            fromAmount.addEventListener('input', calculateQuote);
+            flipBtn.addEventListener('click', flipTokens);
+            swapBtn.addEventListener('click', executeLightningSwap); // ⚡ Lightning DeFi SWAP
+            maxBtn.addEventListener('click', setMaxAmount);
+            modalClose.addEventListener('click', closeTokenModal);
+            tokenModal.addEventListener('click', (e) => {
+                if (e.target === tokenModal) closeTokenModal();
+            });
+            
+            // Listen for wallet connection from parent window
+            window.addEventListener('message', (event) => {
+                // Filter out metamask/xverse messages
+                if (!event.data || event.data.target === 'metamask-inpage' || event.data.target === 'metamask-contentscript') {
+                    return;
+                }
+                
+                console.log('📨 Received message from parent:', event.data);
+                
+                if (event.data.type === 'CONNECT_WALLET') {
+                    console.log('📡 Received connect wallet message from parent');
+                    console.log('   Address:', event.data.address);
+                    console.log('   Wallet:', event.data.wallet);
+                    
+                    // Use the address from parent directly
+                    if (event.data.address) {
+                        userAddress = event.data.address;
+                        isConnected = true;
+                        console.log('✅ Synced with parent wallet:', userAddress);
+                        
+                        // Update UI
+                        updateWalletUI();
+                        
+                        // Load all wallet data
+                        console.log('📞 Calling loadUserBalance()...');
+                        loadUserBalance().catch(e => console.error('Failed to load balance:', e));
+                        
+                        console.log('📞 Calling loadUserRunes()...');
+                        loadUserRunes().catch(e => console.error('Failed to load runes:', e));
+                        
+                        console.log('📞 Calling loadTokenList()...');
+                        loadTokenList().catch(e => console.error('Failed to load token list:', e));
+                    } else {
+                        console.warn('⚠️ No address in message, trying connectWalletFromParent()');
+                        connectWalletFromParent();
+                    }
+                }
+            });
+            
+            // Try to get wallet connection from parent immediately
+            setTimeout(() => {
+                console.log('⏰ Checking parent connection after 1s...');
+                connectWalletFromParent();
+            }, 1000);
+        }
+        
+        function setMaxAmount() {
+            if (!fromToken) {
+                showError('Please select a token first');
+                return;
+            }
+            
+            let maxAmount = 0;
+            
+            if (fromToken.type === 'btc') {
+                // Para BTC, deixar 1000 sats para fee
+                const feeReserve = 1000;
+                maxAmount = Math.max(0, (fromToken.balance - feeReserve) / 100000000);
+            } else {
+                // Para Runes, pode usar tudo (o amount já está formatado)
+                maxAmount = fromToken.balance;
+            }
+            
+            fromAmount.value = maxAmount;
+            calculateQuote();
+        }
+        
+        async function checkWalletConnection() {
+            if (window.krayWallet) {
+                try {
+                    const result = await window.krayWallet.getAccounts();
+                    console.log('🔍 Checking existing connection:', result);
+                    
+                    // Handle different response formats
+                    let address = null;
+                    if (Array.isArray(result) && result.length > 0) {
+                        address = result[0];
+                    } else if (result && result.address) {
+                        address = result.address;
+                    } else if (typeof result === 'string') {
+                        address = result;
+                    }
+                    
+                    if (address) {
+                        userAddress = address;
+                        isConnected = true;
+                        console.log('✅ Auto-connected:', userAddress);
+                        updateWalletUI();
+                        await loadUserBalance();
+                    }
+                } catch (e) {
+                    console.log('ℹ️ Wallet not connected yet');
+                }
+            }
+        }
+        
+        // NEW: Get wallet connection from parent window (runes-swap.html)
+        async function connectWalletFromParent() {
+            try {
+                console.log('🔍 connectWalletFromParent() called');
+                
+                // 1. Try to get from parent window first
+                if (window.parent && window.parent !== window) {
+                    console.log('   Checking parent window...');
+                    console.log('   parent.isWalletConnected:', window.parent.isWalletConnected);
+                    console.log('   parent.connectedAddress:', window.parent.connectedAddress);
+                    
+                    const parentConnected = window.parent.isWalletConnected;
+                    const parentAddress = window.parent.connectedAddress;
+                    
+                    if (parentConnected && parentAddress) {
+                        console.log('✅ Found wallet in parent:', parentAddress);
+                        userAddress = parentAddress;
+                        isConnected = true;
+                        updateWalletUI();
+                        await loadUserBalance();
+                        await loadUserRunes();
+                        await loadTokenList();
+                        
+                        // Notify parent
+                        window.parent.postMessage({
+                            type: 'WALLET_CONNECTED',
+                            address: userAddress
+                        }, '*');
+                        
+                        return;
+                    } else {
+                        console.log('⚠️ Parent wallet not connected yet');
+                        console.log('   parentConnected:', parentConnected);
+                        console.log('   parentAddress:', parentAddress);
+                    }
+                } else {
+                    console.log('⚠️ No parent window or same window');
+                }
+                
+                // 2. Wait for window.krayWallet to be injected (max 5s)
+                console.log('⏳ Waiting for window.krayWallet...');
+                for (let i = 0; i < 50; i++) {
+                    if (window.krayWallet) {
+                        console.log('✅ window.krayWallet detected!');
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // 3. Try direct connection if krayWallet is available
+                if (window.krayWallet) {
+                    console.log('🔌 Trying direct wallet connection...');
+                    await connectWallet();
+                } else {
+                    console.warn('⚠️ No wallet connection available (parent or direct)');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error connecting from parent:', error);
+            }
+        }
+        
+        // LEGACY: Direct wallet connection (fallback)
+        async function connectWallet() {
+            if (!window.krayWallet) {
+                console.warn('⚠️ KrayWallet extension not found');
+                return;
+            }
+            
+            try {
+                console.log('🔌 Connecting wallet directly...');
+                const result = await window.krayWallet.requestAccounts();
+                console.log('📱 Wallet result:', result);
+                
+                // Handle different response formats
+                if (Array.isArray(result)) {
+                    userAddress = result[0];
+                } else if (result && result.address) {
+                    userAddress = result.address;
+                } else if (typeof result === 'string') {
+                    userAddress = result;
+                } else {
+                    throw new Error('Invalid wallet response format');
+                }
+                
+                if (!userAddress) {
+                    throw new Error('No address returned from wallet');
+                }
+                
+                console.log('✅ Connected:', userAddress);
+                isConnected = true;
+                updateWalletUI();
+                await loadUserBalance();
+            } catch (e) {
+                console.error('❌ Connect error:', e);
+                showError('Failed to connect wallet: ' + e.message);
+            }
+        }
+        
+        function updateWalletUI() {
+            console.log('🔄 updateWalletUI called');
+            console.log('   isConnected:', isConnected);
+            console.log('   userAddress:', userAddress);
+            
+            if (isConnected && userAddress) {
+                // Show wallet status
+                if (walletStatus) {
+                    walletStatus.style.display = 'block';
+                }
+                if (walletInfo) {
+                    walletInfo.style.display = 'block';
+                }
+                if (walletAddress) {
+                    walletAddress.textContent = userAddress.substring(0, 12) + '...' + userAddress.substring(userAddress.length - 8);
+                }
+                if (walletStatus) {
+                    walletStatus.classList.add('connected');
+                }
+                
+                console.log('✅ Wallet UI updated');
+                
+                // Update swap button
+                updateSwapButton();
+            } else {
+                console.warn('⚠️ Cannot update UI: isConnected=' + isConnected + ', userAddress=' + userAddress);
+            }
+        }
+        
+        async function loadUserBalance() {
+            try {
+                // ✅ Use parent's krayWallet (extension is injected in parent, not iframe)
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (!wallet) {
+                    console.error('❌ krayWallet not available');
+                    return;
+                }
+                
+                const balance = await wallet.getBalance();
+                console.log('📦 Balance response:', balance);
+                userBalance = balance?.balance || balance?.confirmed || balance?.total || 0;
+                console.log('✅ Balance loaded:', userBalance, 'sats');
+                
+                // Load runes from backend
+                await loadUserRunes();
+            } catch (e) {
+                console.error('❌ Failed to load balance:', e);
+            }
+        }
+        
+        async function loadUserRunes() {
+            try {
+                console.log('🪙 Loading runes from wallet...');
+                
+                // ✅ Use parent's krayWallet (extension is injected in parent, not iframe)
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (wallet && wallet.getRunes) {
+                    const result = await wallet.getRunes();
+                    console.log('📦 Runes result:', result);
+                    
+                    if (result && result.runes) {
+                        userRunes = result.runes;
+                        console.log('✅ Runes loaded:', userRunes.length, 'runes');
+                        console.log('📋 Runes:', userRunes);
+                    } else if (Array.isArray(result)) {
+                        userRunes = result;
+                        console.log('✅ Runes loaded:', userRunes.length, 'runes (array)');
+                    } else {
+                        console.log('ℹ️ No runes found');
+                        userRunes = [];
+                    }
+                } else {
+                    console.warn('⚠️ getRunes not available in wallet');
+                    userRunes = [];
+                }
+            } catch (e) {
+                console.error('❌ Failed to load runes:', e);
+                userRunes = [];
+            }
+        }
+        
+        async function loadPools() {
+            try {
+                const response = await fetch(API_BASE + '/pools');
+                const data = await response.json();
+                
+                if (data.success) {
+                    activePools = data.pools;
+                    displayPools();
+                }
+            } catch (e) {
+                poolsList.innerHTML = '<p class="error">Failed to load pools</p>';
+            }
+        }
+        
+        function displayPools() {
+            if (activePools.length === 0) {
+                poolsList.innerHTML = '<p style="color: #888; font-size: 14px;">No active pools yet</p>';
+                return;
+            }
+            
+            poolsList.innerHTML = activePools.map(pool => {
+                const hasInscription = pool.use_inscription && pool.pool_image;
+                const poolImage = hasInscription 
+                    ? `<img src="${pool.pool_image}" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #f59e0b;">`
+                    : '🎯';
+                
+                const inscriptionBadge = hasInscription 
+                    ? `<span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px; font-weight: 600; margin-left: 6px;">ORDINAL</span>`
+                    : '';
+                
+                return `
+                    <div class="pool-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                                ${poolImage}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center;">
+                                    <span class="pool-label" style="font-weight: 600; font-size: 14px;">${pool.runeName || pool.runeId}</span>
+                                    ${inscriptionBadge}
+                                </div>
+                                ${hasInscription && pool.pool_inscription_number ? `<div style="font-size: 10px; color: #f59e0b; margin-top: 2px;">Inscription #${pool.pool_inscription_number}</div>` : ''}
+                            </div>
+                        </div>
+                        <span class="pool-value" style="font-size: 13px; color: #10b981;">${(pool.reserve_btc / 100000000).toFixed(8)} BTC</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openTokenModal(type) {
+            if (!isConnected) {
+                showError('Please connect your wallet first');
+                return;
+            }
+            
+            selectingFor = type;
+            tokenModal.classList.add('show');
+            loadTokenList();
+        }
+        
+        function closeTokenModal() {
+            tokenModal.classList.remove('show');
+            selectingFor = null;
+        }
+        
+        function loadTokenList() {
+            console.log('📋 Loading token list...');
+            console.log('   User runes:', userRunes.length);
+            console.log('   Active pools:', activePools.length);
+            
+            const tokens = [
+                {
+                    id: 'BTC',
+                    symbol: 'BTC',
+                    name: 'Bitcoin',
+                    icon: '₿',
+                    thumbnail: '/bitcoin.png',
+                    balance: (userBalance / 100000000).toFixed(8),
+                    balanceRaw: userBalance,
+                    type: 'btc'
+                }
+            ];
+            
+            // Add user's runes
+            userRunes.forEach(rune => {
+                console.log('   Adding rune:', rune);
+                tokens.push({
+                    id: rune.runeId || rune.runeid || rune.rune_id || rune.id,
+                    symbol: rune.symbol || rune.runeName || rune.rune || rune.spacedRune || 'RUNE',
+                    name: rune.name || rune.runeName || rune.spacedRune || `Rune ${rune.runeId}`,
+                    icon: rune.thumbnail ? null : '🎯',
+                    thumbnail: rune.thumbnail || rune.parentPreview || null,
+                    balance: (rune.amount || 0).toString(), // ✅ Usa amount direto (já vem dividido da wallet)
+                    balanceRaw: rune.amount || 0,
+                    type: 'rune',
+                    divisibility: rune.divisibility || 0,
+                    spacedRune: rune.spacedRune || rune.name || rune.runeName
+                });
+            });
+            
+            // Add pools that user doesn't have
+            activePools.forEach(pool => {
+                const exists = tokens.find(t => t.id === pool.runeId || t.id === pool.poolId);
+                if (!exists) {
+                    tokens.push({
+                        id: pool.poolId,
+                        symbol: pool.runeName || pool.runeId,
+                        name: pool.runeName || `Rune ${pool.runeId}`,
+                        icon: '🏊',
+                        balance: '0',
+                        balanceRaw: 0,
+                        type: 'rune'
+                    });
+                }
+            });
+            
+            console.log('   Total tokens:', tokens.length);
+            
+            tokenList.innerHTML = tokens.map(token => {
+                const iconHtml = token.thumbnail 
+                    ? `<img src="${escapeHtml(token.thumbnail)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=token-icon-fallback>${token.icon}</span>';">`
+                    : `<span class="token-icon-fallback">${token.icon}</span>`;
+                
+                return `
+                    <div class="token-item" onclick="selectToken('${escapeHtml(token.id)}')">
+                        <div class="token-left">
+                            <div class="token-icon">${iconHtml}</div>
+                            <div class="token-info">
+                                <h4>${escapeHtml(token.symbol)}</h4>
+                                <p>${escapeHtml(token.name)}</p>
+                            </div>
+                        </div>
+                        <div class="token-balance">
+                            <div class="token-balance-amount">${token.balance}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatAmount(amount, divisibility = 0) {
+            if (!amount) return '0';
+            
+            // ✅ IMPORTANTE: O amount da wallet JÁ VEM com divisibility aplicada!
+            // Não dividir novamente! Apenas formatar para exibição.
+            
+            const num = parseFloat(amount);
+            
+            // Formato com K/M para números grandes
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + 'K';
+            }
+            
+            // Se for inteiro, mostrar sem decimais
+            if (num % 1 === 0) {
+                return num.toLocaleString();
+            }
+            
+            // Se tiver decimais, mostrar com até 8 casas (removendo zeros à direita)
+            return num.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 8
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        window.selectToken = function(tokenId) {
+            console.log('🎯 Selecting token:', tokenId);
+            
+            // Build full token list
+            const allTokens = [
+                { 
+                    id: 'BTC', 
+                    symbol: 'BTC', 
+                    name: 'Bitcoin', 
+                    icon: '₿',
+                    thumbnail: '/bitcoin.png',
+                    balance: userBalance,
+                    balanceRaw: userBalance,
+                    type: 'btc' 
+                }
+            ];
+            
+            // Add user runes
+            userRunes.forEach(rune => {
+                allTokens.push({
+                    id: rune.runeId || rune.runeid || rune.rune_id,
+                    symbol: rune.symbol || rune.runeName || rune.rune || rune.spacedRune || 'RUNE',
+                    name: rune.name || rune.runeName || rune.spacedRune || `Rune ${rune.runeId}`,
+                    icon: '🎯',
+                    thumbnail: rune.thumbnail || rune.parentPreview,
+                    balance: rune.amount || 0,
+                    balanceRaw: rune.amount || 0,
+                    type: 'rune',
+                    divisibility: rune.divisibility || 0
+                });
+            });
+            
+            // Add pool tokens
+            activePools.forEach(pool => {
+                const exists = allTokens.find(t => t.id === pool.runeId || t.id === pool.poolId);
+                if (!exists) {
+                    allTokens.push({
+                        id: pool.poolId,
+                        symbol: pool.runeName || pool.runeId,
+                        name: pool.runeName || `Rune ${pool.runeId}`,
+                        icon: '🏊',
+                        balance: 0,
+                        balanceRaw: 0,
+                        type: 'rune'
+                    });
+                }
+            });
+            
+            const token = allTokens.find(t => t.id === tokenId);
+            
+            if (!token) {
+                console.error('❌ Token not found:', tokenId);
+                return;
+            }
+            
+            console.log('✅ Token found:', token);
+            
+            if (selectingFor === 'from') {
+                fromToken = token;
+                updateTokenButton(fromTokenBtn, token);
+                const balanceDisplay = token.type === 'btc' 
+                    ? (token.balance / 100000000).toFixed(8)
+                    : formatAmount(token.balance, token.divisibility);
+                fromBalance.textContent = `Balance: ${balanceDisplay}`;
+                
+                // Mostrar botão MAX
+                maxBtn.style.display = 'block';
+            } else {
+                toToken = token;
+                updateTokenButton(toTokenBtn, token);
+                const balanceDisplay = token.type === 'btc' 
+                    ? (token.balance / 100000000).toFixed(8)
+                    : formatAmount(token.balance, token.divisibility);
+                toBalance.textContent = `Balance: ${balanceDisplay}`;
+            }
+            
+            finalizeTokenSelection();
+        };
+        
+        function updateTokenButton(button, token) {
+            button.innerHTML = '';
+            
+            // Create icon element
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'token-btn-icon';
+            
+            if (token.thumbnail) {
+                const img = document.createElement('img');
+                img.src = token.thumbnail;
+                img.onerror = () => {
+                    iconDiv.innerHTML = token.icon;
+                };
+                iconDiv.appendChild(img);
+            } else {
+                iconDiv.textContent = token.icon;
+            }
+            
+            // Create text element
+            const textSpan = document.createElement('span');
+            textSpan.textContent = token.symbol;
+            
+            button.appendChild(iconDiv);
+            button.appendChild(textSpan);
+        }
+        
+        // Após selecionar token, fechar modal e atualizar
+        function finalizeTokenSelection() {
+            closeTokenModal();
+            updateSwapButton();
+            calculateQuote();
+        }
+        
+        function flipTokens() {
+            const temp = fromToken;
+            fromToken = toToken;
+            toToken = temp;
+            
+            if (fromToken) {
+                fromTokenBtn.textContent = fromToken.icon + ' ' + fromToken.symbol;
+                fromBalance.textContent = `Balance: ${(fromToken.balance / 100000000).toFixed(8)}`;
+            }
+            
+            if (toToken) {
+                toTokenBtn.textContent = toToken.icon + ' ' + toToken.symbol;
+                toBalance.textContent = `Balance: ${(toToken.balance / 100000000).toFixed(8)}`;
+            }
+            
+            const tempAmount = fromAmount.value;
+            fromAmount.value = toAmount.value;
+            toAmount.value = tempAmount;
+            
+            calculateQuote();
+        }
+        
+        async function calculateQuote() {
+            if (!fromToken || !toToken || !fromAmount.value || parseFloat(fromAmount.value) <= 0) {
+                quoteBox.style.display = 'none';
+                toAmount.value = '';
+                return;
+            }
+            
+            try {
+                const inputAmount = Math.floor(parseFloat(fromAmount.value) * 100000000);
+                const pool = activePools.find(p => 
+                    (p.poolId.includes(fromToken.id) || p.poolId.includes(toToken.id))
+                );
+                
+                if (!pool) {
+                    showError('No pool found for this token pair');
+                    return;
+                }
+                
+                const response = await fetch(API_BASE + '/quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: pool.poolId,
+                        inputCoinId: fromToken.type === 'btc' ? '0:0' : fromToken.id,
+                        inputAmount: inputAmount,
+                        slippageTolerance: 0.05
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentQuote = data.quote;
+                    displayQuote();
+                } else {
+                    showError(data.error || 'Failed to get quote');
+                }
+            } catch (e) {
+                showError('Failed to calculate quote: ' + e.message);
+            }
+        }
+        
+        function displayQuote() {
+            if (!currentQuote) return;
+            
+            quoteBox.style.display = 'block';
+            toAmount.value = (currentQuote.outputAmount / 100000000).toFixed(8);
+            
+            document.getElementById('quoteRate').textContent = `1 ${fromToken.symbol} = ${(currentQuote.outputAmount / currentQuote.inputAmount).toFixed(2)} ${toToken.symbol}`;
+            
+            const priceImpact = (currentQuote.priceImpact * 100).toFixed(2);
+            const impactEl = document.getElementById('quotePriceImpact');
+            impactEl.textContent = priceImpact + '%';
+            impactEl.className = 'quote-value ' + (parseFloat(priceImpact) < 1 ? 'green' : parseFloat(priceImpact) < 5 ? '' : 'red');
+            
+            document.getElementById('quoteLpFee').textContent = (currentQuote.lpFee / 100000000).toFixed(8) + ' sats';
+            document.getElementById('quoteProtocolFee').textContent = (currentQuote.protocolFee / 100000000).toFixed(8) + ' sats';
+            document.getElementById('quoteMinReceived').textContent = (currentQuote.minOutput / 100000000).toFixed(8) + ' ' + toToken.symbol;
+            
+            updateSwapButton();
+        }
+        
+        function updateSwapButton() {
+            if (!isConnected) {
+                swapBtn.textContent = 'Connect Wallet to Swap';
+                swapBtn.disabled = true;
+            } else if (!fromToken || !toToken) {
+                swapBtn.textContent = 'Select tokens to swap';
+                swapBtn.disabled = true;
+            } else if (!fromAmount.value || parseFloat(fromAmount.value) <= 0) {
+                swapBtn.textContent = 'Enter amount';
+                swapBtn.disabled = true;
+            } else if (!currentQuote) {
+                swapBtn.textContent = 'Loading quote...';
+                swapBtn.disabled = true;
+            } else {
+                swapBtn.textContent = `Swap ${fromToken.symbol} → ${toToken.symbol}`;
+                swapBtn.disabled = false;
+            }
+        }
+        
+        // ==========================================
+        // ⚡ LIGHTNING DEFI SWAP (NOVO!)
+        // ==========================================
+        
+        async function executeLightningSwap() {
+            if (!currentQuote) {
+                showError('No quote available');
+                return;
+            }
+            
+            console.log('\n⚡ ========== LIGHTNING DEFI SWAP FLOW ==========');
+            
+            try {
+                // STEP 1: Preparar swap Lightning
+                swapBtn.textContent = '⏳ Preparing Lightning swap...';
+                swapBtn.disabled = true;
+                console.log('📡 Step 1: Preparing Lightning DeFi swap...');
+                
+                const inputAmount = parseFloat(fromAmount.value);
+                
+                // Converter para unidades menores
+                let inputAmountSats;
+                if (fromToken.id === 'BTC') {
+                    inputAmountSats = Math.floor(inputAmount * 1e8); // BTC → sats
+                } else {
+                    inputAmountSats = Math.floor(inputAmount * 1e8); // Rune (já com divisibility)
+                }
+                
+                const swapPayload = {
+                    poolId: currentQuote.poolId || `${fromToken.id === 'BTC' ? toToken.id : fromToken.id}:BTC`,
+                    inputToken: fromToken.id === 'BTC' ? '0:0' : fromToken.id,
+                    inputAmount: inputAmountSats,
+                    minOutput: Math.floor(currentQuote.minOutput),
+                    userAddress: userAddress
+                };
+                
+                console.log('   Payload:', JSON.stringify(swapPayload, null, 2));
+                
+                // Chamar backend Lightning DeFi
+                const swapResponse = await fetch('http://localhost:3000/api/lightning-defi/swap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(swapPayload)
+                });
+                
+                const swapData = await swapResponse.json();
+                
+                if (!swapData.success) {
+                    throw new Error(swapData.error || 'Failed to prepare Lightning swap');
+                }
+                
+                console.log('✅ Lightning swap prepared');
+                console.log('   Invoice:', swapData.invoice.substring(0, 50) + '...');
+                console.log('   Amount:', swapData.amountSats, 'sats');
+                console.log('   Expected output:', swapData.expectedOutput);
+                
+                // STEP 2: Pagar invoice via KrayWallet
+                swapBtn.textContent = '⚡ Please confirm payment...';
+                console.log('⚡ Step 2: Requesting Lightning payment from wallet...');
+                
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (!wallet || !wallet.sendPayment) {
+                    throw new Error('KrayWallet not found or does not support Lightning payments');
+                }
+                
+                let paymentResult;
+                try {
+                    paymentResult = await wallet.sendPayment(swapData.invoice);
+                    console.log('✅ Lightning payment successful!');
+                    console.log('   Preimage:', paymentResult.preimage);
+                    console.log('   Payment Hash:', paymentResult.paymentHash);
+                } catch (paymentError) {
+                    console.error('❌ User rejected or payment failed:', paymentError);
+                    throw new Error('Lightning payment was rejected or failed');
+                }
+                
+                // STEP 3: Verificar se swap foi executado
+                swapBtn.textContent = '⏳ Finalizing swap...';
+                console.log('📡 Step 3: Verifying swap execution...');
+                
+                // Aguardar um momento para o backend processar
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log('✅ Swap completed successfully!');
+                console.log('   Preimage:', paymentResult.preimage);
+                console.log('   Amount swapped:', inputAmountSats, 'sats');
+                console.log('   Output received:', swapData.expectedOutput);
+                
+                // STEP 4: Mostrar sucesso
+                showSuccess(`
+                    ✅ Lightning swap successful! ⚡🎉<br>
+                    <span style="font-size: 12px; opacity: 0.8;">
+                        Swapped ${fromToken.symbol} → ${toToken.symbol}<br>
+                        Payment Hash: ${paymentResult.paymentHash.substring(0, 16)}...
+                    </span>
+                `);
+                
+                // Limpar inputs
+                fromAmount.value = '';
+                currentQuote = null;
+                quoteBox.style.display = 'none';
+                
+                // Atualizar balances após 1 segundo
+                setTimeout(() => {
+                    if (fromToken && toToken) {
+                        loadUserBalance();
+                        loadUserRunes();
+                        loadTokenList();
+                    }
+                }, 1000);
+                
+            } catch (e) {
+                console.error('❌ Error executing Lightning swap:', e);
+                showError('Lightning swap failed: ' + e.message);
+            } finally {
+                updateSwapButton();
+            }
+        }
+        
+        // ==========================================
+        // 📝 PSBT SWAP (ANTIGO - FALLBACK)
+        // ==========================================
+        
+        async function executeSwap() {
+            if (!currentQuote) {
+                showError('No quote available');
+                return;
+            }
+            
+            console.log('🔄 ========== EXECUTE SWAP FLOW ==========');
+            
+            try {
+                // STEP 1: Buscar UTXOs do user
+                swapBtn.textContent = '⏳ Fetching UTXOs...';
+                swapBtn.disabled = true;
+                console.log('📡 Step 1: Fetching UTXOs...');
+                
+                const utxosResponse = await fetch(`http://localhost:3000/api/wallet/utxos/${userAddress}`);
+                const utxosData = await utxosResponse.json();
+                
+                if (!utxosData.success || !utxosData.utxos || utxosData.utxos.length === 0) {
+                    throw new Error('No UTXOs found for your address');
+                }
+                
+                console.log('✅ UTXOs fetched:', utxosData.utxos.length);
+                
+                // STEP 2: Preparar PSBT do swap
+                swapBtn.textContent = '⏳ Preparing swap...';
+                console.log('📡 Step 2: Preparing swap PSBT...');
+                
+                const inputAmount = parseFloat(fromAmount.value);
+                
+                // Converter para unidades menores
+                let inputAmountSats;
+                if (fromToken.id === 'BTC') {
+                    inputAmountSats = Math.floor(inputAmount * 1e8); // BTC → sats
+                } else {
+                    inputAmountSats = Math.floor(inputAmount * 1e8); // Rune (já com divisibility)
+                }
+                
+                const preparePayload = {
+                    poolId: currentQuote.poolId || `${fromToken.id === 'BTC' ? toToken.id : fromToken.id}:BTC`,
+                    inputCoinId: fromToken.id === 'BTC' ? '0:0' : fromToken.id,
+                    inputAmount: inputAmountSats,
+                    userAddress: userAddress,
+                    userUtxos: utxosData.utxos,
+                    slippageTolerance: 0.05,
+                    feeRate: 10
+                };
+                
+                console.log('   Payload:', JSON.stringify(preparePayload, null, 2));
+                
+                const prepareResponse = await fetch('http://localhost:3001/api/defi/swap/prepare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(preparePayload)
+                });
+                
+                const prepareData = await prepareResponse.json();
+                
+                if (!prepareData.success) {
+                    throw new Error(prepareData.error || 'Failed to prepare swap');
+                }
+                
+                console.log('✅ Swap PSBT prepared');
+                console.log('   Swap ID:', prepareData.swapId);
+                console.log('   Expected output:', prepareData.quote.outputAmount);
+                
+                // STEP 3: User assina PSBT
+                swapBtn.textContent = '⏳ Please sign...';
+                console.log('📝 Step 3: Requesting signature from wallet...');
+                
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (!wallet || !wallet.signPsbt) {
+                    throw new Error('KrayWallet not found or does not support PSBT signing');
+                }
+                
+                let signedPsbt;
+                try {
+                    signedPsbt = await wallet.signPsbt(prepareData.psbt);
+                    console.log('✅ PSBT signed by user');
+                } catch (signError) {
+                    console.error('❌ User rejected or signing failed:', signError);
+                    throw new Error('Transaction signing was rejected or failed');
+                }
+                
+                // STEP 4: Finalizar e broadcast
+                swapBtn.textContent = '⏳ Broadcasting...';
+                console.log('📡 Step 4: Finalizing and broadcasting...');
+                
+                const finalizeResponse = await fetch('http://localhost:3001/api/defi/swap/finalize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        psbt: signedPsbt,
+                        swapId: prepareData.swapId
+                    })
+                });
+                
+                const finalizeData = await finalizeResponse.json();
+                
+                if (!finalizeData.success) {
+                    throw new Error(finalizeData.error || 'Failed to finalize swap');
+                }
+                
+                console.log('✅ Swap completed successfully!');
+                console.log('   TXID:', finalizeData.txid);
+                console.log('   New Pool Reserves:', finalizeData.newPoolReserves);
+                
+                // STEP 5: Mostrar sucesso
+                showSuccess(`
+                    ✅ Swap successful! 🎉<br>
+                    <a href="${finalizeData.explorerUrl}" target="_blank" style="color: #10b981; text-decoration: underline;">
+                        View on Explorer: ${finalizeData.txid.substring(0, 16)}...
+                    </a>
+                `);
+                
+                // Limpar inputs
+                fromAmount.value = '';
+                currentQuote = null;
+                quoteBox.style.display = 'none';
+                
+                // Atualizar balances após 2 segundos
+                setTimeout(() => {
+                    if (fromToken && toToken) {
+                        loadUserBalance();
+                        loadUserRunes();
+                        loadTokenList();
+                    }
+                }, 2000);
+                
+            } catch (e) {
+                console.error('❌ Error executing swap:', e);
+                showError('Swap failed: ' + e.message);
+            } finally {
+                updateSwapButton();
+            }
+        }
+        
+        function showSuccess(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.innerHTML = message;
+            errorBox.className = 'success';
+            errorBox.style.display = 'block';
+            errorBox.style.background = '#10b981';
+            errorBox.style.color = 'white';
+        }
+        
+        function showError(message) {
+            errorBox.className = 'error';
+            errorBox.textContent = '❌ ' + message;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            errorBox.className = 'success';
+            errorBox.textContent = '✅ ' + message;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 5000);
+        }
+        
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,138 @@
+✅ CREATE POOL AGORA ULTRA CLEAN IGUAL SWAP!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 TODAS AS CORES DE FUNDO REMOVIDAS:
+
+## ANTES:
+❌ body: #0a0a0a
+❌ .container: #1a1a1a
+❌ .banner: rgba gradiente
+❌ .inscription-box: rgba gradiente
+❌ .back-btn: #2a2a2a
+❌ Cores vibrantes em tudo
+
+## DEPOIS:
+✅ body: #000 (preto puro)
+✅ .container: #111 + border #333
+✅ .banner: transparent (SEM fundo)
+✅ .inscription-box: transparent (SEM fundo)
+✅ .back-btn: transparent + border
+✅ .inscription-list: #000 + border #333
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA IDÊNTICO AO SWAP:
+
+SWAP:                          CREATE POOL:
+┌──────────────────────┐      ┌──────────────────────┐
+│ #111 + border #333   │      │ #111 + border #333   │
+│                      │      │                      │
+│ [#000 + border]      │      │ [#000 + border]      │
+│                      │      │                      │
+│ SEM fundos coloridos │      │ SEM fundos coloridos │
+│                      │      │                      │
+│ [Botão verde #10b981]│      │ [Botão verde #10b981]│
+└──────────────────────┘      └──────────────────────┘
+
+PERFEITO! MESMO ESTILO! 🎯
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧹 LIMPEZA COMPLETA:
+
+1. ✅ Preto puro (#000) no body
+2. ✅ Container cinza escuro (#111)
+3. ✅ Banner SEM fundo (transparent)
+4. ✅ Inscription box SEM fundo
+5. ✅ Back button transparente
+6. ✅ Borders consistentes (#333)
+7. ✅ Inscription list (#000)
+8. ✅ Hover sutil (#111)
+9. ✅ Selected sutil (#1a1a1a)
+10. ✅ Verde apenas no botão principal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 DESIGN MINIMALISTA PERFEITO:
+
+CORES USADAS:
+- #000: Preto puro (body, inputs, lista)
+- #111: Cinza escuro 1 (container, hover)
+- #1a1a1a: Cinza escuro 2 (selected)
+- #333: Borders
+- #888: Texto secundário
+- #fff: Texto principal
+- #10b981: Verde (botão, accent)
+
+APENAS ISSO! SEM MAIS NADA!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R (ou Cmd+Shift+R)
+
+1. Ir para tab "Swap"
+   → Ver fundo preto + container #111
+   
+2. Ir para tab "Create Pool"
+   → Ver EXATAMENTE o mesmo fundo preto + container #111
+   
+3. Comparar visualmente
+   → IDÊNTICO! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 COMPARAÇÃO VISUAL:
+
+ANTES (colorido):
+┌────────────────────────────────┐
+│ Banner verde 🟢                │
+│ Pool Name                      │
+│ Inscription box laranja 🟠     │
+│ Cores por todo lado            │
+└────────────────────────────────┘
+
+DEPOIS (clean):
+┌────────────────────────────────┐
+│ Pool Name                      │  ← Limpo!
+│ Use Inscription                │  ← Limpo!
+│ First Token                    │  ← Limpo!
+│ [Create Pool]                  │  ← Verde apenas aqui
+└────────────────────────────────┘
+
+MUITO MAIS PROFISSIONAL! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Idêntico ao Swap
+2. ✅ Zero distrações visuais
+3. ✅ Profissional e moderno
+4. ✅ Foco no conteúdo
+5. ✅ Consistência total
+6. ✅ Minimalista perfeito
+7. ✅ Elegante e clean
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST FINAL:
+
+[x] Body preto puro (#000)
+[x] Container cinza (#111 + border #333)
+[x] Banner transparente
+[x] Inscription box transparente
+[x] Back button transparente + border
+[x] Lista de inscriptions (#000 + border #333)
+[x] Hover sutil (#111)
+[x] Selected sutil (#1a1a1a)
+[x] Botão verde (#10b981)
+[x] Zero gradientes
+[x] Zero cores vibrantes
+[x] ULTRA CLEAN! ✨
+
+✅ AGORA ESTÁ PERFEITO E LIMPO COMO O SWAP! 🎉
+

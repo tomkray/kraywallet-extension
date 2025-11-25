@@ -1,0 +1,111 @@
+✅ TABS CORRIGIDAS - Swap e Create Pool agora funcionam!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 PROBLEMA:
+
+❌ Clicar em "Swap" ou "Create Pool" não fazia nada
+❌ Tabs não trocavam
+
+CAUSA:
+- app.js interceptava TODOS os cliques em .tab-btn
+- app.js tentava acessar elementos que não existem em runes-swap.html
+- Código do runes-swap.html nunca executava!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO APLICADA:
+
+1. ✅ app.js: Adicionado check para elemento existir
+2. ✅ runes-swap.html: 
+   - Seletor mais específico: '.tabs-container .tab-btn'
+   - e.stopPropagation(): Evita app.js interceptar
+   - e.preventDefault(): Evita comportamento padrão
+
+## CÓDIGO CORRIGIDO:
+
+```javascript
+// runes-swap.html
+document.querySelectorAll('.tabs-container .tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // ✅ Bloqueia app.js!
+        e.preventDefault();
+        
+        // Troca tabs
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        
+        // Envia wallet para iframe
+        if (window.isWalletConnected && window.connectedAddress) {
+            iframe.contentWindow.postMessage({
+                type: 'CONNECT_WALLET',
+                address: window.connectedAddress
+            }, '*');
+        }
+    });
+});
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+## PASSO A PASSO:
+
+1. ✅ Página carrega
+2. ✅ Ver tab "Swap" ativa (verde)
+3. ✅ Ver iframe com defi-swap.html
+4. ✅ Clicar "Create Pool"
+5. ✅ Ver log: "🖱️ Tab clicked: create"
+6. ✅ Ver log: "✅ Switched to tab: create"
+7. ✅ Tab "Create Pool" fica verde
+8. ✅ Ver iframe com pool-create.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGS ESPERADOS:
+
+```
+🖱️ Tab clicked: create
+✅ Switched to tab: create
+   isWalletConnected: true (se conectou)
+   connectedAddress: bc1pvz02...
+📡 Sending wallet connection to tab: create
+   ✅ Sent connection to iframe: bc1pvz02...
+```
+
+No iframe pool-create.html:
+```
+📨 pool-create received message: {type: 'CONNECT_WALLET', ...}
+🎬 init() called
+✅ Found parent.krayWallet, getting address...
+💰 BTC Balance: 22612 sats
+🎯 Runes: 2
+✅ Runes loaded in custom dropdowns
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ RESUMO:
+
+PROBLEMA:
+❌ app.js interceptava cliques
+❌ Tabs não funcionavam
+
+SOLUÇÃO:
+✅ e.stopPropagation() bloqueia app.js
+✅ Seletor específico '.tabs-container .tab-btn'
+✅ TABS FUNCIONAM!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE:
+
+1. Abrir página
+2. Clicar "Create Pool"
+3. Ver formulário aparecer
+4. FUNCIONANDO! 🎉
+

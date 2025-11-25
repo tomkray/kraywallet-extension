@@ -1,0 +1,76 @@
+✅ BTC AMOUNT CORRIGIDO!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 PROBLEMA:
+
+❌ Input mostrava: "Initial Amount (BTC sats)"
+❌ MAX button colocava: 2053 (sats bruto)
+❌ User digitava 2053 pensando ser BTC
+❌ Cálculo errado!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO APLICADA:
+
+1. Label mudado: "Initial Amount (BTC)" ✅
+2. Placeholder: "0.00000000" ✅
+3. MAX button: converte sats → BTC ✅
+   - 2053 sats = 0.00002053 BTC
+   - Reserve 2000 sats para fees
+4. Display interno: mantém sats
+5. Form submit: converte BTC → sats
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 LÓGICA:
+
+Interno (variável):
+btcBalance = 2053 (sats)
+
+Display (input):
+amountB = 0.00002053 (BTC)
+
+MAX Button:
+maxSats = 2053 - 2000 = 53 sats
+maxBtc = 53 / 100000000 = 0.00000053 BTC
+input.value = "0.00000053"
+
+Submit:
+btcAmount = 0.00000053 * 100000000 = 53 sats
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 LOGS:
+
+Console mostra:
+💰 BTC Balance: 2053 sats = 0.00002053 BTC
+
+MAX button clicado:
+MAX BTC: 53 sats = 0.00000053 BTC
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 TAMBÉM CORRIGIDO:
+
+✅ MAX Token A: aplica divisibility
+✅ MAX Token B (Rune/Rune): aplica divisibility
+✅ Labels corretos:
+   - "Initial Amount (BTC)" quando BTC pair
+   - "Initial Amount (Token B)" quando Rune pair
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Ver label "Initial Amount (BTC)" ✅
+2. Clicar MAX no BTC ✅
+3. Ver 0.00002053 (não 2053) ✅
+4. Digitar valores em BTC (não sats) ✅
+5. Cálculo de preço correto ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA SIM: BTC EM BTC, NÃO EM SATS!
+

@@ -1,0 +1,111 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║           🚀 INSTRUÇÕES FINAIS - TESTAR RUNES MANUALMENTE             ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+Os comandos automáticos não estão retornando output no terminal.
+Por favor, execute MANUALMENTE cada comando abaixo:
+
+═══════════════════════════════════════════════════════════════════════
+📋 COMANDOS PARA EXECUTAR (copie e cole no terminal):
+═══════════════════════════════════════════════════════════════════════
+
+# 1. Limpar processos antigos
+pkill -9 -f "node server/index.js"
+
+# 2. Aguardar
+sleep 3
+
+# 3. Iniciar backend
+cd /Users/tomkray/Desktop/PSBT-Ordinals
+node server/index.js
+
+# Deixe esse terminal aberto (backend rodando)
+
+# 4. Em OUTRO TERMINAL, testar os endpoints:
+
+ADDRESS="bc1pvz02d8z6c4d7r2m4zvx83z5ng5ggx7pkhx796hdtd9aef85hlk9q3m36gx"
+
+# Testar health
+curl http://localhost:3000/api/health
+
+# Testar transações
+curl "http://localhost:3000/api/wallet/transactions/$ADDRESS"
+
+# Testar runes
+curl "http://localhost:3000/api/runes/by-address/$ADDRESS"
+
+# Testar overview completo
+curl "http://localhost:3000/api/wallet/overview/$ADDRESS"
+
+═══════════════════════════════════════════════════════════════════════
+🎯 O QUE VOCÊ DEVE VER:
+═══════════════════════════════════════════════════════════════════════
+
+✅ Backend deve mostrar:
+   - "✅ Server running on http://localhost:3000"
+   - Sem erros "EADDRINUSE"
+
+✅ Endpoints devem retornar:
+   - JSON com "success": true
+   - Para runes: deve aparecer "DOG•GO•TO•THE•MOON" ou alguma rune
+
+═══════════════════════════════════════════════════════════════════════
+📱 TESTAR NA MYWALLET:
+═══════════════════════════════════════════════════════════════════════
+
+1. Abrir Chrome: chrome://extensions
+
+2. Recarregar MyWallet:
+   - Encontre "MyWallet - Bitcoin Ordinals Runes"
+   - Clique no botão 🔄 "Reload"
+
+3. Abrir MyWallet:
+   - Clique no ícone da extensão
+   - Vá para tab "Runes"
+
+4. Resultado esperado:
+   ┌────────────────────────────────────┐
+   │ [📷] DOG•GO•TO•THE•MOON  🐕   → │
+   │      [quantidade]                │
+   └────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+🐛 SE NÃO FUNCIONAR:
+═══════════════════════════════════════════════════════════════════════
+
+1. Verificar logs do backend (no terminal onde está rodando)
+   - Procurar por erros vermelhos
+   - Verificar se está buscando UTXOs
+   - Verificar se está consultando ORD server
+
+2. Abrir Console do Chrome (F12 na extensão)
+   - Procurar por erros
+   - Verificar chamadas de API
+
+3. Testar ORD server manualmente:
+   curl http://localhost:80/
+
+═══════════════════════════════════════════════════════════════════════
+✅ ARQUIVOS IMPORTANTES:
+═══════════════════════════════════════════════════════════════════════
+
+✅ Backend:
+   server/utils/bitcoinRpc.js     - Bitcoin Core RPC
+   server/utils/runesDecoder.js   - Decoder de runes
+   server/routes/runes.js         - API de runes
+   server/routes/wallet.js        - API de wallet (NEW!)
+
+✅ Frontend:
+   mywallet-extension/popup/popup.js  - UI da wallet
+   mywallet-extension/popup/popup.css - Estilos de runes
+
+✅ Documentação:
+   ARQUITETURA_RUNES_COMPLETA.md  - Arquitetura completa
+   TESTAR_RUNES_MANUAL.md         - Guia de teste manual
+
+═══════════════════════════════════════════════════════════════════════
+🚀 BOA SORTE!
+═══════════════════════════════════════════════════════════════════════
+
+Me avise o resultado quando testar! 😊
+

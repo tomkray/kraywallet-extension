@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runes DeFi - KRAY STATION</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #000;
+            min-height: 100vh;
+        }
+        
+        /* Iframe styling */
+        .tab-content iframe {
+            width: 100%;
+            height: calc(100vh - 200px);
+            border: none;
+            display: block;
+            background: #000;
+        }
+            </style>
+</head>
+<body>
+    <!-- Navbar (Kray Station Standard) -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link active">Runes (DeFi)</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning DEX</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="swap">
+                <span>🔄</span>
+                <span>Swap</span>
+            </button>
+            <button class="tab-btn" data-tab="create">
+                <span>+</span>
+                <span>Create Pool</span>
+            </button>
+            <button class="tab-btn" data-tab="lightning">
+                <span>⚡</span>
+                <span>Lightning Swaps</span>
+                <span style="font-size: 10px; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">NEW</span>
+            </button>
+        </div>
+
+        <!-- Tab Content: Swap (UNIFIED EXPERIENCE) -->
+        <div class="tab-content active" id="tab-swap">
+            <iframe src="unified-defi.html"></iframe>
+        </div>
+
+        <!-- Tab Content: Create Pool -->
+        <div class="tab-content" id="tab-create">
+            <iframe src="backups/defi-working-version/pool-create.html"></iframe>
+        </div>
+
+        <!-- Tab Content: Lightning Swaps -->
+        <div class="tab-content" id="tab-lightning">
+            <iframe src="lightning-swap.html"></iframe>
+        </div>
+    </main>
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeWalletModal()"></div>
+        <div class="modal-content wallet-modal">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <button class="modal-close" onclick="closeWalletModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Choose your preferred wallet to connect</p>
+                <div class="wallet-options">
+                    <!-- KrayWallet -->
+                    <button class="wallet-option" onclick="connectMyWallet()">
+                        <img src="kraywallet/logotk.png" alt="KrayWallet" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">KrayWallet</span>
+                            <span class="wallet-tag recommended">Recommended</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Unisat -->
+                    <button class="wallet-option" onclick="connectUnisat()">
+                        <img src="public/images/unisat.png" alt="Unisat" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Unisat</span>
+                            <span class="wallet-tag">Popular</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Xverse -->
+                    <button class="wallet-option" onclick="connectXverse()">
+                        <img src="public/images/xverse.png" alt="Xverse" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Xverse</span>
+                            <span class="wallet-tag">Trusted</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                </div>
+                <div class="wallet-help">
+                    <p>Don't have a wallet? <a href="https://chrome.google.com/webstore" target="_blank">Get one here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // ⚡ IMPORTANTE: Executar IMEDIATAMENTE para capturar eventos ANTES do app.js
+        (function() {
+            console.log('🎯 runes-swap.html: Configurando tabs...');
+            
+            function setupTabs() {
+                const buttons = document.querySelectorAll('.tabs .tab-btn');
+                console.log('   Found', buttons.length, 'tab buttons');
+                
+                buttons.forEach((btn, index) => {
+                    console.log('   Setting up button', index, ':', btn.dataset.tab);
+                    
+                    // Remover listeners antigos (se existirem)
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    
+                    // Adicionar novo listener
+                    newBtn.addEventListener('click', function(e) {
+                        console.log('🖱️ Tab clicked:', this.dataset.tab);
+                        e.stopPropagation();
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        
+                        // Remove active
+                        document.querySelectorAll('.tabs .tab-btn').forEach(b => {
+                            b.classList.remove('active');
+                        });
+                        document.querySelectorAll('.tab-content').forEach(c => {
+                            c.classList.remove('active');
+                        });
+                        
+                        // Add active
+                        this.classList.add('active');
+                        const tabContent = document.getElementById('tab-' + this.dataset.tab);
+                        if (tabContent) {
+                            tabContent.classList.add('active');
+                            console.log('✅ Tab content displayed:', this.dataset.tab);
+                        } else {
+                            console.error('❌ Tab content not found:', 'tab-' + this.dataset.tab);
+                        }
+                        
+                        // Send wallet connection to iframe
+                        if (window.isWalletConnected && window.connectedAddress) {
+                            const iframe = tabContent.querySelector('iframe');
+                            if (iframe) {
+                                setTimeout(() => {
+                                    try {
+                                        iframe.contentWindow.postMessage({
+                                            type: 'CONNECT_WALLET',
+                                            wallet: window.currentWallet || 'kraywallet',
+                                            address: window.connectedAddress
+                                        }, '*');
+                                        console.log('   ✅ Sent wallet to iframe');
+                                    } catch (e) {
+                                        console.error('   ❌ Failed to send message:', e);
+                                    }
+                                }, 300);
+                            }
+                        }
+                    }, true); // Use capture phase
+                });
+                
+                console.log('✅ Tabs configured successfully');
+            }
+            
+            // Execute imediatamente se DOM já estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupTabs);
+            } else {
+                setupTabs();
+            }
+            
+            // Execute novamente após app.js carregar (caso ele sobrescreva)
+            setTimeout(setupTabs, 100);
+        })();
+
+        // Note: Wallet connection functions (openWalletModal, closeWalletModal, connectMyWallet, etc.) 
+        // are now loaded from app.js (same as ordinals.html)
+        
+        // Listen for messages from iframes to sync wallet state
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'WALLET_CONNECTED') {
+                console.log('✅ Wallet connected in iframe:', event.data);
+                // Sync with parent window
+                if (event.data.address) {
+                    connectedAddress = event.data.address;
+                    isWalletConnected = true;
+                    updateWalletUI();
+                }
+            }
+        });
+
+        console.log('🚀 Runes Swap DeFi loaded');
+        console.log('📄 Active tab: Swap');
+        console.log('💡 Click "Connect Wallet" to see modal');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Pool - KrayStation DeFi</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: #111;
+        }
+        .banner {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .banner h3 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .banner p {
+            color: #888;
+            font-size: 13px;
+            margin: 0;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #888;
+        }
+        input[type="text"], input[type="number"], input[type="url"], select {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .inscription-box {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 16px;
+        }
+        .inscription-box h4 {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .inscription-box p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        .inscription-list {
+            max-height: 240px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            border-radius: 12px;
+            background: #000;
+        }
+        .inscription-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            transition: background 0.2s;
+        }
+        .inscription-item:hover {
+            background: #111;
+        }
+        .inscription-item.selected {
+            background: #1a1a1a;
+            border-left: 3px solid #10b981;
+        }
+        .inscription-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #333;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .inscription-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: #10b981;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .hidden {
+            display: none;
+        }
+        .warning {
+            margin-top: 6px;
+            padding: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #ef4444;
+        }
+        
+        /* Custom Dropdown Styles */
+        .custom-dropdown {
+            position: absolute;
+            z-index: 1000;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 320px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .custom-dropdown::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-dropdown::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-radius: 4px;
+        }
+        
+        .custom-dropdown::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        
+        .custom-dropdown::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .rune-item {
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #333;
+            transition: background 0.2s;
+        }
+        
+        .rune-item:last-child {
+            border-bottom: none;
+        }
+        
+        .rune-item:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .rune-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #444;
+        }
+        
+        .rune-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .token-btn-custom {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.2s;
+        }
+        
+        .token-btn-custom:hover {
+            border-color: #10b981;
+        }
+        
+        .token-btn-custom:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+        
+        .token-btn-thumb {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #444;
+        }
+        
+        .token-btn-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='/defi-swap.html'">← Back</button>
+            <h2 style="margin: 0;">🏊 Create Liquidity Pool</h2>
+        </div>
+
+        <div class="banner">
+            <h3 style="margin: 0 0 6px 0; font-size: 15px;">💰 Earn Trading Fees</h3>
+            <p style="margin: 0; font-size: 13px; opacity: 0.95;">Provide liquidity and earn a share of all trading fees</p>
+        </div>
+
+        <form id="createPoolForm">
+            <!-- Pool Name -->
+            <div class="input-group">
+                <label>Pool Name</label>
+                <input type="text" id="poolName" placeholder="e.g., DOG/BTC Official Pool" required>
+            </div>
+
+            <!-- Inscription -->
+            <div class="inscription-box">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="font-size: 20px;">💎</span>
+                    <div>
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 600;">Use Your Ordinal Inscription!</h4>
+                        <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9;">Give value to your NFT</p>
+                    </div>
+                </div>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    <input type="checkbox" id="useInscription" style="width: 18px; height: 18px;">
+                    <span style="font-size: 14px;">🖼️ Use My Inscription as Pool Image</span>
+                </label>
+            </div>
+
+            <div id="inscriptionInputs" class="hidden input-group">
+                <input type="text" id="inscriptionSearch" placeholder="🔍 Search by ID or number..." style="margin-bottom: 12px;">
+                <div id="inscriptionList" class="inscription-list">
+                    <div style="padding: 20px; text-align: center; color: #888;">Loading...</div>
+                </div>
+                <div style="margin-top: 8px; font-size: 11px; color: #888; text-align: center;">
+                    Showing <span id="shownCount">0</span> of <span id="totalCount">0</span> inscriptions
+                </div>
+            </div>
+
+            <div id="imageUrlInput" class="input-group">
+                <label>Pool Image URL <span style="font-size: 12px; opacity: 0.7;">(optional)</span></label>
+                <input type="url" id="poolImage" placeholder="https://...">
+            </div>
+
+            <!-- Token A -->
+            <div class="input-group">
+                <label>First Token</label>
+                <div style="position: relative;">
+                    <button type="button" id="tokenABtn" class="token-btn-custom">
+                        <span style="font-size: 20px;">🎯</span>
+                        <span>Select rune...</span>
+                    </button>
+                    <input type="hidden" id="tokenA" required>
+                    
+                    <!-- Dropdown customizado -->
+                    <div id="tokenADropdown" class="custom-dropdown hidden"></div>
+                </div>
+                <div id="tokenABalance" style="font-size: 12px; color: #888; margin-top: 4px;"></div>
+            </div>
+
+            <!-- BTC Pair Toggle -->
+            <div class="input-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="isBtcPair" checked style="width: 18px; height: 18px;">
+                    <span>Pair with BTC (uncheck for Rune/Rune)</span>
+                </label>
+            </div>
+
+            <!-- Token B (Rune/Rune) -->
+            <div id="tokenBContainer" class="hidden input-group">
+                <label>Second Token</label>
+                <div style="position: relative;">
+                    <button type="button" id="tokenBBtn" class="token-btn-custom">
+                        <span style="font-size: 20px;">🎯</span>
+                        <span>Select second rune...</span>
+                    </button>
+                    <input type="hidden" id="tokenB">
+                    
+                    <!-- Dropdown customizado -->
+                    <div id="tokenBDropdown" class="custom-dropdown hidden"></div>
+                </div>
+                <div id="tokenBBalance" style="font-size: 12px; color: #888; margin-top: 4px;"></div>
+            </div>
+
+            <!-- Amount A -->
+            <div class="input-group">
+                <label style="display: flex; justify-content: space-between;">
+                    <span>Initial Amount (Token A)</span>
+                    <button type="button" id="maxA" style="padding: 4px 8px; background: #3b82f6; border: none; border-radius: 4px; color: white; font-size: 12px; cursor: pointer;">MAX</button>
+                </label>
+                <input type="number" id="amountA" placeholder="0" min="0" step="any" required>
+                <div id="warningA" class="warning hidden">⚠️ Exceeds balance!</div>
+            </div>
+
+            <!-- Amount B -->
+            <div class="input-group">
+                <label style="display: flex; justify-content: space-between;">
+                    <span id="labelAmountB">Initial Amount (BTC)</span>
+                    <button type="button" id="maxB" style="padding: 4px 8px; background: #3b82f6; border: none; border-radius: 4px; color: white; font-size: 12px; cursor: pointer;">MAX</button>
+                </label>
+                <input type="number" id="amountB" placeholder="0.00000000" min="0" step="any" required>
+                <div id="warningB" class="warning hidden">⚠️ Exceeds balance!</div>
+            </div>
+
+            <!-- Fee Rate -->
+            <div class="input-group">
+                <label>Fee Rate (%)</label>
+                <select id="feeRate">
+                    <option value="5">0.05%</option>
+                    <option value="10">0.10%</option>
+                    <option value="30" selected>0.30%</option>
+                    <option value="100">1.00%</option>
+                </select>
+            </div>
+
+            <!-- Initial Price Display -->
+            <div style="padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; margin-bottom: 16px;">
+                <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Initial Price</div>
+                <div id="initialPrice" style="font-weight: 600; color: #10b981; font-size: 16px;">-</div>
+            </div>
+
+            <button type="submit" class="btn-primary">🏊 Create Pool</button>
+        </form>
+
+        <div id="status" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api/defi';
+        
+        let userAddress = null;
+        let userRunes = [];
+        let btcBalance = 0;
+        let allInscriptions = [];
+        let selectedInscription = null;
+
+        // Wait for wallet to be available
+        async function waitForWallet() {
+            console.log('⏳ Waiting for KrayWallet...');
+            
+            return new Promise((resolve) => {
+                if (window.krayWallet) {
+                    console.log('✅ KrayWallet already available');
+                    resolve();
+                    return;
+                }
+                
+                // Check every 100ms for up to 10 seconds
+                let attempts = 0;
+                const maxAttempts = 100; // 10 seconds / 100ms
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    
+                    if (window.krayWallet) {
+                        console.log('✅ KrayWallet detected!');
+                        clearInterval(checkInterval);
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        console.error('❌ Timeout waiting for wallet after 10s');
+                        clearInterval(checkInterval);
+                        resolve(); // Resolve anyway to show error
+                    }
+                }, 100);
+            });
+        }
+
+        // Connect wallet on load
+        async function init() {
+            try {
+                console.log('🎬 init() called');
+                
+                // 1. Try to get from parent window first
+                if (window.parent && window.parent !== window) {
+                    console.log('   Checking parent window...');
+                    
+                    // Wait a bit for parent to initialize
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    const parentConnected = window.parent.isWalletConnected;
+                    const parentAddress = window.parent.connectedAddress;
+                    
+                    console.log('   parent.isWalletConnected:', parentConnected);
+                    console.log('   parent.connectedAddress:', parentAddress);
+                    
+                    // Even if parentConnected is undefined, if we have krayWallet, try to use it
+                    const wallet = window.parent.krayWallet;
+                    
+                    if (wallet) {
+                        console.log('✅ Found parent.krayWallet, getting address...');
+                        
+                        try {
+                            // Get address from wallet
+                            const accounts = await wallet.getAccounts();
+                            userAddress = Array.isArray(accounts) ? accounts[0] : accounts.address || accounts;
+                            console.log('✅ Address from wallet:', userAddress);
+                        } catch (getAccountsError) {
+                            console.warn('⚠️ getAccounts failed:', getAccountsError.message);
+                            
+                            // Se der erro "No wallet found", tentar conectar
+                            if (getAccountsError.message.includes('No wallet found') || 
+                                getAccountsError.message.includes('locked')) {
+                                console.log('🔓 Wallet may be locked, trying to connect...');
+                                
+                                try {
+                                    const connectResult = await wallet.connect();
+                                    if (connectResult && connectResult.success && connectResult.address) {
+                                        userAddress = connectResult.address;
+                                        console.log('✅ Connected! Address:', userAddress);
+                                    } else {
+                                        throw new Error('Connect failed');
+                                    }
+                                } catch (connectError) {
+                                    console.error('❌ Failed to connect:', connectError);
+                                    throw new Error('Please unlock your KrayWallet and try again');
+                                }
+                            } else {
+                                throw getAccountsError;
+                            }
+                        }
+                        
+                        if (userAddress) {
+                            console.log('✅ Using parent.krayWallet');
+                            
+                            // Get other data from wallet
+                            const balanceResponse = await wallet.getBalance();
+                            btcBalance = balanceResponse?.balance || balanceResponse?.confirmed || parseInt(balanceResponse) || 0;
+                            console.log('💰 BTC Balance:', btcBalance, 'sats =', (btcBalance / 100000000).toFixed(8), 'BTC');
+                            
+                            const runesResponse = await wallet.getRunes();
+                            console.log('📦 Runes Response:', runesResponse);
+                            if (runesResponse && runesResponse.runes) {
+                                userRunes = runesResponse.runes;
+                            } else if (runesResponse && runesResponse.success && runesResponse.runes) {
+                                userRunes = runesResponse.runes;
+                            } else if (Array.isArray(runesResponse)) {
+                                userRunes = runesResponse;
+                            } else {
+                                userRunes = [];
+                            }
+                            console.log('🎯 Runes:', userRunes.length, userRunes);
+                            
+                            console.log('📞 Calling loadTokenSelectors()...');
+                            loadTokenSelectors();
+                            console.log('✅ loadTokenSelectors() finished');
+                            
+                            const inscriptionsResponse = await wallet.getInscriptions();
+                            console.log('📦 Inscriptions Response:', inscriptionsResponse);
+                            if (inscriptionsResponse && inscriptionsResponse.inscriptions) {
+                                allInscriptions = inscriptionsResponse.inscriptions;
+                            } else if (inscriptionsResponse && inscriptionsResponse.success && inscriptionsResponse.inscriptions) {
+                                allInscriptions = inscriptionsResponse.inscriptions;
+                            } else if (Array.isArray(inscriptionsResponse)) {
+                                allInscriptions = inscriptionsResponse;
+                            } else {
+                                allInscriptions = [];
+                            }
+                            console.log('🖼️ Inscriptions:', allInscriptions.length);
+                            
+                            showStatus(`Connected: ${userAddress.substring(0, 8)}...`, 'success');
+                            setTimeout(() => document.getElementById('status').style.display = 'none', 3000);
+                            
+                            return; // ✅ Sucesso!
+                        } else {
+                            console.error('❌ Could not get address from wallet');
+                        }
+                    } else {
+                        console.error('❌ parent.krayWallet not available');
+                    }
+                }
+                
+                // 2. Fallback: Use parent's krayWallet
+                console.log('⏳ Waiting for parent.krayWallet (fallback)...');
+                
+                // Wait a bit for parent to be ready
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (!wallet) {
+                    throw new Error('KrayWallet not found. Please connect wallet in the main page.');
+                }
+                
+                console.log('🔌 Connecting wallet from parent...');
+                
+                // Get Address
+                const accounts = await wallet.getAccounts();
+                userAddress = Array.isArray(accounts) ? accounts[0] : accounts.address || accounts;
+                console.log('✅ Address:', userAddress);
+                
+                // Get Balance
+                const balanceResponse = await wallet.getBalance();
+                console.log('📦 Balance Response:', balanceResponse);
+                btcBalance = balanceResponse?.balance || balanceResponse?.confirmed || parseInt(balanceResponse) || 0;
+                console.log('💰 BTC Balance:', btcBalance, 'sats =', (btcBalance / 100000000).toFixed(8), 'BTC');
+                
+                // Get Runes
+                const runesResponse = await wallet.getRunes();
+                console.log('📦 Runes Response:', runesResponse);
+                
+                // Handle different response formats
+                if (runesResponse && runesResponse.success && runesResponse.runes) {
+                    userRunes = runesResponse.runes;
+                } else if (Array.isArray(runesResponse)) {
+                    userRunes = runesResponse;
+                } else {
+                    userRunes = [];
+                }
+                console.log('🎯 Runes:', userRunes.length, userRunes);
+                
+                loadTokenSelectors();
+                
+                // Get Inscriptions (use wallet variable, not window.krayWallet)
+                const inscriptionsResponse = await wallet.getInscriptions();
+                console.log('📦 Inscriptions Response:', inscriptionsResponse);
+                
+                // Handle different response formats
+                if (inscriptionsResponse && inscriptionsResponse.inscriptions) {
+                    allInscriptions = inscriptionsResponse.inscriptions;
+                } else if (inscriptionsResponse && inscriptionsResponse.success && inscriptionsResponse.inscriptions) {
+                    allInscriptions = inscriptionsResponse.inscriptions;
+                } else if (Array.isArray(inscriptionsResponse)) {
+                    allInscriptions = inscriptionsResponse;
+                } else {
+                    allInscriptions = [];
+                }
+                console.log('🖼️ Inscriptions:', allInscriptions.length);
+                
+                showStatus(`Connected: ${userAddress.substring(0, 8)}...`, 'success');
+                setTimeout(() => document.getElementById('status').style.display = 'none', 3000);
+            } catch (e) {
+                console.error('❌ Wallet error:', e);
+                showStatus('Connect wallet first: ' + e.message, 'error');
+            }
+        }
+
+        function loadTokenSelectors() {
+            const dropdownA = document.getElementById('tokenADropdown');
+            const dropdownB = document.getElementById('tokenBDropdown');
+            
+            console.log('📋 Loading runes:', userRunes.length, userRunes);
+            
+            if (!userRunes || userRunes.length === 0) {
+                console.log('⚠️ No runes found');
+                dropdownA.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No runes found</div>';
+                dropdownB.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No runes found</div>';
+                return;
+            }
+            
+            dropdownA.innerHTML = '';
+            dropdownB.innerHTML = '';
+            
+            userRunes.forEach((rune, index) => {
+                console.log(`  Rune ${index}:`, rune);
+                
+                const runeId = rune.runeId || rune.rune_id || rune.id || `rune-${index}`;
+                const symbol = rune.symbol || '?';
+                const displayName = rune.name || rune.runeName || rune.rune_name || 'Unknown Rune';
+                const amount = rune.amount || rune.balance || 0;
+                const thumbnail = rune.thumbnail || '';
+                
+                // Format amount
+                const formattedAmount = amount >= 1000 ? 
+                    amount.toLocaleString('en-US', {maximumFractionDigits: 2}) :
+                    amount;
+                
+                // Create item for dropdown A
+                const itemA = document.createElement('div');
+                itemA.className = 'rune-item';
+                itemA.dataset.rune = JSON.stringify(rune);
+                itemA.dataset.runeid = runeId;
+                
+                itemA.innerHTML = `
+                    <div class="rune-thumb">
+                        ${thumbnail ? `<img src="${thumbnail}" onerror="this.parentElement.innerHTML='<span style=\\'font-size:20px;\\'>${symbol}</span>'">` : `<span style="font-size: 20px;">${symbol}</span>`}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                            <span>${symbol}</span>
+                            <span style="font-size: 12px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayName}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #10b981; margin-top: 2px;">Balance: ${formattedAmount}</div>
+                    </div>
+                `;
+                
+                itemA.addEventListener('click', () => selectRuneA(rune));
+                
+                // Create item for dropdown B (clone)
+                const itemB = itemA.cloneNode(true);
+                itemB.dataset.rune = JSON.stringify(rune);
+                itemB.dataset.runeid = runeId;
+                itemB.addEventListener('click', () => selectRuneB(rune));
+                
+                dropdownA.appendChild(itemA);
+                dropdownB.appendChild(itemB);
+            });
+            
+            console.log('✅ Runes loaded in custom dropdowns');
+        }
+        
+        // Toggle dropdown A
+        document.getElementById('tokenABtn').addEventListener('click', () => {
+            console.log('🖱️ Token A button clicked!');
+            const dropdown = document.getElementById('tokenADropdown');
+            const dropdownB = document.getElementById('tokenBDropdown');
+            console.log('   Dropdown A innerHTML length:', dropdown.innerHTML.length);
+            console.log('   Dropdown A children:', dropdown.children.length);
+            dropdownB.classList.add('hidden');
+            dropdown.classList.toggle('hidden');
+            console.log('   Dropdown A hidden?', dropdown.classList.contains('hidden'));
+        });
+        
+        // Toggle dropdown B
+        document.getElementById('tokenBBtn').addEventListener('click', () => {
+            const dropdown = document.getElementById('tokenBDropdown');
+            const dropdownA = document.getElementById('tokenADropdown');
+            dropdownA.classList.add('hidden');
+            dropdown.classList.toggle('hidden');
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdownA = document.getElementById('tokenADropdown');
+            const dropdownB = document.getElementById('tokenBDropdown');
+            const btnA = document.getElementById('tokenABtn');
+            const btnB = document.getElementById('tokenBBtn');
+            
+            if (!btnA.contains(e.target) && !dropdownA.contains(e.target)) {
+                dropdownA.classList.add('hidden');
+            }
+            if (!btnB.contains(e.target) && !dropdownB.contains(e.target)) {
+                dropdownB.classList.add('hidden');
+            }
+        });
+        
+        // Select rune A
+        function selectRuneA(rune) {
+            const btn = document.getElementById('tokenABtn');
+            const input = document.getElementById('tokenA');
+            const balanceDiv = document.getElementById('tokenABalance');
+            const dropdown = document.getElementById('tokenADropdown');
+            
+            const symbol = rune.symbol || '?';
+            const displayName = rune.name || rune.runeName || 'Unknown';
+            const amount = rune.amount || 0;
+            const thumbnail = rune.thumbnail || '';
+            
+            // Update button
+            btn.innerHTML = `
+                <div style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; background: #2a2a2a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #444;">
+                    ${thumbnail ? `<img src="${thumbnail}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='${symbol}'">` : `<span style="font-size: 18px;">${symbol}</span>`}
+                </div>
+                <div style="flex: 1; text-align: left;">
+                    <div style="font-weight: 600;">${symbol}</div>
+                    <div style="font-size: 11px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayName}</div>
+                </div>
+            `;
+            
+            input.value = rune.runeId || rune.id;
+            balanceDiv.textContent = `Balance: ${amount.toLocaleString('en-US')} ${symbol}`;
+            balanceDiv.style.color = '#10b981';
+            dropdown.classList.add('hidden');
+            
+            window.selectedRuneA = rune;
+            calculatePrice();
+        }
+        
+        // Select rune B
+        function selectRuneB(rune) {
+            const btn = document.getElementById('tokenBBtn');
+            const input = document.getElementById('tokenB');
+            const balanceDiv = document.getElementById('tokenBBalance');
+            const dropdown = document.getElementById('tokenBDropdown');
+            
+            const symbol = rune.symbol || '?';
+            const displayName = rune.name || rune.runeName || 'Unknown';
+            const amount = rune.amount || 0;
+            const thumbnail = rune.thumbnail || '';
+            
+            // Update button
+            btn.innerHTML = `
+                <div style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; background: #2a2a2a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #444;">
+                    ${thumbnail ? `<img src="${thumbnail}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='${symbol}'">` : `<span style="font-size: 18px;">${symbol}</span>`}
+                </div>
+                <div style="flex: 1; text-align: left;">
+                    <div style="font-weight: 600;">${symbol}</div>
+                    <div style="font-size: 11px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayName}</div>
+                </div>
+            `;
+            
+            input.value = rune.runeId || rune.id;
+            balanceDiv.textContent = `Balance: ${amount.toLocaleString('en-US')} ${symbol}`;
+            balanceDiv.style.color = '#10b981';
+            dropdown.classList.add('hidden');
+            
+            window.selectedRuneB = rune;
+            calculatePrice();
+        }
+
+        // Toggle inscription inputs
+        document.getElementById('useInscription').addEventListener('change', (e) => {
+            const inputs = document.getElementById('inscriptionInputs');
+            const imageUrl = document.getElementById('imageUrlInput');
+            
+            if (e.target.checked) {
+                inputs.classList.remove('hidden');
+                imageUrl.style.opacity = '0.5';
+                imageUrl.style.pointerEvents = 'none';
+                
+                // ✅ Verificar se userAddress está pronto
+                if (userAddress) {
+                    loadInscriptions();
+                } else {
+                    console.warn('⚠️ Waiting for wallet connection...');
+                    document.getElementById('inscriptionList').innerHTML = 
+                        '<div style="padding: 20px; text-align: center; color: #f59e0b;">⏳ Waiting for wallet connection...</div>';
+                    
+                    // Tentar novamente após 1s
+                    setTimeout(() => {
+                        if (userAddress) {
+                            loadInscriptions();
+                        } else {
+                            document.getElementById('inscriptionList').innerHTML = 
+                                '<div style="padding: 20px; text-align: center; color: #ef4444;">❌ Please connect wallet first</div>';
+                        }
+                    }, 1000);
+                }
+            } else {
+                inputs.classList.add('hidden');
+                imageUrl.style.opacity = '1';
+                imageUrl.style.pointerEvents = 'auto';
+            }
+        });
+
+        // Load inscriptions
+        async function loadInscriptions(searchQuery = '') {
+            const listContainer = document.getElementById('inscriptionList');
+            
+            console.log('🖼️ Loading inscriptions...');
+            if (searchQuery) {
+                console.log(`   🔎 Search query: "${searchQuery}"`);
+            }
+            
+            listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;"><div style="display: inline-block; animation: spin 1s linear infinite;">⏳</div> Loading...</div>';
+            
+            try {
+                // 🎯 BUSCAR DO BACKEND (mesmo endpoint que a KrayWallet usa)
+                if (!userAddress) {
+                    throw new Error('No wallet address');
+                }
+                
+                const url = searchQuery 
+                    ? `http://localhost:3000/api/ordinals/by-address/${userAddress}?search=${encodeURIComponent(searchQuery)}`
+                    : `http://localhost:3000/api/ordinals/by-address/${userAddress}`;
+                
+                console.log(`   📡 Fetching from: ${url}`);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('📦 Response:', data);
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to fetch inscriptions');
+                }
+                
+                allInscriptions = data.inscriptions || [];
+                console.log(`✅ Found ${allInscriptions.length} inscriptions`);
+                
+                // Update counter
+                document.getElementById('totalCount').textContent = allInscriptions.length;
+                document.getElementById('shownCount').textContent = Math.min(allInscriptions.length, 12);
+                
+                if (allInscriptions.length === 0) {
+                    listContainer.innerHTML = searchQuery 
+                        ? '<div style="padding: 20px; text-align: center; color: #888;">No inscriptions found for "' + searchQuery + '"</div>'
+                        : '<div style="padding: 20px; text-align: center; color: #888;">No inscriptions found in wallet</div>';
+                    return;
+                }
+                
+                // 📋 RENDERIZAR (máximo 12)
+                listContainer.innerHTML = '';
+                const limited = allInscriptions.slice(0, 12);
+                
+                limited.forEach((ins, idx) => {
+                    console.log(`   Inscription ${idx}:`, ins);
+                    
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display: flex; flex-direction: column; align-items: center; padding: 8px; cursor: pointer; border: 2px solid transparent; border-radius: 8px; transition: all 0.2s; background: rgba(0,0,0,0.5);';
+                    item.dataset.inscription = JSON.stringify(ins);
+                    
+                    // 🖼️ THUMBNAIL (80x80)
+                    const thumb = document.createElement('div');
+                    thumb.style.cssText = 'width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #f59e0b; background: #2a2a2a; display: flex; align-items: center; justify-content: center; margin-bottom: 6px;';
+                    
+                    // Extract fields (mesmo formato que KrayWallet)
+                    const insId = ins.inscription_id || ins.inscriptionId || ins.id;
+                    const insNumber = ins.inscription_number || ins.inscriptionNumber || ins.number;
+                    const contentType = ins.content_type || ins.contentType || 'unknown';
+                    
+                    // 🎨 CONTENT URL (localhost:80 como na KrayWallet)
+                    const contentUrl = ins.preview || `http://localhost:80/content/${insId}`;
+                    
+                    thumb.innerHTML = `<img src="${contentUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<span style=\\'font-size:40px;\\'>🖼️</span>'">`;
+                    
+                    // 📝 INFO
+                    const info = document.createElement('div');
+                    info.style.cssText = 'width: 100%; text-align: center;';
+                    info.innerHTML = `
+                        <div style="font-weight: 600; color: #f59e0b; font-size: 12px;">#${insNumber || '?'}</div>
+                        <div style="font-size: 10px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${(insId || '').substring(0, 8)}...</div>
+                    `;
+                    
+                    item.appendChild(thumb);
+                    item.appendChild(info);
+                    
+                    // HOVER
+                    item.addEventListener('mouseenter', () => {
+                        item.style.borderColor = '#10b981';
+                        item.style.background = 'rgba(16, 185, 129, 0.1)';
+                    });
+                    item.addEventListener('mouseleave', () => {
+                        if (!item.classList.contains('selected')) {
+                            item.style.borderColor = 'transparent';
+                            item.style.background = 'rgba(0,0,0,0.5)';
+                        }
+                    });
+                    
+                    // CLICK
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('#inscriptionList > div').forEach(el => {
+                            el.classList.remove('selected');
+                            el.style.borderColor = 'transparent';
+                            el.style.background = 'rgba(0,0,0,0.5)';
+                        });
+                        item.classList.add('selected');
+                        item.style.borderColor = '#10b981';
+                        item.style.background = 'rgba(16, 185, 129, 0.2)';
+                        
+                        selectedInscription = {
+                            id: insId,
+                            inscriptionId: insId,
+                            inscriptionNumber: insNumber,
+                            contentType: contentType,
+                            contentUrl: contentUrl
+                        };
+                        
+                        document.getElementById('poolImage').value = contentUrl;
+                        console.log('✅ Inscription selected:', selectedInscription);
+                    });
+                    
+                    listContainer.appendChild(item);
+                });
+                
+                console.log('✅ Inscriptions rendered successfully');
+                
+            } catch (e) {
+                console.error('❌ Error loading inscriptions:', e);
+                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">Error loading inscriptions:<br>' + e.message + '</div>';
+            }
+        }
+        
+        // Search inscriptions
+        let searchTimeout;
+        document.getElementById('inscriptionSearch').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            searchTimeout = setTimeout(() => {
+                loadInscriptions(query);
+            }, 300);
+        });
+
+        // Toggle BTC/Rune pair
+        document.getElementById('isBtcPair').addEventListener('change', (e) => {
+            const tokenBContainer = document.getElementById('tokenBContainer');
+            const labelB = document.getElementById('labelAmountB');
+            const inputB = document.getElementById('amountB');
+            
+            if (e.target.checked) {
+                tokenBContainer.classList.add('hidden');
+                labelB.textContent = 'Initial Amount (BTC)';
+                inputB.placeholder = '0.00000000';
+            } else {
+                tokenBContainer.classList.remove('hidden');
+                labelB.textContent = 'Initial Amount (Token B)';
+                inputB.placeholder = '0';
+            }
+            calculatePrice();
+        });
+
+        // Calculate price
+        function calculatePrice() {
+            const amountA = parseFloat(document.getElementById('amountA').value) || 0;
+            const amountB = parseFloat(document.getElementById('amountB').value) || 0;
+            const isBtc = document.getElementById('isBtcPair').checked;
+            const tokenASelect = document.getElementById('tokenA');
+            const tokenBSelect = document.getElementById('tokenB');
+            
+            if (amountA > 0 && amountB > 0) {
+                const price = amountB / amountA;
+                const symbolA = (tokenASelect && tokenASelect.selectedIndex >= 0 && tokenASelect.options[tokenASelect.selectedIndex]) 
+                    ? tokenASelect.options[tokenASelect.selectedIndex].text.split(' ')[0] 
+                    : 'TOKEN_A';
+                const symbolB = isBtc ? 'BTC' : (
+                    (tokenBSelect && tokenBSelect.selectedIndex >= 0 && tokenBSelect.options[tokenBSelect.selectedIndex]) 
+                        ? tokenBSelect.options[tokenBSelect.selectedIndex].text.split(' ')[0] 
+                        : 'TOKEN_B'
+                );
+                document.getElementById('initialPrice').textContent = `1 ${symbolA} = ${price.toFixed(8)} ${symbolB}`;
+            } else {
+                document.getElementById('initialPrice').textContent = '-';
+            }
+        }
+
+        document.getElementById('amountA').addEventListener('input', calculatePrice);
+        document.getElementById('amountB').addEventListener('input', calculatePrice);
+        document.getElementById('tokenA').addEventListener('change', calculatePrice);
+        document.getElementById('tokenB').addEventListener('change', calculatePrice);
+
+        // MAX buttons
+        document.getElementById('maxA').addEventListener('click', () => {
+            if (window.selectedRuneA) {
+                // KrayWallet JÁ envia com divisibility aplicada!
+                const amount = window.selectedRuneA.amount || 0;
+                document.getElementById('amountA').value = amount;
+                console.log('MAX Token A:', amount);
+                calculatePrice();
+            }
+        });
+
+        document.getElementById('maxB').addEventListener('click', () => {
+            const isBtc = document.getElementById('isBtcPair').checked;
+            if (isBtc) {
+                // Convert sats to BTC (reserve 2000 sats for fees)
+                const maxSats = Math.max(0, btcBalance - 2000);
+                const maxBtc = maxSats / 100000000;
+                document.getElementById('amountB').value = maxBtc.toFixed(8);
+                console.log('MAX BTC:', maxSats, 'sats =', maxBtc, 'BTC');
+            } else {
+                if (window.selectedRuneB) {
+                    // KrayWallet JÁ envia com divisibility aplicada!
+                    const amount = window.selectedRuneB.amount || 0;
+                    document.getElementById('amountB').value = amount;
+                    console.log('MAX Token B:', amount);
+                }
+            }
+            calculatePrice();
+        });
+
+        // Form submit - NOVO FLUXO COM PSBT
+        document.getElementById('createPoolForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            console.log('🏊 ========== CREATE POOL FLOW ==========');
+            
+            // Validar dados
+            if (!userAddress) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
+            
+            const tokenAInput = document.getElementById('tokenA');
+            const runeId = tokenAInput.value;
+            
+            if (!runeId || !window.selectedRuneA) {
+                showStatus('Please select a Rune token', 'error');
+                return;
+            }
+            
+            const runeName = window.selectedRuneA.name || window.selectedRuneA.runeName || 'Unknown';
+            const runeSymbol = runeName.split('•')[0]; // Primeiro token do nome
+            const amountA = parseFloat(document.getElementById('amountA').value);
+            const amountB = parseFloat(document.getElementById('amountB').value);
+            const isBtcPair = document.getElementById('isBtcPair').checked;
+            const feeRate = parseInt(document.getElementById('feeRate').value) || 10;
+            
+            if (!runeId || !amountA || !amountB) {
+                showStatus('Please fill all required fields', 'error');
+                return;
+            }
+            
+            // Converter para formato correto (KrayWallet já envia com divisibility)
+            const initialRune = Math.floor(amountA * 1e8); // Para backend, sempre em unidades menores
+            const initialBtc = Math.floor(amountB * 1e8); // sats
+            
+            console.log('   Rune:', runeName, runeId);
+            console.log('   Amount Rune:', initialRune, '(from', amountA, ')');
+            console.log('   Amount BTC:', initialBtc, 'sats (from', amountB, 'BTC)');
+            
+            try {
+                // STEP 1: Buscar UTXOs do user
+                showStatus('⏳ Fetching your UTXOs...', 'loading');
+                console.log('📡 Step 1: Fetching UTXOs...');
+                
+                const utxosResponse = await fetch(`http://localhost:3000/api/wallet/utxos/${userAddress}`);
+                const utxosData = await utxosResponse.json();
+                
+                if (!utxosData.success || !utxosData.utxos || utxosData.utxos.length === 0) {
+                    throw new Error('No UTXOs found for your address');
+                }
+                
+                console.log('✅ UTXOs fetched:', utxosData.utxos.length);
+                
+                // STEP 2: Preparar PSBT
+                showStatus('⏳ Preparing transaction...', 'loading');
+                console.log('📡 Step 2: Preparing PSBT...');
+                
+                const preparePayload = {
+                    runeId,
+                    runeName,
+                    runeSymbol,
+                    btcAmount: initialBtc,
+                    runeAmount: initialRune,
+                    userAddress,
+                    userUtxos: utxosData.utxos,
+                    feeRate,
+                    poolName: document.getElementById('poolName').value || `${runeName}/BTC Pool`
+                };
+                
+                // Adicionar inscription se selecionada
+                if (document.getElementById('useInscription').checked && selectedInscription) {
+                    preparePayload.useInscription = true;
+                    preparePayload.poolInscriptionId = selectedInscription.inscriptionId || selectedInscription.id;
+                    preparePayload.poolInscriptionNumber = selectedInscription.inscriptionNumber || selectedInscription.number;
+                    preparePayload.poolImage = `https://ordinals.com/content/${preparePayload.poolInscriptionId}`;
+                } else if (document.getElementById('poolImage').value) {
+                    preparePayload.poolImage = document.getElementById('poolImage').value;
+                }
+                
+                console.log('   Payload:', JSON.stringify(preparePayload, null, 2));
+                
+                // ⚡ USAR LIGHTNING DEFI CREATE POOL (NOVO!)
+                const prepareResponse = await fetch('http://localhost:3000/api/lightning-defi/create-pool', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(preparePayload)
+                });
+                
+                const prepareData = await prepareResponse.json();
+                
+                if (!prepareData.success) {
+                    throw new Error(prepareData.error || 'Failed to prepare Lightning pool');
+                }
+                
+                console.log('✅ Lightning Pool PSBT prepared');
+                console.log('   Pool ID:', prepareData.poolId);
+                console.log('   Channel ID:', prepareData.channelId);
+                console.log('   PSBT length:', prepareData.psbt.length);
+                
+                // STEP 3: User assina PSBT
+                showStatus('⏳ Please sign the transaction in your wallet...', 'loading');
+                console.log('📝 Step 3: Requesting signature from wallet...');
+                
+                const wallet = window.parent.krayWallet || window.krayWallet;
+                
+                if (!wallet || !wallet.signPsbt) {
+                    throw new Error('KrayWallet not found or does not support PSBT signing');
+                }
+                
+                let signResult;
+                try {
+                    signResult = await wallet.signPsbt(prepareData.psbt);
+                    console.log('✅ PSBT signed by user');
+                    console.log('   Sign result:', signResult);
+                } catch (signError) {
+                    console.error('❌ User rejected or signing failed:', signError);
+                    throw new Error('Transaction signing was rejected or failed');
+                }
+                
+                // Extrair PSBT assinado (pode ser objeto ou string)
+                const signedPsbt = signResult.signedPsbt || signResult;
+                
+                if (!signedPsbt || typeof signedPsbt !== 'string') {
+                    throw new Error('Invalid signed PSBT format');
+                }
+                
+                console.log('   Signed PSBT type:', typeof signedPsbt);
+                console.log('   Signed PSBT length:', signedPsbt.length);
+                
+                // STEP 4: Finalizar e broadcast (Lightning Channel)
+                showStatus('⏳ Opening Lightning channel...', 'loading');
+                console.log('📡 Step 4: Finalizing Lightning pool...');
+                
+                // ⚡ USAR LIGHTNING DEFI FINALIZE POOL (NOVO!)
+                const finalizeResponse = await fetch('http://localhost:3000/api/lightning-defi/finalize-pool', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        psbt: signedPsbt,
+                        poolId: prepareData.poolId,
+                        channelId: prepareData.channelId
+                    })
+                });
+                
+                const finalizeData = await finalizeResponse.json();
+                
+                if (!finalizeData.success) {
+                    throw new Error(finalizeData.error || 'Failed to finalize Lightning pool');
+                }
+                
+                console.log('✅ Lightning Pool created successfully!');
+                console.log('   TXID:', finalizeData.txid);
+                console.log('   Pool ID:', finalizeData.poolId);
+                console.log('   Channel ID:', finalizeData.channelId);
+                console.log('   Explorer:', finalizeData.explorerUrl);
+                
+                // STEP 5: Mostrar sucesso
+                showStatus(`✅ Pool created! TXID: ${finalizeData.txid.substring(0, 8)}... 🎉`, 'success');
+                
+                // Adicionar link para explorer
+                const status = document.getElementById('status');
+                status.innerHTML = `
+                    ✅ Pool created successfully! 🎉<br>
+                    <a href="${finalizeData.explorerUrl}" target="_blank" style="color: white; text-decoration: underline;">
+                        View on Explorer: ${finalizeData.txid.substring(0, 16)}...
+                    </a><br>
+                    <small>Redirecting to swap page...</small>
+                `;
+                
+                // Redirecionar após 5 segundos
+                setTimeout(() => {
+                    window.location.href = '/runes-swap.html';
+                }, 5000);
+                
+            } catch (error) {
+                console.error('❌ Error creating pool:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        });
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            status.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+        }
+
+        // Listen for wallet connection from parent window
+        window.addEventListener('message', (event) => {
+            // Filter out metamask/xverse messages
+            if (!event.data || event.data.target === 'metamask-inpage' || event.data.target === 'metamask-contentscript') {
+                return;
+            }
+            
+            console.log('📨 pool-create received message:', event.data);
+            
+            if (event.data.type === 'CONNECT_WALLET') {
+                console.log('📡 Received connect wallet message');
+                console.log('   Address:', event.data.address);
+                
+                // Reinit with parent connection
+                init();
+            }
+        });
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,127 @@
+✅ DIAGRAMAÇÃO IDÊNTICA - RUNES-SWAP = ORDINALS!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 MUDANÇAS APLICADAS:
+
+## ESTRUTURA HTML:
+
+ANTES:
+```html
+<div class="tabs-wrapper">
+    <div class="tabs-container">
+        <button class="tab-btn">
+```
+
+DEPOIS (IGUAL ORDINALS):
+```html
+<main class="container">
+    <div class="tabs">
+        <button class="tab-btn">
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## CSS:
+
+REMOVIDO: Todo CSS customizado das tabs
+AGORA USA: styles.css (mesmo do ordinals)
+
+RESULTADO:
+✅ Padding idêntico (.container)
+✅ Margin idêntico (.tabs)
+✅ Gap idêntico (8px)
+✅ Border idêntico
+✅ Posicionamento idêntico
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## JAVASCRIPT:
+
+ATUALIZADO:
+- '.tabs-container' → '.tabs'
+- Mantém funcionalidade
+- Usa mesmos seletores
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ RESULTADO FINAL:
+
+AMBAS AS PÁGINAS IDÊNTICAS:
+
+┌────────────────────────────────────────┐
+│ KRAY STATION [Ordinals][Runes][...]  │  ← Navbar
+├────────────────────────────────────────┤
+│                                        │
+│   [Tab 1] [Tab 2] [Tab 3] [Tab 4]    │  ← Tabs (mesmo padding)
+│   ══════                               │  ← Linha verde
+│                                        │
+│   Conteúdo...                          │  ← Mesmo espaçamento
+│                                        │
+└────────────────────────────────────────┘
+
+CARACTERÍSTICAS IDÊNTICAS:
+✅ Distância do navbar ao tabs
+✅ Padding lateral (container)
+✅ Gap entre tabs (8px)
+✅ Altura das tabs
+✅ Espaço após tabs
+✅ Border-bottom
+✅ Cores
+✅ Transições
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/ordinals.html
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R (AMBAS!)
+
+## COMPARE:
+
+1. Abra ordinals.html
+2. Abra runes-swap.html em outra aba
+3. Alterne entre elas
+4. Observe:
+   ✅ Tabs na mesma posição
+   ✅ Mesmo padding lateral
+   ✅ Mesmo espaçamento vertical
+   ✅ Mesma altura
+   ✅ Mesma distância do topo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📐 MEDIDAS EXATAS (AMBAS):
+
+- Container max-width: 1200px
+- Container padding: 0 20px
+- Tabs gap: 8px
+- Tabs margin-bottom: 32px
+- Tab padding: 16px 24px
+- Border-bottom: 1px
+- Line height: 2px (ativa)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Diagramação 100% idêntica
+2. ✅ Usa mesmo CSS global
+3. ✅ Manutenção centralizada
+4. ✅ Consistência perfeita
+5. ✅ Profissional
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST:
+
+[ ] Hard refresh (Ctrl+Shift+R)
+[ ] Tabs na mesma posição
+[ ] Mesmo padding
+[ ] Mesmo espaçamento
+[ ] Mesma altura
+[ ] Design idêntico
+
+✅ DIAGRAMAÇÃO PERFEITA! 🚀
+

@@ -1,0 +1,115 @@
+✅ INSCRIÇÕES AGORA CARREGAM CORRETAMENTE!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 PROBLEMA:
+
+❌ Checkbox "Use My Inscription" não mostrava inscriptions
+❌ allInscriptions estava vazio
+❌ Não refazia fetch quando necessário
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SOLUÇÃO APLICADA:
+
+1. ✅ FUNÇÃO ASYNC
+   - loadInscriptions() agora é async
+   - Pode buscar inscriptions dinamicamente
+
+2. ✅ FETCH AUTOMÁTICO
+   - Se allInscriptions vazio → busca da wallet
+   - window.krayWallet.getInscriptions()
+   - Suporta múltiplos formatos de resposta
+
+3. ✅ LOGS DETALHADOS
+   console.log('🖼️ Loading inscriptions...')
+   console.log('📦 Fresh Inscriptions Response:', ...)
+   console.log('✅ Inscriptions fetched:', X)
+   console.log('📋 Rendering', X, 'inscriptions')
+
+4. ✅ CAMPOS FLEXÍVEIS
+   - insId: inscriptionId || inscription_id || id
+   - insNumber: inscriptionNumber || inscription_number || number
+   - insContent: content || content_url || ordinals.com
+
+5. ✅ ERROR HANDLING
+   - Try/catch para erros de wallet
+   - Mensagens claras de erro
+   - Fallbacks para campos faltando
+
+6. ✅ AUTO-FILL poolImage
+   - Click na inscription → preenche URL
+   - Salva selectedInscription
+   - Log de confirmação
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 FORMATOS SUPORTADOS:
+
+Resposta da wallet pode ser:
+1. { success: true, inscriptions: [...] } ✅
+2. { data: [...] } ✅
+3. [...] (array direto) ✅
+
+Cada inscription pode ter:
+- inscriptionId / inscription_id / id
+- inscriptionNumber / inscription_number / number
+- content / content_url (ou usa ordinals.com)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 FLUXO COMPLETO:
+
+1. User marca checkbox "Use My Inscription" ✅
+2. loadInscriptions() é chamado ✅
+3. Verifica se allInscriptions tem dados
+4. Se vazio → busca window.krayWallet.getInscriptions() ✅
+5. Processa resposta (múltiplos formatos) ✅
+6. Renderiza até 12 inscriptions com thumbs ✅
+7. User clica em uma inscription ✅
+8. selectedInscription é salvo ✅
+9. poolImage input é preenchido ✅
+10. Visual de "selected" aplicado ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Conectar wallet ✅
+2. Scroll até "Use Your Ordinal Inscription!" ✅
+3. Marcar checkbox "🖼️ Use My Inscription..." ✅
+4. Ver grid de inscriptions aparecer ✅
+5. Ver thumbnails carregando ✅
+6. Ver #número e ID de cada inscription ✅
+7. Clicar em uma inscription ✅
+8. Ver borda verde "selected" ✅
+9. Ver URL preenchida no input ✅
+10. Abrir console → ver logs detalhados ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 DEBUG NO CONSOLE:
+
+Quando marcar checkbox você verá:
+
+🖼️ Loading inscriptions...
+   Current allInscriptions: []
+⚠️ No inscriptions in memory, fetching from wallet...
+📦 Fresh Inscriptions Response: {success: true, inscriptions: Array(3)}
+✅ Inscriptions fetched: 3
+📋 Rendering 3 inscriptions
+   Inscription 0: {id: "abc...", number: 12345, ...}
+   Inscription 1: {id: "def...", number: 67890, ...}
+   Inscription 2: {id: "ghi...", number: 11111, ...}
+✅ Inscriptions rendered successfully
+
+Quando clicar em uma:
+
+✅ Inscription selected: {id: "abc...", number: 12345, ...}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA SIM: INSCRIPTIONS CARREGAM E PODEM SER
+   SELECIONADAS COMO LOGO DA POOL! 🎨
+

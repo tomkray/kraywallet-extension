@@ -1,0 +1,94 @@
+✅ DESIGN DAS TABS UNIFICADO!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 MUDANÇA APLICADA:
+
+runes-swap.html agora usa o MESMO estilo de ordinals.html!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## ANTES (runes-swap):
+- Border-bottom: 3px
+- Cor ativa: #10b981 (verde intenso)
+- Background ativo: rgba(16,185,129,0.05)
+- Padding: 20px 32px
+
+## DEPOIS (igual ordinals):
+- Border-bottom: 2px
+- Cor ativa: #fff (branco)
+- Sem background no ativo
+- Padding: 16px 24px
+- Border ativa: #10b981 (verde na linha)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ RESULTADO:
+
+DESIGN CONSISTENTE:
+1. ✅ ordinals.html
+   [🔥 Marketplace] [Create Offer] [My Offers] [Wallet Sweep]
+   
+2. ✅ runes-swap.html
+   [🔄 Swap] [+ Create Pool]
+
+AMBAS COM:
+- ✅ Mesmo estilo
+- ✅ Mesma cor
+- ✅ Mesmo padding
+- ✅ Mesma transição
+- ✅ Mesmo hover
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+http://localhost:3000/ordinals.html
+
+HARD REFRESH: Ctrl+Shift+R (em ambas!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📐 VISUAL (AMBAS):
+
+┌────────────────────────────────────────┐
+│ KRAY STATION [logo + menu]            │
+├────────────────────────────────────────┤
+│                                        │
+│ [Tab 1] [Tab 2] [Tab 3] [Tab 4]      │  ← Mesmo estilo!
+│ ══════                                 │  ← Linha verde
+│                                        │
+│ Conteúdo...                            │
+│                                        │
+└────────────────────────────────────────┘
+
+CARACTERÍSTICAS:
+- Tabs com fundo transparente
+- Texto branco quando ativo
+- Linha verde embaixo (2px)
+- Hover suave
+- Gap de 8px entre tabs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Design consistente em todo site
+2. ✅ Profissional
+3. ✅ Clean
+4. ✅ Fácil de navegar
+5. ✅ Visual unificado
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST:
+
+[ ] Hard refresh em ordinals.html
+[ ] Hard refresh em runes-swap.html
+[ ] Tabs têm mesmo estilo
+[ ] Cores iguais
+[ ] Hover funciona igual
+[ ] Design profissional e consistente
+
+✅ KRAY STATION UNIFICADO! 🚀
+

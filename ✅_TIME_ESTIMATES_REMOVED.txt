@@ -1,0 +1,137 @@
+
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║                                                               ║
+   ║       ✅ ESTIMATIVAS DE TEMPO REMOVIDAS! ✅                  ║
+   ║                                                               ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+
+   ✅ O QUE FOI FEITO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Removidas todas as estimativas de tempo (~24 hours, ~1 hour, etc)
+   das opções de fee rate em Send Bitcoin e Send Runes.
+
+   Motivo: Bitcoin funciona por BLOCOS, não por tempo exato.
+
+
+   ❌ ANTES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🐢 Economy (1 sat/vB) - ~24 hours
+   ⏱️  Normal (5 sat/vB) - ~1 hour
+   ⚡ Fast (10 sat/vB) - ~30 min
+   🚀 Priority (20 sat/vB) - ~10 min
+   ⚙️  Custom
+
+
+   ✅ AGORA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🐢 Economy (1 sat/vB)
+   ⏱️  Normal (5 sat/vB)
+   ⚡ Fast (10 sat/vB)
+   🚀 Priority (20 sat/vB)
+   ⚙️  Custom
+
+
+   💡 POR QUE ISSO É MELHOR?
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Bitcoin funciona por BLOCOS (~10 min cada)
+   ✓ Tempo de confirmação é IMPREVISÍVEL
+   ✓ Depende da mempool, mineradores, sorte
+   ✓ Não existe garantia de tempo
+   ✓ Mais honesto com o usuário
+   ✓ Foco no que importa: sat/vB e prioridade
+
+
+   📊 O QUE O USUÁRIO VÊ
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Dropdown de Fee Rate:
+
+   🐢 Economy (1 sat/vB)      → Mais barato, menor prioridade
+   ⏱️  Normal (5 sat/vB)       → Balance entre custo/velocidade
+   ⚡ Fast (10 sat/vB)         → Rápido, prioridade média
+   🚀 Priority (20 sat/vB)     → Máxima prioridade
+   ⚙️  Custom                  → Controle total
+
+   Estimativa de Fee:
+   ~3,000 sats (~0.00003000 BTC)
+
+
+   🧪 COMO TESTAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1️⃣  RECARREGAR EXTENSION
+   
+        chrome://extensions/ → MyWallet → 🔄 RELOAD
+
+   ────────────────────────────────────────────────────────────────
+
+   2️⃣  TESTAR SEND BITCOIN
+   
+        1. Abrir MyWallet
+        2. Tab "Bitcoin"
+        3. Click "Send" ↑
+        4. ✅ Ver dropdown SEM estimativas de tempo
+        5. ✅ Apenas: emoji + nome + (sat/vB)
+
+   ────────────────────────────────────────────────────────────────
+
+   3️⃣  TESTAR SEND RUNES
+   
+        1. Tab "Runes" 🪙
+        2. Click em uma rune
+        3. Click "Send" 📤
+        4. ✅ Ver dropdown SEM estimativas de tempo
+        5. ✅ Apenas: emoji + nome + (sat/vB)
+
+
+   📂 ARQUIVOS MODIFICADOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ mywallet-extension/popup/popup.js
+     - loadBitcoinSendFees() (2 locais)
+     - loadMempoolFees() (2 locais)
+
+
+   ✅ CHECKLIST
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   [x] Removido "~24 hours" de Economy
+   [x] Removido "~1 hour" de Normal
+   [x] Removido "~30 min" de Fast
+   [x] Removido "~10 min" de Priority
+   [x] Aplicado em Send Bitcoin
+   [x] Aplicado em Send Runes
+   [x] Fallback também atualizado
+   [x] Linter errors: 0
+
+
+   🎯 RESULTADO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Agora a wallet mostra apenas informações PRECISAS:
+   
+   ✓ Fee rate em sat/vB (mempool.space)
+   ✓ Prioridade (Economy/Normal/Fast/Priority)
+   ✓ Emoji visual para identificação rápida
+   ✓ Fee total estimada em sats e BTC
+   
+   SEM prometer tempos que são IMPREVISÍVEIS! 🎯
+
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   🔥 RECARREGUE E TESTE AGORA:
+   
+   chrome://extensions/ → MyWallet → 🔄 RELOAD
+   
+   Agora está mais honesto e profissional! 💪
+   
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+

@@ -1,0 +1,91 @@
+✅ API RESPONSE FORMAT FIXED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 PROBLEMA IDENTIFICADO:
+
+❌ getRunes() retorna: {success: true, runes: Array}
+❌ getInscriptions() retorna: {success: true, inscriptions: Array}
+❌ getBalance() retorna: {balance: 123456, confirmed: 123456}
+
+Mas o código esperava array direto!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CORREÇÕES APLICADAS:
+
+1. ✅ getRunes() - Extrai runesResponse.runes
+2. ✅ getInscriptions() - Extrai inscriptionsResponse.inscriptions
+3. ✅ getBalance() - Extrai balanceResponse.balance
+4. ✅ Fallbacks para diferentes formatos
+5. ✅ Logs detalhados de cada response
+6. ✅ Tratamento de campos com nomes diferentes:
+   - runeId / rune_id / id
+   - symbol / name / runeName / rune_name
+   - amount / balance
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 FORMATO ESPERADO:
+
+getRunes():
+{
+  success: true,
+  address: "bc1p...",
+  runes: [
+    {
+      runeId: "840000:1",
+      symbol: "DOG",
+      name: "DOG•GO•TO•THE•MOON",
+      amount: 300,
+      divisibility: 5
+    }
+  ]
+}
+
+getInscriptions():
+{
+  success: true,
+  inscriptions: [
+    {
+      id: "abc...i0",
+      inscriptionId: "abc...i0",
+      inscriptionNumber: 12345,
+      contentType: "image/png"
+    }
+  ]
+}
+
+getBalance():
+{
+  balance: 1000000,
+  confirmed: 1000000,
+  unconfirmed: 0
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 LOGS AGORA:
+
+📦 Runes Response: {success: true, runes: Array(1)}
+🎯 Runes: 1 [{runeId: "840000:1", symbol: "DOG", ...}]
+📋 Loading runes: 1 [...]
+  Rune 0: {runeId: "840000:1", symbol: "DOG", ...}
+✅ Runes loaded in selectors
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Abrir Console
+2. Ver logs de response
+3. Runes aparecem nos dropdowns
+4. Selecionar → ver balance
+5. Marcar inscription → ver lista
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA DEVE FUNCIONAR!
+   Todos os formatos de response tratados.
+

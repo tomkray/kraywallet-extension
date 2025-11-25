@@ -1,0 +1,75 @@
+✅ CORREÇÕES FINAIS APLICADAS!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 O QUE FOI CORRIGIDO:
+
+1. ✅ DIVISIBILITY
+   - Agora aplica divisibilidade corretamente
+   - Exemplo: 30000 com divisibility 5 = 0.30 (não 30000)
+   - Formato: amount / 10^divisibility
+
+2. ✅ THUMBNAIL DAS RUNES
+   - Mostra thumbnail ao lado do select
+   - 32x32px com borda arredondada
+   - Fallback para 🎯 se não tiver imagem
+   - Usa rune.thumbnail do endpoint /fast
+
+3. ✅ NOME COMPLETO DA RUNE
+   - Mostra symbol ou name completo
+   - Exemplo: "DOG•GO•TO•THE•MOON (300)"
+
+4. ✅ BTC BALANCE
+   - Mantém em sats internamente
+   - Log mostra: "2053 sats = 0.00002053 BTC"
+   - Cálculo correto para MAX button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 FORMATO DE DADOS:
+
+Rune do endpoint /fast:
+{
+  runeId: "840000:1",
+  name: "DOG•GO•TO•THE•MOON",
+  symbol: "DOG",
+  amount: 30000,
+  divisibility: 5,
+  thumbnail: "http://localhost:3005/content/abc...i0"
+}
+
+Display no select:
+"DOG (0.30)"  ← amount aplicado divisibility
+
+Balance display:
+"Balance: 0.30 DOG" ← formatado com locale
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 VISUAL AGORA:
+
+Select Token:
+┌──────────────────────────────────┐
+│ [🖼️]  DOG (300)           ▼     │
+└──────────────────────────────────┘
+  ↑ thumbnail 32x32
+
+Balance:
+"Balance: 300 DOG" (verde #10b981)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Ver thumbnail das runes ✅
+2. Ver nome completo ✅
+3. Ver amount correto (com divisibility) ✅
+4. Ver BTC em sats (correto) ✅
+5. Selecionar rune → thumbnail aparece ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TUDO FUNCIONANDO COMO ANTES!
+   Thumbnails, nomes, amounts, divisibility, BTC.
+

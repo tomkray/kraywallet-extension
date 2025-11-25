@@ -1,0 +1,73 @@
+✅ BITCOIN.PNG AGORA APARECE!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 PROBLEMA RESOLVIDO:
+
+❌ ANTES: thumbnail: 'bitcoin.png'
+   Caminho relativo não funcionava no iframe
+
+✅ AGORA: thumbnail: '/bitcoin.png'
+   Caminho absoluto funciona perfeitamente!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 ARQUIVOS:
+
+✅ bitcoin.png copiado para raiz:
+   /Volumes/D2/KRAY WALLET- V1/bitcoin.png
+
+✅ Código atualizado em:
+   backups/defi-working-version/defi-swap.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R (OBRIGATÓRIO!)
+
+## O QUE VAI APARECER:
+
+TAB SWAP → Click "Select token (FROM)":
+
+┌─────────────────────────────────┐
+│ 🪙 Bitcoin                      │  ← Logo bitcoin.png
+│    Bitcoin                      │
+│                    0.00022612   │
+├─────────────────────────────────┤
+│ 🎯 DOG                          │  ← Thumbnail da rune
+│    DOG RUNE                     │
+│                    300          │
+├─────────────────────────────────┤
+│ 🎯 CATS                         │  ← Thumbnail da rune
+│    CATS RUNE                    │
+│                    150          │
+└─────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA FICA BONITO:
+
+ANTES:
+- BTC: ₿ (apenas emoji)
+- DOG: 🎯 (thumbnail da rune)
+- CATS: 🎯 (thumbnail da rune)
+
+DEPOIS:
+- BTC: 🪙 (logo bitcoin.png profissional!)
+- DOG: 🎯 (thumbnail da rune)
+- CATS: 🎯 (thumbnail da rune)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST:
+
+[ ] Hard refresh feito (Ctrl+Shift+R)
+[ ] Logo do Bitcoin aparece na lista
+[ ] Logo do Bitcoin aparece no botão selecionado
+[ ] Runes também com thumbnails
+[ ] Tudo bonito e profissional
+
+✅ PERFEITO! 🚀
+

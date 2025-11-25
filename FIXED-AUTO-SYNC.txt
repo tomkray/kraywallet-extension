@@ -1,0 +1,186 @@
+✅ CORRIGIDO - SINCRONIZAÇÃO AUTOMÁTICA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 PROBLEMA IDENTIFICADO:
+
+❌ Wallet JÁ conectada no parent (bc1pvz02d8z6c4d7r2m4zvx83z5ng5ggx7pkhx796hdtd9aef85hlk9q3m36gx)
+❌ Mas iframe NÃO recebia notificação ao carregar
+❌ Mensagens do Metamask poluindo log
+
+✅ SOLUÇÃO APLICADA:
+
+1. ✅ app.js AGORA envia postMessage ao RESTAURAR conexão
+2. ✅ defi-swap.html FILTRA mensagens do Metamask
+3. ✅ Logs DETALHADOS para debug
+4. ✅ Sincronização AUTOMÁTICA ao carregar página
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 CÓDIGO CORRIGIDO:
+
+## app.js - restoreWalletConnection()
+```javascript
+// Atualizar UI
+setTimeout(() => {
+    updateWalletUI();
+    
+    // 🔄 Notify iframes about restored connection
+    console.log('📡 Notifying iframes about restored connection...');
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+        iframe.contentWindow.postMessage({
+            type: 'CONNECT_WALLET',
+            wallet: currentWallet,
+            address: connectedAddress
+        }, '*');
+        console.log('   ✅ Notified iframe');
+    });
+}, 100);
+```
+
+## defi-swap.html - message listener
+```javascript
+window.addEventListener('message', (event) => {
+    // Filter out metamask/xverse messages
+    if (!event.data || event.data.target === 'metamask-inpage' || 
+        event.data.target === 'metamask-contentscript') {
+        return; // ✅ Ignora mensagens irrelevantes
+    }
+    
+    console.log('📨 Received message from parent:', event.data);
+    
+    if (event.data.type === 'CONNECT_WALLET') {
+        // ... sincroniza wallet
+    }
+});
+```
+
+## defi-swap.html - connectWalletFromParent()
+```javascript
+async function connectWalletFromParent() {
+    console.log('🔍 connectWalletFromParent() called');
+    
+    if (window.parent && window.parent !== window) {
+        console.log('   Checking parent window...');
+        console.log('   parent.isWalletConnected:', window.parent.isWalletConnected);
+        console.log('   parent.connectedAddress:', window.parent.connectedAddress);
+        
+        // ... resto do código com logs detalhados
+    }
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 FLUXO AGORA (WALLET JÁ CONECTADA):
+
+1. User abre runes-swap.html
+   ↓
+2. app.js carrega
+   ↓
+3. app.js: restoreWalletConnection()
+   ├─ isWalletConnected = true
+   ├─ connectedAddress = "bc1pvz02..."
+   └─ updateWalletUI()
+   ↓
+4. app.js: ENVIA postMessage para iframes ✅ NOVO!
+   ├─ type: 'CONNECT_WALLET'
+   ├─ wallet: 'kraywallet'
+   └─ address: 'bc1pvz02...'
+   ↓
+5. iframe: Recebe mensagem
+   ├─ Filtra mensagens do Metamask ✅ NOVO!
+   ├─ userAddress = event.data.address
+   ├─ isConnected = true
+   └─ updateWalletUI()
+   ↓
+6. iframe: loadUserBalance()
+   ↓
+7. iframe: loadUserRunes()
+   ↓
+8. iframe: loadTokenList()
+   ↓
+9. ✅ TUDO SINCRONIZADO!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGS ESPERADOS (AGORA):
+
+PARENT (runes-swap.html):
+```
+💾 Restored wallet connection: bc1pvz02...
+💾 Wallet type: kraywallet
+📡 Notifying iframes about restored connection...
+   ✅ Notified iframe
+   ✅ Notified iframe
+```
+
+IFRAME (defi-swap.html):
+```
+🔄 DeFi Swap initializing...
+📨 Received message from parent: {type: 'CONNECT_WALLET', address: 'bc1pvz02...'}
+📡 Received connect wallet message from parent
+   Address: bc1pvz02...
+✅ Synced with parent wallet: bc1pvz02...
+🔄 updateWalletUI called
+   isConnected: true
+   userAddress: bc1pvz02...
+✅ Wallet UI updated
+🪙 Loading runes from wallet...
+✅ Runes loaded: 1 runes
+✅ Balance loaded: 2053
+📋 Loading token list...
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+EXPECTED:
+1. ✅ Página carrega
+2. ✅ Navbar JÁ mostra: "bc1pvz...36gx"
+3. ✅ Console mostra: "📡 Notifying iframes"
+4. ✅ Console mostra: "✅ Notified iframe" (2x)
+5. ✅ Iframe recebe mensagem
+6. ✅ Iframe sincroniza automaticamente
+7. ✅ Balance, Runes, Pools aparecem!
+
+SEM precisar clicar "Connect Wallet"!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 SE AINDA NÃO FUNCIONAR:
+
+1. LIMPAR CACHE: Ctrl+Shift+R (hard refresh)
+2. ABRIR CONSOLE: F12
+3. BUSCAR NO LOG:
+   ✅ "📡 Notifying iframes about restored connection"
+   ✅ "📨 Received message from parent: {type: 'CONNECT_WALLET'}"
+   
+4. SE NÃO APARECER:
+   → Arquivos não foram atualizados
+   → Fazer cache clear e reload
+   
+5. SE APARECER MAS NÃO SINCRONIZA:
+   → Me enviar os logs completos
+   → Vou investigar o problema específico
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ RESUMO:
+
+ANTES:
+❌ Wallet conectada no parent
+❌ Iframe não sabia
+❌ Tinha que conectar de novo
+
+AGORA:
+✅ Wallet conectada no parent
+✅ app.js AVISA iframes automaticamente
+✅ Iframe sincroniza SOZINHO
+✅ TUDO FUNCIONA!
+
+TESTE AGORA! 🚀
+

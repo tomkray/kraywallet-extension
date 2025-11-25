@@ -1,0 +1,56 @@
+✅ WALLET SYNC CORRIGIDO - pool-create.html
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 O QUE FOI CORRIGIDO:
+
+1. ✅ getAccounts() - Pegando address corretamente
+2. ✅ getBalance() - Mostrando BTC balance
+3. ✅ getRunes() - Carregando todas as runes
+4. ✅ getInscriptions() - Carregando inscriptions
+5. ✅ Token Selectors - Mostrando runes nos dropdowns
+6. ✅ Balance Display - Mostrando balance ao selecionar token
+7. ✅ Console Logs - Debug completo para verificar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 O QUE AGORA APARECE:
+
+✅ Address do usuário
+✅ BTC Balance (sats)
+✅ Lista de Runes com:
+   - Symbol/Name
+   - Amount
+   - Balance ao selecionar
+
+✅ Lista de Inscriptions com:
+   - Thumbnail (40x40)
+   - Number
+   - ID
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 CONSOLE LOGS ADICIONADOS:
+
+console.log('🔌 Connecting wallet...')
+console.log('✅ Address:', userAddress)
+console.log('💰 BTC Balance:', btcBalance, 'sats')
+console.log('🎯 Runes:', userRunes.length, userRunes)
+console.log('🖼️ Inscriptions:', allInscriptions.length)
+console.log('📋 Loading runes:', userRunes.length)
+console.log('✅ Runes loaded in selectors')
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+1. Abrir: http://localhost:3000/pool-create.html
+2. Abrir Console (F12)
+3. Ver todos os logs de conexão
+4. Verificar se runes aparecem nos dropdowns
+5. Selecionar uma rune → ver balance aparecer
+6. Verificar inscriptions (se tiver)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TUDO SINCRONIZADO COM A WALLET!
+

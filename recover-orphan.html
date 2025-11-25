@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Recover Orphan Pool UTXO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .explorer-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .explorer-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Recover Orphan Pool UTXO</h1>
+        <p class="subtitle">Recuperar fundos de uma pool que falhou ao criar</p>
+
+        <div class="info-box">
+            <strong>ℹ️ Como encontrar o TXID órfão:</strong>
+            1. Abra sua KrayWallet<br>
+            2. Vá em "Activity" ou histórico de transações<br>
+            3. Procure pela última transação "Create Pool" que falhou<br>
+            4. Copie o TXID<br>
+            <br>
+            <strong>Pool Pubkey padrão LND:</strong> 03ccd7f9e700490173470a08aa909e848d39dc08dc3c8f924e48c784233b137497
+        </div>
+
+        <form id="recoveryForm">
+            <div class="form-group">
+                <label>UTXO TXID (copie da sua wallet)</label>
+                <input 
+                    type="text" 
+                    id="utxoTxid" 
+                    placeholder="Cole o TXID aqui..."
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>UTXO VOUT (geralmente 0)</label>
+                <input 
+                    type="number" 
+                    id="utxoVout" 
+                    value="0"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Pool Pubkey (hex)</label>
+                <input 
+                    type="text" 
+                    id="poolPubkey" 
+                    value="03ccd7f9e700490173470a08aa909e848d39dc08dc3c8f924e48c784233b137497"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Seu Endereço (para onde enviar)</label>
+                <input 
+                    type="text" 
+                    id="userAddress" 
+                    placeholder="bc1p..."
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Fee Rate (sat/vB)</label>
+                <input 
+                    type="number" 
+                    id="feeRate" 
+                    value="10"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn" id="recoverBtn">
+                🔓 Recover Funds
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Processing...</p>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/lightning-defi';
+
+        document.getElementById('recoveryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const recoverBtn = document.getElementById('recoverBtn');
+            
+            resultDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            recoverBtn.disabled = true;
+            
+            try {
+                // Verificar se wallet está conectada
+                if (!window.krayWallet) {
+                    throw new Error('KrayWallet not found! Please install the extension.');
+                }
+                
+                const accounts = await window.krayWallet.getAccounts();
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No wallet connected! Please connect KrayWallet.');
+                }
+                
+                // Step 1: Criar PSBT de recuperação
+                console.log('📡 Step 1: Creating recovery PSBT...');
+                
+                const payload = {
+                    utxoTxid: document.getElementById('utxoTxid').value,
+                    utxoVout: parseInt(document.getElementById('utxoVout').value),
+                    poolPubkey: document.getElementById('poolPubkey').value,
+                    userAddress: document.getElementById('userAddress').value || accounts[0],
+                    feeRate: parseInt(document.getElementById('feeRate').value)
+                };
+                
+                console.log('Payload:', payload);
+                
+                const response1 = await fetch(`${API_URL}/recover-orphan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data1 = await response1.json();
+                
+                if (!response1.ok || !data1.success) {
+                    throw new Error(data1.error || 'Failed to create recovery PSBT');
+                }
+                
+                console.log('✅ Recovery PSBT created');
+                console.log('Recovery info:', data1.recovery);
+                
+                // Step 2: Assinar PSBT
+                console.log('📝 Step 2: Signing PSBT...');
+                
+                const signResult = await window.krayWallet.signPsbt(data1.psbt);
+                
+                if (!signResult || !signResult.success) {
+                    throw new Error('User cancelled or signing failed');
+                }
+                
+                console.log('✅ PSBT signed');
+                
+                // Step 3: Finalizar e broadcast
+                console.log('📡 Step 3: Broadcasting recovery TX...');
+                
+                const response2 = await fetch(`${API_URL}/finalize-recovery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ psbt: signResult.signedPsbt })
+                });
+                
+                const data2 = await response2.json();
+                
+                if (!response2.ok || !data2.success) {
+                    throw new Error(data2.error || 'Failed to broadcast recovery TX');
+                }
+                
+                console.log('✅ Recovery TX broadcast!');
+                console.log('TXID:', data2.txid);
+                
+                // Mostrar sucesso
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <strong>✅ Funds Recovered Successfully!</strong><br>
+                    <br>
+                    <strong>TXID:</strong> ${data2.txid}<br>
+                    <strong>Recovered:</strong> ${data1.recovery.outputValue} sats<br>
+                    <strong>Fee:</strong> ${data1.recovery.fee} sats<br>
+                    <br>
+                    <a href="${data2.explorerUrl}" target="_blank" class="explorer-link">
+                        🔍 View on Mempool.space →
+                    </a>
+                `;
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Error</strong><br>
+                    ${error.message}
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+                recoverBtn.disabled = false;
+            }
+        });
+        
+        // Auto-preencher endereço da wallet e params da URL
+        window.addEventListener('load', async () => {
+            try {
+                // Verificar params da URL
+                const params = new URLSearchParams(window.location.search);
+                const txidParam = params.get('txid');
+                const voutParam = params.get('vout');
+                const addressParam = params.get('address');
+                
+                if (txidParam) {
+                    document.getElementById('utxoTxid').value = txidParam;
+                }
+                
+                if (voutParam) {
+                    document.getElementById('utxoVout').value = voutParam;
+                }
+                
+                if (addressParam) {
+                    document.getElementById('userAddress').value = addressParam;
+                }
+                
+                // Auto-preencher wallet se não veio da URL
+                if (!addressParam && window.krayWallet) {
+                    const accounts = await window.krayWallet.getAccounts();
+                    if (accounts && accounts.length > 0) {
+                        document.getElementById('userAddress').value = accounts[0];
+                        console.log('✅ Wallet detected:', accounts[0]);
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not auto-fill:', e);
+            }
+        });
+    </script>
+</body>
+</html>
+

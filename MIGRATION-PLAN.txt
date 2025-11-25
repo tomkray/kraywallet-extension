@@ -1,0 +1,111 @@
+📋 PLANO DE MIGRAÇÃO DEFI → RUNES-SWAP.HTML
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 OBJETIVO:
+Migrar toda a funcionalidade DeFi (defi-swap.html + pool-create.html)
+para dentro do runes-swap.html com o navbar e design da Kray Station.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 ARQUIVOS ATUAIS:
+
+1. ✅ defi-swap.html (1169 linhas)
+   - Swap interface completa
+   - Wallet connection
+   - Token selection com thumbnails
+   - Pools display
+   - MAX button
+   - Tudo funcionando!
+
+2. ✅ pool-create.html (936 linhas)
+   - Create pool interface
+   - Inscription selector com search
+   - Token dropdowns customizados
+   - BTC/Rune pair toggle
+   - Fee rate selector
+   - Tudo funcionando!
+
+3. ⚠️  runes-swap.html (atual - 401 linhas)
+   - TEM navbar Kray Station ✅
+   - TEM styles.css link ✅
+   - MAS interface antiga/incompleta ❌
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 ESTRATÉGIA:
+
+OPÇÃO 1 (RECOMENDADA): TABS/ABAS
+┌─────────────────────────────────┐
+│ NAVBAR KRAY STATION             │
+├─────────────────────────────────┤
+│ [ SWAP ] [ CREATE POOL ]        │ ← Tabs
+├─────────────────────────────────┤
+│                                 │
+│  CONTEÚDO DO TAB ATIVO          │
+│  (Swap ou Create Pool)          │
+│                                 │
+└─────────────────────────────────┘
+
+Vantagens:
+✅ Tudo em uma página
+✅ UX melhor (não precisa navegar)
+✅ Mantém navbar Kray Station
+✅ Design moderno com tabs
+
+OPÇÃO 2: PÁGINAS SEPARADAS
+- runes-swap.html → Swap interface
+- pool-create.html → Create pool (já existe)
+- Ambos com navbar Kray Station
+
+Vantagens:
+✅ Separação de concerns
+✅ Mais fácil de manter
+✅ Cada página independente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 AÇÕES NECESSÁRIAS:
+
+1. ✅ Copiar navbar de index.html
+2. ✅ Adicionar link styles.css
+3. ✅ Adicionar fonts (Inter)
+4. ✅ Integrar conteúdo defi-swap.html
+5. ✅ Ajustar CSS (remover conflitos)
+6. ✅ Adicionar tab switcher (se opção 1)
+7. ✅ Integrar conteúdo pool-create.html (se opção 1)
+8. ✅ Testar wallet connection
+9. ✅ Testar swap flow
+10. ✅ Testar create pool flow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 DESIGN:
+
+NAVBAR (do index.html):
+- Logo + KRAY STATION
+- Links: Home | Ordinals | Runes | Lightning
+- Connect Wallet button
+
+HERO (pequeno):
+- Título: "Runes Swap"
+- Subtítulo: "Deep liquidity pools powered by PSBT"
+
+TABS (se opção 1):
+- [ SWAP ] [ CREATE POOL ]
+- Active: border-bottom verde
+- Smooth transition
+
+CONTEÚDO:
+- Todo CSS inline do defi-swap/pool-create
+- Mantém funcionalidade 100%
+- Adiciona classes do styles.css onde fizer sentido
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 PRÓXIMOS PASSOS:
+
+1. User escolhe OPÇÃO 1 ou OPÇÃO 2
+2. Implementamos a escolhida
+3. Testamos tudo
+4. Deploy! 🚀
+

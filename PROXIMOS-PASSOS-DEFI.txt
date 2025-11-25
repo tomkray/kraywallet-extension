@@ -1,0 +1,194 @@
+═══════════════════════════════════════════════════════════════
+🚀 KRAY DEFI - PRÓXIMOS PASSOS
+═══════════════════════════════════════════════════════════════
+
+✅ JÁ IMPLEMENTADO:
+
+1. Frontend DeFi Swap (defi-swap.html)
+   - ✅ Connect wallet (MyWallet)
+   - ✅ Carregar BTC balance
+   - ✅ Carregar Runes via wallet.getRunes()
+   - ✅ Modal de seleção de tokens
+   - ✅ Thumbnails das runes
+   - ✅ Formatação correta de amounts (sem dividir por divisibility)
+   - ✅ Botão MAX para usar saldo total
+   - ✅ Cálculo de quote em tempo real
+   - ✅ UI moderna e responsiva
+
+2. Backend DeFi
+   - ✅ Pool Manager (AMM x*y=k)
+   - ✅ PSBT Builder (Runes-aware)
+   - ✅ Policy Engine (validações)
+   - ✅ Pool Signer (HD Wallet + LND ready)
+   - ✅ API Routes (/api/defi/*)
+   - ✅ Database schema (pools, swaps, liquidity)
+
+═══════════════════════════════════════════════════════════════
+
+❌ FALTA IMPLEMENTAR:
+
+1. CREATE POOL - FRONTEND
+   ────────────────────────────────────────────────────────
+   Modal já criado em defi-swap.html (linha 532-583)
+   
+   Precisa adicionar JavaScript:
+   
+   a) Event listeners:
+      - createPoolBtn.click → openCreatePoolModal()
+      - createPoolClose.click → closeCreatePoolModal()
+      - poolRuneBtn.click → openTokenModal('pool')
+      - poolRuneAmount.input → calculateInitialPrice()
+      - poolBtcAmount.input → calculateInitialPrice()
+      - poolRuneMaxBtn.click → setPoolRuneMax()
+      - poolBtcMaxBtn.click → setPoolBtcMax()
+      - createPoolSubmitBtn.click → submitCreatePool()
+   
+   b) Funções necessárias:
+      - openCreatePoolModal()
+      - closeCreatePoolModal()
+      - calculateInitialPrice()
+      - setPoolRuneMax()
+      - setPoolBtcMax()
+      - submitCreatePool() → POST /api/defi/pools
+   
+   c) Lógica:
+      - Selecionar rune (somente runes, sem BTC)
+      - Digitar amount de rune
+      - Digitar amount de BTC
+      - Mostrar preço inicial: 1 RUNE = X BTC
+      - Validar: mínimo 1000 sats de BTC
+      - Validar: amount > 0 para ambos
+      - Criar pool via API
+
+2. CREATE POOL - BACKEND
+   ────────────────────────────────────────────────────────
+   Já existe POST /api/defi/pools em server/routes/defiSwap.js
+   
+   Mas precisa:
+   
+   a) Validar no policyEngine:
+      - Rune ID válido
+      - Amounts mínimos (BTC >= 1000 sats, Rune > 0)
+      - Pool já não existe
+      - User tem balance suficiente
+   
+   b) Construir PSBT em psbtBuilder:
+      - Input: BTC do user
+      - Input: Rune do user (com OP_RETURN edict)
+      - Output: BTC para pool address
+      - Output: Rune para pool address
+      - Output: LP tokens para user
+      - Output: Fee para protocol
+      - Output: Change
+   
+   c) Assinar com poolSigner:
+      - User assina seus inputs (via MyWallet)
+      - Pool assina inputs do pool (HD Wallet ou LND)
+      - Finalizar e broadcast
+
+3. SWAP - EXECUTAR
+   ────────────────────────────────────────────────────────
+   Frontend já chama executeSwap(), mas está com TODO
+   
+   Precisa:
+   
+   a) Construir PSBT de swap:
+      - Se BTC → Rune:
+        * Input: BTC do user
+        * Output: BTC para pool
+        * Output: Rune para user (OP_RETURN edict)
+        * Output: LP fee
+        * Output: Protocol fee
+        * Output: Change
+      
+      - Se Rune → BTC:
+        * Input: Rune do user (com edict)
+        * Input: BTC do pool
+        * Output: Rune para pool
+        * Output: BTC para user
+        * Output: LP fee
+        * Output: Protocol fee
+        * Output: Change
+   
+   b) Assinar:
+      - User assina com MyWallet
+      - Pool assina com poolSigner
+      - Broadcast
+   
+   c) Atualizar pool state:
+      - Recalcular reserves (x*y=k)
+      - Registrar swap no banco
+      - Atualizar UI
+
+4. ADD/REMOVE LIQUIDITY
+   ────────────────────────────────────────────────────────
+   Opcional para depois, mas importante:
+   
+   - Add Liquidity: Adicionar mais BTC+Rune a um pool existente
+   - Remove Liquidity: Resgatar LP tokens e receber BTC+Rune
+
+═══════════════════════════════════════════════════════════════
+
+🎯 ORDEM RECOMENDADA:
+
+1. HOJE: Implementar CREATE POOL frontend (JavaScript)
+   - Event listeners
+   - Modal open/close
+   - Token selection para pool
+   - Initial price calculation
+   - API call
+
+2. AMANHÃ: Implementar CREATE POOL backend
+   - Validações no policyEngine
+   - PSBT construction em psbtBuilder
+   - Pool signing
+   - Database insert
+   - Testar criar primeiro pool
+
+3. DEPOIS: Implementar SWAP execution
+   - PSBT construction para swap
+   - User + Pool signing
+   - Broadcast
+   - Pool state update
+   - Testar swap completo
+
+═══════════════════════════════════════════════════════════════
+
+📋 CHECKLIST PARA CREATE POOL:
+
+Frontend (defi-swap.html):
+[ ] Add event listener: createPoolBtn → openCreatePoolModal()
+[ ] Add event listener: createPoolClose → closeCreatePoolModal()
+[ ] Add event listener: poolRuneBtn → openTokenModal('pool')
+[ ] Add event listener: poolRuneAmount.input → calculateInitialPrice()
+[ ] Add event listener: poolBtcAmount.input → calculateInitialPrice()
+[ ] Add event listener: createPoolSubmitBtn → submitCreatePool()
+[ ] Function: openCreatePoolModal()
+[ ] Function: closeCreatePoolModal()
+[ ] Function: calculateInitialPrice()
+[ ] Function: submitCreatePool()
+[ ] Handle token selection para 'pool'
+[ ] Validar inputs antes de submit
+[ ] Mostrar loading durante criação
+[ ] Mostrar sucesso/erro
+[ ] Atualizar lista de pools após criar
+
+Backend (server/routes/defiSwap.js):
+[ ] Validar rune ID existe
+[ ] Validar amounts mínimos
+[ ] Validar pool não existe
+[ ] Validar user tem balance
+[ ] Construir PSBT (psbtBuilder.js)
+[ ] Validar PSBT (policyEngine.js)
+[ ] Assinar com pool (poolSigner.js)
+[ ] Inserir no database
+[ ] Retornar pool criado
+
+═══════════════════════════════════════════════════════════════
+
+URL: http://localhost:3000/defi-swap.html
+
+Status: Frontend 80% pronto, Backend 90% pronto
+Falta: Conectar CREATE POOL e SWAP execution
+
+

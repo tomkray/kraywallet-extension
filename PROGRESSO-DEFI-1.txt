@@ -1,0 +1,110 @@
+✅ PROGRESSO DeFi - PARTE 1 COMPLETA!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## ✅ BACKEND COMPLETO (CREATE POOL):
+
+### 1. ✅ buildCreatePoolPSBT() - IMPLEMENTADO
+**Arquivo:** `server/defi/psbtBuilder.js`
+
+**O que faz:**
+- Recebe UTXOs do user (BTC + Runes)
+- Cria PSBT com:
+  - INPUTS: UTXOs do user
+  - OUTPUT 0: Pool address (BTC + Runes)
+  - OUTPUT 1: OP_RETURN (Runestone)
+  - OUTPUT 2: Change (troco para user)
+- Retorna PSBT pronto para assinar
+
+### 2. ✅ POST /api/defi/pools/prepare - IMPLEMENTADO
+**Arquivo:** `server/routes/defiSwap.js`
+
+**O que faz:**
+- Valida parâmetros (runeId, amounts, UTXOs)
+- Gera Pool Address (Taproot 2-of-2)
+- Chama buildCreatePoolPSBT()
+- Salva pool como "PENDING" no DB
+- Retorna PSBT (base64) para user assinar
+
+**Request:**
+```json
+POST /api/defi/pools/prepare
+{
+  "runeId": "840000:3",
+  "runeName": "DOG•GO•TO•THE•MOON",
+  "runeSymbol": "DOG",
+  "initialBtc": 10000000,
+  "initialRune": 10000,
+  "userAddress": "bc1p...",
+  "userUtxos": [{txid, vout, value, scriptPubKey, runes}],
+  "feeRate": 10
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "psbt": "cHNidP8BAF4CAAAAAQECAwQ...",
+  "poolId": "temp_840000:3:BTC_1699...",
+  "poolAddress": "bc1p...pool...",
+  "message": "Please sign this PSBT with your wallet"
+}
+```
+
+### 3. ✅ POST /api/defi/pools/finalize - IMPLEMENTADO
+**Arquivo:** `server/routes/defiSwap.js`
+
+**O que faz:**
+- Recebe PSBT assinado pelo user
+- Valida pool (status PENDING)
+- TODO: Co-assina com Pool Signer (por enquanto skip)
+- Finaliza PSBT e extrai TX
+- Faz broadcast para Bitcoin Core
+- Atualiza pool no DB (status ACTIVE + UTXO real)
+
+**Request:**
+```json
+POST /api/defi/pools/finalize
+{
+  "psbt": "cHNidP8BAF4CAAAAAQECAwQ...",
+  "poolId": "temp_840000:3:BTC_1699..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "txid": "abc123def456...",
+  "poolId": "840000:3:BTC",
+  "message": "Pool created successfully!",
+  "explorerUrl": "https://mempool.space/tx/abc123..."
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 📋 PRÓXIMO PASSO: FRONTEND
+
+Agora preciso atualizar `pool-create.html` para:
+
+1. ✅ Buscar UTXOs do user (via KrayWallet ou backend)
+2. ✅ Chamar POST /api/defi/pools/prepare
+3. ✅ Receber PSBT
+4. ✅ window.krayWallet.signPsbt(psbt)
+5. ✅ Chamar POST /api/defi/pools/finalize
+6. ✅ Mostrar sucesso + TXID
+
+**Problema:** KrayWallet tem método para buscar UTXOs?
+
+**Opções:**
+A) Criar endpoint GET /api/wallet/utxos/:address
+B) KrayWallet já retorna UTXOs? (precisa verificar)
+C) User envia apenas rune + amount, backend busca UTXOs
+
+**Vou verificar KrayWallet API...**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## ⏭️ CONTINUANDO...
+

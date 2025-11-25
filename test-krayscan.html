@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test KrayScan API</title>
+</head>
+<body>
+    <h1>Test KrayScan API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            const txid = '72e206ff59c5922d86f6816b077dcd85ad5d7433e47eed9e5c8200205385c628';
+            console.log('Testing API for TXID:', txid);
+            
+            try {
+                const response = await fetch(`/api/explorer/tx/${txid}`);
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Data:', data);
+                
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.inscriptions && data.inscriptions.length > 0) {
+                    console.log('✅ Inscriptions found:', data.inscriptions.length);
+                    data.inscriptions.forEach(insc => {
+                        console.log('  - Inscription #' + insc.inscriptionNumber);
+                        console.log('    Content URL:', insc.contentUrl);
+                        console.log('    Preview URL:', insc.preview);
+                    });
+                } else {
+                    console.log('❌ No inscriptions found');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

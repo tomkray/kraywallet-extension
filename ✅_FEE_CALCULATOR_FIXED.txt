@@ -1,0 +1,167 @@
+
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║                                                               ║
+   ║          ✅ FEE CALCULATOR CORRIGIDO! ✅                     ║
+   ║                                                               ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+
+   🐛 PROBLEMA IDENTIFICADO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   O texto "Calculating..." ficava estático e não atualizava quando
+   o usuário mudava a fee rate ou digitava uma taxa customizada.
+
+
+   ✅ SOLUÇÃO IMPLEMENTADA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1. ✓ Função updateRuneFeeEstimate() criada
+   2. ✓ Cálculo automático ao selecionar fee
+   3. ✓ Cálculo automático ao digitar custom fee
+   4. ✓ Estimativa inicial após carregar fees
+   5. ✓ Formato: ~3,000 sats (~0.00003000 BTC)
+
+
+   ⚙️  COMO FUNCIONA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Fórmula:
+   ───────────────────────────────────────────
+   Fee (sats) = Fee Rate (sat/vB) × Size (vB)
+   ───────────────────────────────────────────
+
+   Estimativa de TX Rune:
+   • 1-2 inputs (UTXOs com runes)
+   • 3 outputs (receiver, change, OP_RETURN)
+   • Tamanho médio: ~300 vBytes
+
+   Exemplo:
+   • Fee Rate: 10 sat/vB
+   • Size: 300 vB
+   • Fee Total: 10 × 300 = 3,000 sats (~0.00003 BTC)
+
+
+   🧪 COMO TESTAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1️⃣  RECARREGAR EXTENSION
+   
+        chrome://extensions/ → MyWallet → 🔄 RELOAD
+
+   ────────────────────────────────────────────────────────────────
+
+   2️⃣  ABRIR SEND RUNES
+   
+        1. Abrir MyWallet
+        2. Tab "Runes" 🪙
+        3. Clicar em uma rune
+        4. Clicar em "Send" 📤
+
+   ────────────────────────────────────────────────────────────────
+
+   3️⃣  VERIFICAR CÁLCULO AUTOMÁTICO
+   
+        Ao carregar:
+        ✅ "Calculating..." → "~3,000 sats (~0.00003000 BTC)"
+        
+        Mudar para Economy (1 sat/vB):
+        ✅ Estimativa atualiza para "~300 sats"
+        
+        Mudar para Priority (15 sat/vB):
+        ✅ Estimativa atualiza para "~4,500 sats"
+        
+        Selecionar Custom:
+        ✅ Input aparece
+        
+        Digitar 50 sat/vB:
+        ✅ Estimativa atualiza para "~15,000 sats"
+        
+        Digitar 100 sat/vB:
+        ✅ Estimativa atualiza para "~30,000 sats"
+
+
+   💡 EXEMPLOS DE FEES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Fee Rate       Fee Total         Em BTC
+   ───────────────────────────────────────────────────────────
+   1 sat/vB    →  ~300 sats      (~0.00000300 BTC)  🐢
+   5 sat/vB    →  ~1,500 sats    (~0.00001500 BTC)  ⏱️
+   10 sat/vB   →  ~3,000 sats    (~0.00003000 BTC)  ⚡
+   20 sat/vB   →  ~6,000 sats    (~0.00006000 BTC)  🚀
+   50 sat/vB   →  ~15,000 sats   (~0.00015000 BTC)  ⚙️
+   100 sat/vB  →  ~30,000 sats   (~0.00030000 BTC)  ⚙️🔥
+
+
+   📊 ATUALIZAÇÃO EM TEMPO REAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   A estimativa atualiza automaticamente quando:
+   
+   ✓ Usuário seleciona outra fee rate no dropdown
+   ✓ Usuário digita no input de custom fee
+   ✓ Fees são carregadas da mempool.space
+
+
+   🎯 VALIDAÇÕES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ Se custom fee vazio → "Enter fee rate"
+   ✓ Se custom fee < 1 → "Enter fee rate"
+   ✓ Se fee rate válida → Cálculo automático
+   ✓ Se ainda carregando → Não calcula
+
+
+   📝 CÓDIGO IMPLEMENTADO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   function updateRuneFeeEstimate() {
+       // Obter fee rate (preset ou custom)
+       let feeRate = ...
+       
+       // Tamanho estimado da TX
+       const estimatedSize = 300; // vBytes
+       
+       // Calcular fee
+       const estimatedFeeSats = feeRate * estimatedSize;
+       const estimatedFeeBTC = (estimatedFeeSats / 100000000).toFixed(8);
+       
+       // Mostrar resultado
+       feeValue.textContent = 
+         `~${estimatedFeeSats.toLocaleString()} sats (~${estimatedFeeBTC} BTC)`;
+   }
+
+
+   🔗 EVENT LISTENERS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1. Fee selector change → updateRuneFeeEstimate()
+   2. Custom input change → updateRuneFeeEstimate()
+   3. Fees loaded → updateRuneFeeEstimate()
+
+
+   ✅ STATUS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   [x] Função de cálculo criada
+   [x] Event listeners adicionados
+   [x] Cálculo inicial após load
+   [x] Formato humanizado (com vírgulas)
+   [x] Conversão para BTC
+   [x] Validações implementadas
+   [x] Linter errors: 0
+
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   🔥 RECARREGUE E TESTE AGORA:
+   
+   chrome://extensions/ → MyWallet → 🔄 RELOAD
+   
+   Depois abra Send Runes e veja o cálculo automático! 💰
+   
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+

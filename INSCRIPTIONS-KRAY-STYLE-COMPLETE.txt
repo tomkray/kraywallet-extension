@@ -1,0 +1,164 @@
+✅ INSCRIPTIONS AGORA IGUAL À KRAYWALLET!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 IMPLEMENTADO (100% KRAYWALLET STYLE):
+
+1. ✅ MESMO ENDPOINT
+   📡 http://localhost:3000/api/ordinals/by-address/{address}
+   - Busca direto do ORD server local
+   - Mesmo formato de dados
+   - inscription_id, inscription_number, content_type
+
+2. ✅ THUMBNAILS CORRETOS
+   🖼️ http://localhost:80/content/{inscriptionId}
+   - 80x80px (como na KrayWallet)
+   - Border amarelo #f59e0b
+   - Fallback 🖼️ emoji
+   - object-fit: cover
+
+3. ✅ GRID LAYOUT
+   📐 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr))
+   - Máximo 12 inscriptions
+   - Gap 10px
+   - Scroll 300px
+   - Background rgba(0,0,0,0.3)
+
+4. ✅ SEARCH FUNCIONAL
+   🔍 Search by ID or number
+   - Debounce 300ms
+   - Busca no backend
+   - Filtra por ID ou número
+   - Resultado instantâneo
+
+5. ✅ VISUAL INTERATIVO
+   - Border verde no hover (#10b981)
+   - Border verde no selected
+   - Background transparente → verde claro
+   - Smooth transitions (0.2s)
+
+6. ✅ CONTADOR
+   Showing 3 of 5 inscriptions
+   - shownCount (max 12)
+   - totalCount (total)
+
+7. ✅ LOADING STATE
+   ⏳ Loading... (com animação spin)
+   - Mostra enquanto busca
+   - Animation: rotate 360deg (1s)
+
+8. ✅ DADOS COMPLETOS
+   selectedInscription = {
+       id: inscriptionId,
+       inscriptionId: inscriptionId,
+       inscriptionNumber: number,
+       contentType: type,
+       contentUrl: http://localhost:80/content/...
+   }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 ESTRUTURA DOS DADOS:
+
+BACKEND RETORNA:
+{
+    success: true,
+    inscriptions: [
+        {
+            inscription_id: "abc...i0",
+            inscription_number: 12345,
+            content_type: "image/png",
+            output_value: 555,
+            address: "bc1p...",
+            txid: "abc...",
+            vout: 0
+        }
+    ],
+    count: 1
+}
+
+FRONTEND USA:
+- inscription_id → ID completo
+- inscription_number → #12345
+- content_type → tipo
+- URL: http://localhost:80/content/{id}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 SEARCH FUNCIONA:
+
+Digite no input:
+- ID: "abc123" → filtra por ID
+- Número: "12345" → filtra por número
+- Ambos funcionam!
+
+Backend retorna:
+?search=12345
+→ Filtra inscriptions WHERE id LIKE '%12345%' OR number LIKE '%12345%'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 VISUAL COMPLETO:
+
+ITEM NÃO SELECIONADO:
+┌────────────────┐
+│ [🖼️ 80x80]    │ ← Thumbnail
+│                │
+│ #12345         │ ← Número (amarelo)
+│ abc123...      │ ← ID curto (cinza)
+└────────────────┘
+Border: transparent
+Background: rgba(0,0,0,0.5)
+
+HOVER:
+Border: #10b981 (verde)
+Background: rgba(16, 185, 129, 0.1)
+
+SELECTED:
+Border: #10b981 (verde, 2px)
+Background: rgba(16, 185, 129, 0.2)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. ✅ Conectar wallet
+2. ✅ Scroll até "Use Your Ordinal Inscription!"
+3. ✅ Marcar checkbox
+4. ✅ Ver loading ⏳ (animado)
+5. ✅ Ver grid de inscriptions (máx 12)
+6. ✅ Ver thumbnails carregando
+7. ✅ Ver #número + ID curto
+8. ✅ Hover → borda verde
+9. ✅ Click → borda verde fixa
+10. ✅ Ver URL preenchida automaticamente
+11. ✅ Digitar no search → filtrar instantâneo
+12. ✅ Ver contador "Showing X of Y"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 LOGS NO CONSOLE:
+
+🖼️ Loading inscriptions...
+   📡 Fetching from: http://localhost:3000/api/ordinals/by-address/bc1p...
+📦 Response: {success: true, inscriptions: Array(5), count: 5}
+✅ Found 5 inscriptions
+   Inscription 0: {inscription_id: "abc...i0", inscription_number: 12345, ...}
+   Inscription 1: {inscription_id: "def...i1", inscription_number: 67890, ...}
+✅ Inscriptions rendered successfully
+
+Click em uma:
+✅ Inscription selected: {id: "abc...i0", inscriptionNumber: 12345, contentUrl: "http://localhost:80/content/..."}
+
+Search por "123":
+🖼️ Loading inscriptions...
+   🔎 Search query: "123"
+   📡 Fetching from: http://localhost:3000/api/ordinals/by-address/bc1p...?search=123
+✅ Found 2 inscriptions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA SIM: 100% IGUAL À KRAYWALLET!
+   Thumbnails, search, hover, selected, tudo! 🎨
+

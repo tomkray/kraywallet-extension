@@ -1,0 +1,79 @@
+🐛 DEBUG: Por que pool-create não recebe wallet?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CORREÇÕES APLICADAS:
+
+1. ✅ app.js linha 257: Adicionado check para elemento existir
+2. ✅ runes-swap.html: Logs adicionados para debug
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE E VEJA OS LOGS:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R (importante!)
+
+## PASSO A PASSO:
+
+1. ✅ Abrir DevTools (F12)
+2. ✅ Clicar "Connect Wallet" no navbar
+3. ✅ Conectar KrayWallet
+4. ✅ Ver no console:
+   ```
+   ✅ Wallet connected: bc1pvz02...
+   isWalletConnected = true
+   connectedAddress = "bc1pvz02..."
+   ```
+
+5. ✅ Clicar na tab "Create Pool"
+6. ✅ Ver no console:
+   ```
+   ✅ Switched to tab: create
+      isWalletConnected: true  ← DEVE SER true!
+      connectedAddress: bc1pvz02...  ← DEVE TER endereço!
+   📡 Sending wallet connection to tab: create
+      ✅ Sent connection to iframe: bc1pvz02...
+   ```
+
+7. ✅ Ver no console do iframe pool-create:
+   ```
+   📨 pool-create received message: {type: 'CONNECT_WALLET', ...}
+   📡 Received connect wallet message
+   🎬 init() called
+   ✅ Found parent.krayWallet, getting address...
+   ```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ SE NÃO APARECER:
+
+## Caso 1: isWalletConnected: undefined
+
+PROBLEMA: app.js não está setando variáveis globais
+SOLUÇÃO: Verificar se app.js define window.isWalletConnected
+
+## Caso 2: connectedAddress: undefined
+
+PROBLEMA: app.js não está salvando endereço
+SOLUÇÃO: Verificar connectMyWallet() em app.js
+
+## Caso 3: Não envia mensagem para iframe
+
+PROBLEMA: Condição if não passa
+SOLUÇÃO: Enviar logs que aparecem!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ME ENVIE OS LOGS:
+
+Faça o teste acima e me envie EXATAMENTE o que aparece no console quando:
+1. Conectar wallet
+2. Clicar "Create Pool"
+
+Preciso ver se:
+- isWalletConnected = true ou undefined?
+- connectedAddress = "bc1p..." ou undefined?
+
+COM ESSES LOGS EU CONSERTO! 🎯
+

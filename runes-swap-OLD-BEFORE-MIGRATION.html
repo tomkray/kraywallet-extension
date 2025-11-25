@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAY STATION - Runes Swap</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar (Same as index.html) -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link active">Runes (On-chain)</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning DEX</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Runes Swap</h2>
+                <p>Trade Runes with deep liquidity pools powered by PSBT</p>
+            </div>
+        </section>
+
+        <!-- Swap Interface -->
+        <div class="swap-layout">
+            <!-- Main Swap Card -->
+            <div class="swap-card-modern">
+                <div class="swap-header">
+                    <h3>Swap</h3>
+                    <button class="settings-btn" id="settingsBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M16.25 10C16.25 10.625 16.875 11.25 17.5 11.25V13.75C16.875 13.75 16.25 14.375 16.25 15V17.5H13.75C13.75 16.875 13.125 16.25 12.5 16.25H10H7.5C6.875 16.25 6.25 16.875 6.25 17.5H3.75V15C3.75 14.375 3.125 13.75 2.5 13.75V11.25C3.125 11.25 3.75 10.625 3.75 10V7.5V5C3.75 4.375 3.125 3.75 2.5 3.75V1.25H5C5 1.875 5.625 2.5 6.25 2.5H10H12.5C13.125 2.5 13.75 1.875 13.75 1.25H16.25V3.75C16.25 4.375 16.875 5 17.5 5V7.5C16.875 7.5 16.25 8.125 16.25 8.75V10Z" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- From Token -->
+                <div class="swap-input-wrapper">
+                    <div class="swap-input-header">
+                        <label>From</label>
+                        <span class="balance-text">Balance: <span id="fromBalance">0</span></span>
+                    </div>
+                    <div class="swap-input-box">
+                        <input type="text" class="swap-amount-input" id="fromAmount" placeholder="0.0">
+                        <button class="token-select-btn" id="fromTokenBtn">
+                            <span class="token-icon">🪙</span>
+                            <span class="token-name" id="fromTokenName">Select token</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="swap-input-footer">
+                        <span class="usd-value" id="fromUsdValue">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Swap Arrow -->
+                <div class="swap-arrow-wrapper">
+                    <button class="swap-arrow-btn" id="swapArrowBtn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- To Token -->
+                <div class="swap-input-wrapper">
+                    <div class="swap-input-header">
+                        <label>To</label>
+                        <span class="balance-text">Balance: <span id="toBalance">0</span></span>
+                    </div>
+                    <div class="swap-input-box">
+                        <input type="text" class="swap-amount-input" id="toAmount" placeholder="0.0" readonly>
+                        <button class="token-select-btn" id="toTokenBtn">
+                            <span class="token-icon">🪙</span>
+                            <span class="token-name" id="toTokenName">Select token</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="swap-input-footer">
+                        <span class="usd-value" id="toUsdValue">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Swap Details -->
+                <div class="swap-details-modern" id="swapDetails" style="display: none;">
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Rate</span>
+                        <span class="detail-value" id="rateValue">1 RUNE = 0.05 BTC</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Price Impact</span>
+                        <span class="detail-value impact-low" id="impactValue">&lt;0.01%</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Liquidity Provider Fee</span>
+                        <span class="detail-value" id="lpFeeValue">0.3%</span>
+                    </div>
+                    <div class="detail-row-modern">
+                        <span class="detail-label">Network Fee</span>
+                        <span class="detail-value" id="networkFeeValue">~350 sats</span>
+                    </div>
+                </div>
+
+                <!-- Swap Button -->
+                <button class="swap-btn-modern" id="swapBtn" disabled>
+                    <span>Select a token</span>
+                </button>
+                
+                <!-- Create Pool Button -->
+                <button class="create-pool-btn-modern" id="createPoolBtn" style="margin-top: 12px; width: 100%; padding: 16px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border: none; border-radius: 16px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                    <span>➕ Create New Pool</span>
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="swap-stats">
+                <!-- TVL Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Value Locked</span>
+                        <span class="stat-badge">24h</span>
+                    </div>
+                    <div class="stat-value">
+                        <span class="stat-amount">₿ 12.45</span>
+                        <span class="stat-change positive">+5.2%</span>
+                    </div>
+                    <div class="stat-subvalue">$487,234 USD</div>
+                </div>
+
+                <!-- Volume Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">24h Volume</span>
+                        <span class="stat-badge">All pools</span>
+                    </div>
+                    <div class="stat-value">
+                        <span class="stat-amount">₿ 3.82</span>
+                        <span class="stat-change positive">+12.8%</span>
+                    </div>
+                    <div class="stat-subvalue">$149,876 USD</div>
+                </div>
+
+                <!-- Pools Card -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Active Pools</span>
+                        <span class="stat-badge">Live</span>
+                    </div>
+                    <div class="stat-value">
+                        <span class="stat-amount">24</span>
+                        <span class="stat-change positive">+3</span>
+                    </div>
+                    <div class="stat-subvalue">Across 12 Runes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Pools Section -->
+        <section class="pools-section">
+            <div class="section-header">
+                <h3>Popular Pools</h3>
+                <div class="section-filters">
+                    <button class="filter-btn active">All</button>
+                    <button class="filter-btn">High APY</button>
+                    <button class="filter-btn">New</button>
+                </div>
+            </div>
+
+            <div class="pools-grid">
+                <!-- Pool Card 1 -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <div class="pool-tokens">
+                            <div class="pool-token-icons">
+                                <span class="pool-token-icon">🪙</span>
+                                <span class="pool-token-icon">₿</span>
+                            </div>
+                            <div class="pool-token-names">
+                                <span class="pool-name">DOG•GO•TO•THE•MOON</span>
+                                <span class="pool-pair">DOGE / BTC</span>
+                            </div>
+                        </div>
+                        <span class="pool-badge hot">🔥 Hot</span>
+                    </div>
+                    <div class="pool-stats">
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">TVL</span>
+                            <span class="pool-stat-value">₿ 5.2</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">Volume 24h</span>
+                            <span class="pool-stat-value">₿ 1.8</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">APY</span>
+                            <span class="pool-stat-value apy-high">42.5%</span>
+                        </div>
+                    </div>
+                    <div class="pool-actions">
+                        <button class="pool-btn primary">Add Liquidity</button>
+                        <button class="pool-btn secondary">Swap</button>
+                    </div>
+                </div>
+
+                <!-- Pool Card 2 -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <div class="pool-tokens">
+                            <div class="pool-token-icons">
+                                <span class="pool-token-icon">🎭</span>
+                                <span class="pool-token-icon">₿</span>
+                            </div>
+                            <div class="pool-token-names">
+                                <span class="pool-name">MEME•MAGIC•RUNE</span>
+                                <span class="pool-pair">MEME / BTC</span>
+                            </div>
+                        </div>
+                        <span class="pool-badge new">New</span>
+                    </div>
+                    <div class="pool-stats">
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">TVL</span>
+                            <span class="pool-stat-value">₿ 2.8</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">Volume 24h</span>
+                            <span class="pool-stat-value">₿ 0.9</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">APY</span>
+                            <span class="pool-stat-value apy-high">68.2%</span>
+                        </div>
+                    </div>
+                    <div class="pool-actions">
+                        <button class="pool-btn primary">Add Liquidity</button>
+                        <button class="pool-btn secondary">Swap</button>
+                    </div>
+                </div>
+
+                <!-- Pool Card 3 -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <div class="pool-tokens">
+                            <div class="pool-token-icons">
+                                <span class="pool-token-icon">⚡</span>
+                                <span class="pool-token-icon">₿</span>
+                            </div>
+                            <div class="pool-token-names">
+                                <span class="pool-name">UNCOMMON•GOODS</span>
+                                <span class="pool-pair">GOODS / BTC</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pool-stats">
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">TVL</span>
+                            <span class="pool-stat-value">₿ 3.4</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">Volume 24h</span>
+                            <span class="pool-stat-value">₿ 1.2</span>
+                        </div>
+                        <div class="pool-stat-item">
+                            <span class="pool-stat-label">APY</span>
+                            <span class="pool-stat-value apy-medium">28.4%</span>
+                        </div>
+                    </div>
+                    <div class="pool-actions">
+                        <button class="pool-btn primary">Add Liquidity</button>
+                        <button class="pool-btn secondary">Swap</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coming Soon Features -->
+        <section class="features-section">
+            <h3>Coming Soon</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💧</div>
+                    <h4>Liquidity Mining</h4>
+                    <p>Earn rewards by providing liquidity to Runes pools</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Advanced Charts</h4>
+                    <p>Real-time price charts and trading analytics</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Limit Orders</h4>
+                    <p>Set custom price targets for your trades</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h4>Cross-chain Bridge</h4>
+                    <p>Bridge Runes across different Bitcoin layers</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Wallet Selection Modal -->
+    <div id="walletModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeWalletModal()"></div>
+        <div class="modal-content wallet-modal">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <button class="modal-close" onclick="closeWalletModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Choose your preferred wallet to connect</p>
+                <div class="wallet-options">
+                    <!-- MyWallet -->
+                    <button class="wallet-option" onclick="connectMyWallet()">
+                        <img src="kraywallet/logotk.png" alt="MyWallet" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">MyWallet</span>
+                            <span class="wallet-tag recommended">Recommended</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Unisat -->
+                    <button class="wallet-option" onclick="connectUnisat()">
+                        <img src="public/images/unisat.png" alt="Unisat" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Unisat</span>
+                            <span class="wallet-tag">Popular</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+
+                    <!-- Xverse -->
+                    <button class="wallet-option" onclick="connectXverse()">
+                        <img src="public/images/xverse.png" alt="Xverse" class="wallet-icon">
+                        <div class="wallet-info">
+                            <span class="wallet-name">Xverse</span>
+                            <span class="wallet-tag">Trusted</span>
+                        </div>
+                        <span class="wallet-arrow">→</span>
+                    </button>
+                </div>
+                <div class="wallet-help">
+                    <p>Don't have a wallet? <a href="https://chrome.google.com/webstore" target="_blank">Get one here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Selection Modal -->
+    <div id="tokenModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeTokenModal()"></div>
+        <div class="modal-content token-modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>Select a token</h3>
+                <button class="modal-close" onclick="closeTokenModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="tokenSearch" placeholder="Search by name or symbol" style="width: 100%; padding: 12px; border: 1px solid #333; background: #1a1a1a; border-radius: 8px; color: white; margin-bottom: 16px;">
+                
+                <div id="tokenList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Tokens will be loaded here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="public/js/wallet-connect.js?v=3"></script>
+    <script src="runes-swap.js?v=3"></script>
+</body>
+</html>

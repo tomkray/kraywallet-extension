@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Rankings - Kray Station</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Dashboard specific styles */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-4xl) var(--spacing-2xl);
+        }
+
+        .dashboard-header {
+            margin-bottom: var(--spacing-4xl);
+        }
+
+        .dashboard-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: -1px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            font-weight: 400;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-2xl);
+            margin-bottom: var(--spacing-4xl);
+        }
+
+        .stat-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-3xl);
+            transition: all var(--transition-base);
+        }
+
+        .stat-card:hover {
+            border-color: var(--color-border-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: var(--spacing-lg);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            line-height: 1;
+            margin-bottom: var(--spacing-xs);
+            font-family: var(--font-mono);
+        }
+
+        .stat-description {
+            font-size: 13px;
+            color: var(--color-text-tertiary);
+        }
+
+        /* Leaderboard Section */
+        .leaderboard-section {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-3xl);
+            margin-bottom: var(--spacing-4xl);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-3xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+        }
+
+        .leaderboard-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .leaderboard-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-family);
+        }
+
+        .tab-btn:hover {
+            border-color: var(--color-border-hover);
+            color: var(--color-text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--color-text-primary);
+            color: var(--color-bg-primary);
+            border-color: var(--color-text-primary);
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table thead th {
+            padding: var(--spacing-lg);
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .leaderboard-table tbody tr {
+            border-bottom: 1px solid var(--color-border);
+            transition: background var(--transition-fast);
+        }
+
+        .leaderboard-table tbody tr:hover {
+            background: var(--color-bg-secondary);
+        }
+
+        .leaderboard-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-table td {
+            padding: var(--spacing-xl);
+        }
+
+        .rank-cell {
+            font-weight: 600;
+            font-size: 18px;
+            font-family: var(--font-mono);
+            width: 80px;
+        }
+
+        .rank-medal {
+            font-size: 24px;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--color-border);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .user-display-name {
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--color-text-primary);
+        }
+
+        .user-address {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            font-family: var(--font-mono);
+        }
+
+        .score-legendary {
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .score-elite {
+            background: rgba(192, 192, 192, 0.15);
+            color: #c0c0c0;
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        .score-veteran {
+            background: rgba(205, 127, 50, 0.15);
+            color: #cd7f32;
+            border: 1px solid rgba(205, 127, 50, 0.3);
+        }
+
+        .score-active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border-hover);
+        }
+
+        .score-new {
+            background: var(--color-bg-secondary);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+        }
+
+        .value-cell {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        /* Loading & Empty States */
+        .loading {
+            text-align: center;
+            padding: var(--spacing-4xl);
+            color: var(--color-text-secondary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-4xl);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: var(--spacing-2xl) var(--spacing-lg);
+            }
+
+            .dashboard-title {
+                font-size: 28px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .leaderboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .leaderboard-table {
+                font-size: 13px;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            .rank-cell {
+                font-size: 16px;
+                width: 60px;
+            }
+
+            .leaderboard-table td {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link">Runes</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning</a>
+                <a href="dashboard.html" class="nav-link" style="color: var(--color-text-primary);">🏆 Rankings</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">🏆 Community Rankings</h1>
+            <p class="dashboard-subtitle">Top traders, collectors, and community members on Kray Station</p>
+        </div>
+
+        <!-- Global Stats -->
+        <div class="stats-grid" id="global-stats">
+            <div class="stat-card">
+                <span class="stat-icon">👥</span>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value" id="stat-users">-</div>
+                <div class="stat-description">Active traders</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💝</span>
+                <div class="stat-label">Total Likes</div>
+                <div class="stat-value" id="stat-likes">-</div>
+                <div class="stat-description">Community engagement</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">🤝</span>
+                <div class="stat-label">Total Sales</div>
+                <div class="stat-value" id="stat-sales">-</div>
+                <div class="stat-description">Completed trades</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💰</span>
+                <div class="stat-label">Total Volume</div>
+                <div class="stat-value" id="stat-volume">-</div>
+                <div class="stat-description">Sats traded</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <h2>🏆 Leaderboard</h2>
+                <div class="leaderboard-tabs">
+                    <button class="tab-btn active" data-type="reputation">⭐ Reputation</button>
+                    <button class="tab-btn" data-type="volume">💰 Volume</button>
+                    <button class="tab-btn" data-type="sales">🤝 Sales</button>
+                    <button class="tab-btn" data-type="likes">💝 Likes</button>
+                </div>
+            </div>
+
+            <div id="leaderboard-content">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading rankings...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="js/avatar.js"></script>
+    <script>
+        let currentLeaderboardType = 'reputation';
+        
+        // API Base URL
+        const API_BASE_URL = window.CONFIG?.API_URL || 'http://localhost:3000/api';
+
+        // Load global stats
+        async function loadGlobalStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.stats;
+                    
+                    document.getElementById('stat-users').textContent = 
+                        stats.total_users.toLocaleString();
+                    
+                    document.getElementById('stat-likes').textContent = 
+                        stats.total_likes.toLocaleString();
+                    
+                    document.getElementById('stat-sales').textContent = 
+                        stats.total_sales.toLocaleString();
+                    
+                    const btcValue = (stats.total_volume / 100000000).toFixed(8);
+                    document.getElementById('stat-volume').textContent = 
+                        `${btcValue} BTC`;
+                }
+            } catch (error) {
+                console.error('❌ Error loading stats:', error);
+                // Set placeholders on error
+                document.getElementById('stat-users').textContent = '0';
+                document.getElementById('stat-likes').textContent = '0';
+                document.getElementById('stat-sales').textContent = '0';
+                document.getElementById('stat-volume').textContent = '0';
+            }
+        }
+
+        // Load leaderboard
+        async function loadLeaderboard(type = 'reputation') {
+            try {
+                const content = document.getElementById('leaderboard-content');
+                content.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading rankings...</p>
+                    </div>
+                `;
+
+                const response = await fetch(`${API_BASE_URL}/analytics/leaderboard/${type}`);
+                const data = await response.json();
+
+                if (data.success && data.leaderboard.length > 0) {
+                    renderLeaderboard(data.leaderboard, type);
+                } else {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <h3>No data yet</h3>
+                            <p>Be the first to appear on the leaderboard!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading leaderboard:', error);
+                document.getElementById('leaderboard-content').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3>Error loading leaderboard</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render leaderboard table
+        function renderLeaderboard(users, type) {
+            const content = document.getElementById('leaderboard-content');
+            
+            let table = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>${getColumnHeader(type)}</th>
+                            <th>Sales</th>
+                            <th>Volume</th>
+                            <th>Likes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            users.forEach((user, index) => {
+                const rank = index + 1;
+                const rankDisplay = rank <= 3 ? 
+                    `<span class="rank-medal">${['🥇', '🥈', '🥉'][rank - 1]}</span>` : 
+                    rank;
+                
+                const avatar = AvatarGenerator.getAvatarDataURL(
+                    user.address, 
+                    user.avatar_style || 'identicon', 
+                    48
+                );
+                
+                const displayName = user.display_name || 
+                    `${user.address.substring(0, 8)}...${user.address.substring(user.address.length - 6)}`;
+
+                const scoreClass = getScoreBadgeClass(user.reputation_score);
+                const mainValue = getMainValue(user, type);
+
+                table += `
+                    <tr>
+                        <td class="rank-cell">${rankDisplay}</td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="${avatar}" alt="Avatar" class="user-avatar">
+                                <div class="user-info">
+                                    <div class="user-display-name">${displayName}</div>
+                                    <div class="user-address">${user.address.substring(0, 20)}...</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="score-badge ${scoreClass}">${mainValue}</span>
+                        </td>
+                        <td class="value-cell">${user.total_sales}</td>
+                        <td class="value-cell">${formatSats(user.total_volume_sold)}</td>
+                        <td class="value-cell">💝 ${user.total_likes_received}</td>
+                    </tr>
+                `;
+            });
+
+            table += `
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = table;
+        }
+
+        // Get column header based on type
+        function getColumnHeader(type) {
+            const headers = {
+                reputation: '⭐ Reputation',
+                volume: '💰 Total Volume',
+                sales: '🤝 Total Sales',
+                likes: '💝 Likes Received'
+            };
+            return headers[type] || 'Score';
+        }
+
+        // Get main value based on type
+        function getMainValue(user, type) {
+            switch (type) {
+                case 'reputation':
+                    return `${user.reputation_score} pts`;
+                case 'volume':
+                    return formatSats(user.total_volume_sold);
+                case 'sales':
+                    return `${user.total_sales}`;
+                case 'likes':
+                    return `${user.total_likes_received}`;
+                default:
+                    return user.reputation_score;
+            }
+        }
+
+        // Get score badge class
+        function getScoreBadgeClass(score) {
+            if (score >= 80) return 'score-legendary';
+            if (score >= 60) return 'score-elite';
+            if (score >= 40) return 'score-veteran';
+            if (score >= 20) return 'score-active';
+            return 'score-new';
+        }
+
+        // Format sats
+        function formatSats(sats) {
+            if (sats >= 100000000) {
+                return `${(sats / 100000000).toFixed(2)} BTC`;
+            } else if (sats >= 1000) {
+                return `${(sats / 1000).toFixed(1)}K`;
+            }
+            return `${sats}`;
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Load new leaderboard
+                const type = btn.dataset.type;
+                currentLeaderboardType = type;
+                loadLeaderboard(type);
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🏆 Dashboard initializing...');
+            loadGlobalStats();
+            loadLeaderboard(currentLeaderboardType);
+
+            // Refresh every 30 seconds
+            setInterval(() => {
+                loadGlobalStats();
+                loadLeaderboard(currentLeaderboardType);
+            }, 30000);
+        });
+
+        // Wallet connection
+        document.getElementById('connectWallet')?.addEventListener('click', async () => {
+            console.log('Connect wallet clicked');
+            // Add wallet connection logic here
+        });
+    </script>
+</body>
+</html>

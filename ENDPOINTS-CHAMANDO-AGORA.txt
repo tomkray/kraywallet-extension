@@ -1,0 +1,183 @@
+✅ ENDPOINTS AGORA ESTÃO SENDO CHAMADOS!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 O QUE FOI CORRIGIDO:
+
+## defi-swap.html:
+✅ Adicionados logs detalhados
+✅ Calls explícitos com .catch()
+✅ loadUserBalance() → chama wallet.getBalance()
+✅ loadUserRunes() → chama wallet.getRunes()
+✅ loadTokenList() → monta lista de tokens
+
+## pool-create.html:
+✅ Chama init() quando recebe CONNECT_WALLET
+✅ init() busca:
+   - wallet.getAccounts() → endereço
+   - wallet.getBalance() → saldo BTC
+   - wallet.getRunes() → lista de runes
+   - wallet.getInscriptions() → lista de inscriptions
+✅ Trata wallet locked automaticamente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGS ESPERADOS (COMPLETOS):
+
+## AO ABRIR runes-swap.html:
+
+```
+🚀 Runes Swap DeFi loaded
+🎯 runes-swap.html: Configurando tabs...
+   Found 2 tab buttons
+   Setting up button 0 : swap
+   Setting up button 1 : create
+✅ Tabs configured successfully
+```
+
+## AO CONECTAR WALLET:
+
+```
+🌐 Global wallet state updated: {
+  isWalletConnected: true,
+  connectedAddress: "bc1pvz02...",
+  currentWallet: "kraywallet"
+}
+```
+
+## TAB SWAP (já ativa):
+
+```
+📨 Received message from parent: {type: 'CONNECT_WALLET', ...}
+📡 Received connect wallet message from parent
+   Address: bc1pvz02...
+   Wallet: kraywallet
+✅ Synced with parent wallet: bc1pvz02...
+📞 Calling loadUserBalance()...
+💰 KrayWallet: getBalance()
+📦 Balance Response: {success: true, balance: 22612}
+✅ Balance loaded: 22612 sats
+
+📞 Calling loadUserRunes()...
+🪙 Loading runes from wallet...
+🪙 KrayWallet: getRunes()
+📦 Runes result: {success: true, runes: Array(2)}
+✅ Runes loaded: 2 runes
+📋 Runes: [
+  {runeId: '840000:3', symbol: 'DOG', amount: 300, ...},
+  {runeId: '840000:5', symbol: 'CATS', amount: 150, ...}
+]
+
+📞 Calling loadTokenList()...
+📋 Loading token list...
+   User runes: 2
+   Active pools: 0
+   Total tokens: 3
+```
+
+## AO CLICAR CREATE POOL:
+
+```
+🖱️ Tab clicked: create
+✅ Tab content displayed: create
+📡 Sending wallet connection to tab: create
+   ✅ Sent connection to iframe: bc1pvz02...
+
+[NO IFRAME pool-create.html:]
+
+📨 pool-create received message: {type: 'CONNECT_WALLET', ...}
+📡 Received connect wallet message
+   Address: bc1pvz02...
+
+🎬 init() called
+   Checking parent window...
+   parent.isWalletConnected: true
+   parent.connectedAddress: bc1pvz02...
+✅ Found parent.krayWallet, getting address...
+
+📋 KrayWallet: getAccounts()
+✅ Address from wallet: bc1pvz02...
+✅ Using parent.krayWallet
+
+💰 KrayWallet: getBalance()
+💰 BTC Balance: 22612 sats = 0.00022612 BTC
+
+🪙 KrayWallet: getRunes()
+📦 Runes Response: {success: true, runes: Array(2)}
+🎯 Runes: 2 [DOG, CATS]
+
+📞 Calling loadTokenSelectors()...
+📋 Loading runes: 2
+   Rune 0: DOG {symbol: 'DOG', amount: 300, ...}
+   Rune 1: CATS {symbol: 'CATS', amount: 150, ...}
+✅ Runes loaded in custom dropdowns
+✅ loadTokenSelectors() finished
+
+🖼️ KrayWallet: getInscriptions()
+📦 Inscriptions Response: {success: true, inscriptions: Array(5)}
+🖼️ Inscriptions: 5
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+## VERIFICAÇÕES:
+
+### TAB SWAP:
+✅ Aparece lista "Select token (FROM)"
+✅ Clicar mostra: BTC + 2 runes
+✅ Runes têm thumbnail, nome, balance
+✅ "TO" também funciona
+
+### TAB CREATE POOL:
+✅ Click "+ Create Pool"
+✅ Aparece formulário
+✅ "First Token" dropdown:
+   - Mostra 2 runes
+   - Com thumbnails
+   - Com nomes completos
+   - Com balance correto
+✅ "BTC Balance" mostra: 0.00022612 BTC
+✅ Click "Use Inscription":
+   - Carrega lista de inscriptions
+   - Mostra thumbnails
+   - Mostra inscription numbers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ SE NÃO APARECER:
+
+1. Wallet está desbloqueada?
+   → Click no ícone, digitar senha
+
+2. Fez hard refresh?
+   → Ctrl+Shift+R (várias vezes!)
+
+3. Console mostra os logs acima?
+   → F12 → Console
+   → Se não: me enviar o que aparece!
+
+4. Cache desabilitado?
+   → F12 → Network → "Disable cache"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ CHECKLIST FINAL:
+
+[ ] Wallet desbloqueada
+[ ] Hard refresh (Ctrl+Shift+R)
+[ ] Wallet conectada no navbar
+[ ] TAB SWAP: lista de tokens aparece
+[ ] TAB SWAP: runes aparecem com dados
+[ ] TAB CREATE POOL: dropdowns funcionam
+[ ] TAB CREATE POOL: thumbnails aparecem
+[ ] TAB CREATE POOL: inscriptions carregam
+[ ] Trocar tabs funciona sem bug
+
+SE TUDO OK: ✅ FUNCIONANDO!
+SE ALGO FALTA: Me enviar logs do console! 🎯
+

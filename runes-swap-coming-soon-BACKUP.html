@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runes Swap - KRAY STATION</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar (Kray Station Standard) -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                <div class="nav-title">
+                    <h1>KRAY STATION</h1>
+                    <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link active">Runes (On-chain)</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning DEX</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" style="padding: 100px 0; text-align: center;">
+        <div class="container">
+            <div style="display: inline-block; font-size: 80px; margin-bottom: 24px; animation: float 3s ease-in-out infinite;">
+                💎
+            </div>
+            <h1 style="font-size: 56px; margin-bottom: 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">
+                Runes Swap DeFi
+            </h1>
+            <p style="font-size: 20px; color: #888; max-width: 600px; margin: 0 auto 48px; line-height: 1.6;">
+                Deep liquidity pools for Runes tokens powered by PSBT atomic swaps.<br>
+                <strong style="color: #10b981;">Zero service fees. True decentralization.</strong>
+            </p>
+            
+            <!-- Coming Soon Badge -->
+            <div style="display: inline-block; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%); border: 2px solid #10b981; border-radius: 50px; padding: 16px 40px; margin-bottom: 32px;">
+                <span style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #10b981;">
+                    🚀 Coming Soon
+                </span>
+            </div>
+
+            <!-- Features Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; padding: 48px 0;">
+                <!-- Feature 1 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; transition: all 0.3s;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🔄</div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #fff;">Instant Swaps</h3>
+                    <p style="font-size: 14px; color: #888; line-height: 1.6;">
+                        Swap Runes tokens instantly with deep liquidity pools and minimal slippage.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; transition: all 0.3s;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #fff;">Earn Yield</h3>
+                    <p style="font-size: 14px; color: #888; line-height: 1.6;">
+                        Provide liquidity and earn trading fees. Create custom pools with your own tokens.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 16px; padding: 32px; text-align: center; transition: all 0.3s;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🔐</div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #fff;">PSBT Security</h3>
+                    <p style="font-size: 14px; color: #888; line-height: 1.6;">
+                        All swaps use PSBT atomic swaps. Non-custodial. Trustless. Pure Bitcoin.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="display: flex; gap: 16px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 32px;">
+                <a href="ordinals.html" style="text-decoration: none;">
+                    <button style="background: #fff; color: #000; border: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Browse Ordinals Marketplace
+                    </button>
+                </a>
+                <a href="index.html#download" style="text-decoration: none;">
+                    <button style="background: transparent; color: #fff; border: 2px solid #333; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Download KrayWallet
+                    </button>
+                </a>
+            </div>
+
+            <!-- Status Info -->
+            <div style="margin-top: 80px; padding: 32px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #10b981;">
+                    🔨 Development Status
+                </h3>
+                <div style="text-align: left; font-size: 14px; color: #888; line-height: 2;">
+                    <div style="margin-bottom: 8px;">
+                        <span style="color: #10b981; font-weight: 600;">✅ Frontend Interface</span>
+                        <span style="float: right; color: #10b981;">100%</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <span style="color: #10b981; font-weight: 600;">✅ Backend Structure</span>
+                        <span style="float: right; color: #10b981;">100%</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <span style="color: #f59e0b; font-weight: 600;">⏳ PSBT Integration</span>
+                        <span style="float: right; color: #f59e0b;">In Progress</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <span style="color: #f59e0b; font-weight: 600;">⏳ LND Pool Signing</span>
+                        <span style="float: right; color: #f59e0b;">In Progress</span>
+                    </div>
+                    <div>
+                        <span style="color: #666; font-weight: 600;">⏸️  Mainnet Launch</span>
+                        <span style="float: right; color: #666;">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: rgba(255,255,255,0.02); border-top: 1px solid #333; padding: 40px 20px; margin-top: 80px;">
+        <div class="container" style="text-align: center;">
+            <img src="kraywallet/logo.png" alt="KRAY STATION" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;">
+            <p style="color: #666; font-size: 14px; margin-bottom: 8px;">
+                KRAY STATION • Decentralized Bitcoin Ordinals & Runes Marketplace
+            </p>
+            <p style="color: #444; font-size: 12px;">
+                Built with ❤️ for the Bitcoin community
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Connect wallet button (placeholder)
+        document.getElementById('connectWallet').addEventListener('click', () => {
+            alert('Runes Swap DeFi is coming soon! For now, you can trade Ordinals in our marketplace.');
+        });
+
+        // Feature cards hover effect
+        document.querySelectorAll('[style*="border: 1px solid #333"]').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = '#10b981';
+                card.style.transform = 'translateY(-4px)';
+                card.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.2)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = '#333';
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+            });
+        });
+
+        // Button hover effects
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                if (btn.style.background === 'rgb(255, 255, 255)' || btn.style.background === '#fff') {
+                    btn.style.background = '#e0e0e0';
+                } else {
+                    btn.style.borderColor = '#10b981';
+                    btn.style.color = '#10b981';
+                }
+            });
+            btn.addEventListener('mouseleave', () => {
+                if (btn.style.background === 'rgb(224, 224, 224)') {
+                    btn.style.background = '#fff';
+                } else {
+                    btn.style.borderColor = '#333';
+                    btn.style.color = '#fff';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

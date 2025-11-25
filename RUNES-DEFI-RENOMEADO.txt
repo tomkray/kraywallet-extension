@@ -1,0 +1,73 @@
+✅ RENOMEADO: Runes (On-chain) → Runes (DeFi)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 MUDANÇAS APLICADAS:
+
+## NAVBAR:
+
+ANTES:
+```
+[Home] [Ordinals] [Runes (On-chain)] [⚡ Lightning DEX]
+```
+
+DEPOIS:
+```
+[Home] [Ordinals] [Runes (DeFi)] [⚡ Lightning DEX]
+```
+
+## TÍTULO DA PÁGINA:
+
+ANTES: "Runes Swap - KRAY STATION"
+DEPOIS: "Runes DeFi - KRAY STATION"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ MOTIVO:
+
+"DeFi" é mais claro e profissional:
+- ✅ Indica função (Decentralized Finance)
+- ✅ Termo conhecido no mercado
+- ✅ Diferencia de operações on-chain simples
+- ✅ Destaca pools e swaps
+- ✅ Marketing melhor
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+## O QUE VAI APARECER:
+
+NAVBAR:
+┌────────────────────────────────────────┐
+│ KRAY STATION                           │
+│ [Home] [Ordinals] [Runes (DeFi)] ⚡   │  ← Novo nome!
+└────────────────────────────────────────┘
+
+ABA DO NAVEGADOR:
+📑 Runes DeFi - KRAY STATION  ← Novo título!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Nome mais profissional
+2. ✅ Termo conhecido (DeFi)
+3. ✅ Destaca funcionalidade
+4. ✅ Marketing melhor
+5. ✅ Consistência com setor
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ESTRUTURA FINAL DO SITE:
+
+1. Home → Apresentação
+2. Ordinals → Marketplace (Atomic Swaps)
+3. Runes (DeFi) → Swap + Pools ✨
+4. ⚡ Lightning DEX → Lightning Network
+
+PERFEITO! 🚀
+

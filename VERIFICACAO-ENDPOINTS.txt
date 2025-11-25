@@ -1,0 +1,76 @@
+🔍 VERIFICAÇÃO - O QUE FOI ALTERADO?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ IMPORTANTE:
+
+EU **NÃO ALTEREI NENHUM JAVASCRIPT** OU ENDPOINT!
+
+As mudanças foram APENAS CSS:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ O QUE FOI ALTERADO (APENAS CSS):
+
+1. body { background: #000; } ← era #0a0a0a
+2. .container { background: #111; border: 1px solid #333; } ← era #1a1a1a
+3. .banner { background: transparent; } ← era rgba gradiente
+4. .inscription-box { background: transparent; } ← era rgba gradiente
+5. .back-btn { background: transparent; } ← era #2a2a2a
+6. .inscription-list { border: 1px solid #333; } ← era rgba
+7. .inscription-item:hover { background: #111; } ← era rgba
+8. .inscription-thumb { border: 1px solid #333; } ← era rgba
+9. .btn-primary { background: #10b981; } ← era gradiente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ O QUE **NÃO** FOI ALTERADO:
+
+1. ✅ waitForWallet() - INTACTO
+2. ✅ init() - INTACTO
+3. ✅ wallet.getAccounts() - INTACTO
+4. ✅ wallet.getBalance() - INTACTO
+5. ✅ wallet.getRunes() - INTACTO
+6. ✅ wallet.getInscriptions() - INTACTO
+7. ✅ loadTokenSelectors() - INTACTO
+8. ✅ loadInscriptions() - INTACTO
+9. ✅ Todos os endpoints da API - INTACTOS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 POSSÍVEIS CAUSAS DO "BUG":
+
+1. ⚠️ Cache do navegador não foi limpo
+   → Solução: Ctrl+Shift+R (hard refresh)
+
+2. ⚠️ Wallet desconectada/bloqueada
+   → Solução: Reconectar wallet
+
+3. ⚠️ Servidor foi reiniciado
+   → Solução: Verificar se servidor está rodando
+
+4. ⚠️ Outro arquivo foi alterado sem querer
+   → Solução: Verificar console do navegador
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 PARA DIAGNOSTICAR:
+
+1. Abrir Console do navegador (F12)
+2. Ir para http://localhost:3000/runes-swap.html
+3. Clicar em "Create Pool"
+4. Ver EXATAMENTE qual erro aparece
+5. Copiar e colar o erro aqui
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 INFORMAÇÕES NECESSÁRIAS:
+
+Por favor me envie:
+
+1. Qual erro aparece no console?
+2. O que exatamente "bugou"? (não carrega runes? não conecta?)
+3. Estava funcionando antes? Quando parou?
+4. Já fez hard refresh (Ctrl+Shift+R)?
+
+Com essas informações eu posso ajudar melhor! 🔍
+

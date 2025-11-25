@@ -1,0 +1,128 @@
+✅ IMPLEMENTANDO: TABS EM RUNES-SWAP.HTML
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 O QUE VOU FAZER AGORA:
+
+Criar UM ÚNICO runes-swap.html que contém:
+
+┌─────────────────────────────────────────┐
+│ 🎨 NAVBAR KRAY STATION                  │
+│ Logo | Home | Ordinals | Runes |        │
+│ Lightning | [Connect Wallet]            │
+├─────────────────────────────────────────┤
+│                                         │
+│ 💎 Runes Swap                           │
+│ Deep liquidity pools powered by PSBT    │
+│                                         │
+├─────────────────────────────────────────┤
+│ [ 🔄 SWAP ] [ + CREATE POOL ]           │ ← TABS
+├─────────────────────────────────────────┤
+│                                         │
+│ TAB 1 - SWAP:                          │
+│ - Token selector (From/To)              │
+│ - Amount inputs                         │
+│ - MAX button                            │
+│ - Pools display                         │
+│ - Swap button                           │
+│                                         │
+│ TAB 2 - CREATE POOL:                   │
+│ - Pool name                             │
+│ - Inscription selector (com search)     │
+│ - Token selectors (com thumbnails)      │
+│ - BTC/Rune toggle                       │
+│ - Amount inputs (com MAX)               │
+│ - Fee rate                              │
+│ - Create button                         │
+│                                         │
+└─────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ESTRUTURA DO ARQUIVO:
+
+1. <head>
+   - Link styles.css (Kray Station)
+   - Link Google Fonts (Inter)
+   - <style> inline (DeFi components)
+
+2. <body>
+   - Navbar (copiado de index.html)
+   - Hero section (pequeno)
+   - Tabs (Swap | Create Pool)
+   - Tab content #1 (Swap - de defi-swap.html)
+   - Tab content #2 (Create - de pool-create.html)
+   - <script> (toda a lógica JS)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 CÓDIGO DOS TABS:
+
+HTML:
+```html
+<div class="tabs-container">
+    <button class="tab-btn active" data-tab="swap">
+        🔄 Swap
+    </button>
+    <button class="tab-btn" data-tab="create">
+        + Create Pool
+    </button>
+</div>
+
+<div class="tab-content active" id="tab-swap">
+    <!-- Conteúdo de defi-swap.html -->
+</div>
+
+<div class="tab-content" id="tab-create">
+    <!-- Conteúdo de pool-create.html -->
+</div>
+```
+
+CSS:
+```css
+.tab-btn.active {
+    border-bottom: 2px solid #10b981;
+    color: #10b981;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+```
+
+JS:
+```javascript
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active
+        document.querySelectorAll('.tab-btn').forEach(b => 
+            b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => 
+            c.classList.remove('active'));
+        
+        // Add active
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab)
+            .classList.add('active');
+    });
+});
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BENEFÍCIOS:
+
+1. ✅ Tudo em uma página
+2. ✅ Navbar Kray Station
+3. ✅ Design profissional
+4. ✅ UX melhor (sem navegação)
+5. ✅ Mant​ém funcionalidade 100%
+6. ✅ Fácil de usar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 VAMOS IMPLEMENTAR AGORA!
+

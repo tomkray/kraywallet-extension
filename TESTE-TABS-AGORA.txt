@@ -1,0 +1,120 @@
+🧪 TESTE AS TABS AGORA - Passo a Passo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 URL PRINCIPAL:
+http://localhost:3000/runes-swap.html
+
+🔄 HARD REFRESH OBRIGATÓRIO:
+Ctrl + Shift + R (Windows/Linux)
+Cmd + Shift + R (Mac)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TESTE 1: Página simples de teste
+
+http://localhost:3000/TEST-TABS-NOW.html
+
+O QUE DEVE ACONTECER:
+1. Ver 2 botões: "Swap" e "Create Pool"
+2. Botão "Swap" verde (ativo)
+3. Ver conteúdo "SWAP CONTENT" com iframe
+4. Clicar "Create Pool"
+5. Botão "Create Pool" fica verde
+6. Ver conteúdo "CREATE POOL CONTENT" com iframe
+
+LOGS ESPERADOS:
+```
+🧪 Test page loaded
+🖱️ Clicked: create
+✅ Tab switched to: create
+```
+
+SE FUNCIONAR: O problema está no runes-swap.html
+SE NÃO FUNCIONAR: O problema é mais básico (CSS/HTML)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TESTE 2: Página principal
+
+http://localhost:3000/runes-swap.html
+
+HARD REFRESH: Ctrl+Shift+R
+
+O QUE DEVE ACONTECER:
+1. Ver navbar do Kray Station
+2. Ver 2 tabs: "🔄 Swap" e "+ Create Pool"
+3. Tab "Swap" verde (ativa)
+4. Ver iframe com defi-swap.html embaixo
+5. Clicar "+ Create Pool"
+6. Tab "Create Pool" fica verde
+7. Ver iframe com pool-create.html embaixo
+
+LOGS ESPERADOS:
+```
+🚀 Runes Swap DeFi loaded
+🖱️ Tab clicked: create
+✅ Switched to tab: create
+   isWalletConnected: true (se conectou)
+   connectedAddress: bc1pvz02...
+```
+
+SE NÃO APARECER NADA:
+- Abrir DevTools (F12)
+- Ir para Console
+- Ver se tem erros em vermelho
+- Me enviar os erros!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ PROBLEMAS POSSÍVEIS:
+
+## 1. Cache do navegador
+SOLUÇÃO: Ctrl+Shift+R (hard refresh)
+
+## 2. app.js bloqueando cliques
+SOLUÇÃO: Já adicionamos e.stopPropagation()
+
+## 3. CSS display: none não mudando
+SOLUÇÃO: Verificar no DevTools > Elements
+- Procurar <div id="tab-swap" class="tab-content active">
+- Verificar se "active" aparece
+- Verificar CSS "display: block" quando ativo
+
+## 4. JavaScript não executando
+SOLUÇÃO: Ver erros no console
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 DEBUG MANUAL:
+
+Abrir DevTools (F12) > Console
+
+Digitar:
+```javascript
+// Ver se tabs existem
+document.querySelectorAll('.tab-content')
+
+// Ver qual está ativa
+document.querySelector('.tab-content.active')
+
+// Forçar mostrar Create Pool
+document.getElementById('tab-create').classList.add('active')
+document.getElementById('tab-swap').classList.remove('active')
+```
+
+SE ISSO FUNCIONAR: O problema é no event listener
+SE NÃO FUNCIONAR: O problema é no HTML/CSS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ME ENVIE:
+
+1. Qual teste você fez? (1 ou 2)
+2. O que aconteceu?
+3. Quais logs aparecem no console?
+4. Tem algum erro em vermelho?
+5. Ao clicar na tab, ela fica verde?
+6. O conteúdo (iframe) aparece ou não?
+
+COM ESSAS INFORMAÇÕES EU CORRIJO! 🎯
+

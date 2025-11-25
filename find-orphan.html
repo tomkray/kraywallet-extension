@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Find Orphan UTXOs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .utxo-list {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .utxo-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .utxo-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .utxo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .utxo-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .utxo-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .utxo-txid {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .recover-btn {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .recover-btn:hover {
+            background: #218838;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Find Orphan UTXOs</h1>
+        <p class="subtitle">Encontrar UTXOs órfãos na sua wallet</p>
+
+        <div class="info-box">
+            <strong>📍 Esta ferramenta irá:</strong><br>
+            1. Conectar com sua KrayWallet<br>
+            2. Buscar todos os UTXOs do seu endereço<br>
+            3. Identificar possíveis UTXOs órfãos<br>
+            4. Permitir recuperação com 1 clique
+        </div>
+
+        <button class="btn" id="scanBtn" onclick="scanForOrphans()">
+            🔎 Scan for Orphan UTXOs
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Scanning...</p>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="utxo-list" id="utxoList"></div>
+    </div>
+
+    <script>
+        let userAddress = null;
+
+        async function scanForOrphans() {
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const utxoListDiv = document.getElementById('utxoList');
+            const scanBtn = document.getElementById('scanBtn');
+            
+            resultDiv.style.display = 'none';
+            utxoListDiv.style.display = 'none';
+            utxoListDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+            scanBtn.disabled = true;
+            
+            try {
+                // Conectar wallet
+                if (!window.krayWallet) {
+                    throw new Error('KrayWallet not found!');
+                }
+                
+                const accounts = await window.krayWallet.getAccounts();
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No wallet connected!');
+                }
+                
+                userAddress = accounts[0];
+                console.log('✅ Wallet:', userAddress);
+                
+                // Buscar UTXOs via API local
+                const response = await fetch(`http://localhost:3000/api/wallet/utxos?address=${userAddress}`);
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to fetch UTXOs');
+                }
+                
+                const utxos = data.utxos || [];
+                console.log(`✅ Found ${utxos.length} UTXOs`);
+                
+                // Filtrar UTXOs "suspeitos" (sem runes, sem inscriptions, valor pequeno)
+                const suspiciousUtxos = utxos.filter(u => 
+                    !u.hasRunes && 
+                    !u.hasInscription && 
+                    u.value < 50000 && 
+                    u.value > 500
+                );
+                
+                console.log(`🔍 Found ${suspiciousUtxos.length} suspicious UTXOs`);
+                
+                if (utxos.length === 0) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '❌ No UTXOs found in this address';
+                    resultDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Mostrar todos os UTXOs
+                utxoListDiv.innerHTML = `<h3 style="margin-bottom: 20px;">📦 Your UTXOs (${utxos.length} total)</h3>`;
+                
+                utxos.forEach(utxo => {
+                    const card = document.createElement('div');
+                    card.className = 'utxo-card';
+                    
+                    const isSuspicious = !utxo.hasRunes && !utxo.hasInscription && utxo.value < 50000 && utxo.value > 500;
+                    
+                    card.innerHTML = `
+                        <div class="utxo-header">
+                            <div class="utxo-value">${utxo.value.toLocaleString()} sats</div>
+                            <div class="utxo-status ${utxo.status?.confirmed ? 'status-confirmed' : 'status-pending'}">
+                                ${utxo.status?.confirmed ? '✅ Confirmed' : '⏳ Pending'}
+                            </div>
+                        </div>
+                        <div class="utxo-txid">
+                            <strong>TXID:</strong> ${utxo.txid}:${utxo.vout}
+                        </div>
+                        <div style="font-size: 13px; color: #666;">
+                            ${utxo.hasRunes ? '🪙 Contains Runes' : ''}
+                            ${utxo.hasInscription ? '🖼️ Contains Inscription' : ''}
+                            ${!utxo.hasRunes && !utxo.hasInscription ? '💰 Plain BTC' : ''}
+                            ${isSuspicious ? '<br><strong style="color: #f39c12;">⚠️ Possible orphan UTXO</strong>' : ''}
+                        </div>
+                        ${isSuspicious ? `
+                            <button class="recover-btn" onclick="recoverUtxo('${utxo.txid}', ${utxo.vout}, ${utxo.value})">
+                                🔓 Recover this UTXO
+                            </button>
+                        ` : ''}
+                    `;
+                    
+                    utxoListDiv.appendChild(card);
+                });
+                
+                utxoListDiv.style.display = 'block';
+                
+                if (suspiciousUtxos.length > 0) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Found ${suspiciousUtxos.length} possible orphan UTXO(s)! Click "Recover" to get them back.`;
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ No orphan UTXOs found. All your funds are safe!`;
+                    resultDiv.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+                resultDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+                scanBtn.disabled = false;
+            }
+        }
+        
+        async function recoverUtxo(txid, vout, value) {
+            if (!confirm(`Recover ${value} sats from ${txid}:${vout}?`)) {
+                return;
+            }
+            
+            // Redirecionar para a página de recuperação com os dados
+            const params = new URLSearchParams({
+                txid: txid,
+                vout: vout,
+                address: userAddress
+            });
+            
+            window.location.href = `recover-orphan.html?${params.toString()}`;
+        }
+        
+        // Auto-scan on load if wallet is connected
+        window.addEventListener('load', async () => {
+            setTimeout(async () => {
+                try {
+                    if (window.krayWallet) {
+                        const accounts = await window.krayWallet.getAccounts();
+                        if (accounts && accounts.length > 0) {
+                            console.log('✅ Wallet auto-detected');
+                            // Não fazer auto-scan, deixar user clicar
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Wallet check:', e);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+

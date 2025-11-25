@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Swaps - Synthetic Runes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* Banner explicativo */
+        .info-banner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.15) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .info-banner h2 {
+            color: #FFD700;
+            font-size: 20px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-banner p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .feature {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .feature-label {
+            font-size: 12px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        /* Pool selector */
+        .pool-selector {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .pool-selector h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .pool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .pool-card {
+            background: rgba(30, 30, 40, 0.6);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pool-card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(40, 40, 50, 0.8);
+        }
+
+        .pool-card.selected {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .pool-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFD700;
+            margin-bottom: 8px;
+        }
+
+        .pool-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .pool-liquidity {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Swap interface */
+        .swap-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .swap-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .swap-box {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .swap-box h3 {
+            color: #FFD700;
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .balance-info {
+            font-size: 12px;
+            color: #FFD700;
+            cursor: pointer;
+        }
+
+        .balance-info:hover {
+            text-decoration: underline;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .swap-input {
+            width: 100%;
+            background: rgba(30, 30, 40, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .swap-input:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .asset-label {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        .swap-details {
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #aaa;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .swap-button {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .swap-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .swap-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .swap-button.loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        /* Balance display */
+        .balance-section {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .balance-section h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .balance-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .balance-item {
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .balance-rune {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFD700;
+        }
+
+        .balance-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .balance-type {
+            font-size: 12px;
+            color: #FFA500;
+            margin-top: 4px;
+        }
+
+        .redeem-button {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1px solid rgba(255, 165, 0, 0.5);
+            color: #FFA500;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .redeem-button:hover {
+            background: rgba(255, 165, 0, 0.3);
+            border-color: #FFA500;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .pool-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Error/Success messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.error {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            color: #ff6b6b;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+        }
+
+        .message.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <h2>⚡ Lightning Swaps - Instant Rune Trading</h2>
+        <p>
+            Trade runes <strong>instantly</strong> using <strong>Synthetic Runes</strong> powered by Lightning Network!<br>
+            No waiting for confirmations. Fees as low as ~1 sat. Unlimited swaps before settling on L1.
+        </p>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-label">Instant (~1-3s)</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💎</div>
+                <div class="feature-label">Synthetic Runes</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-label">L1 Backed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your Synthetic Balances -->
+    <div class="balance-section" id="balanceSection" style="display: none;">
+        <h3>💎 Your Synthetic Rune Balances</h3>
+        <div class="balance-list" id="balanceList"></div>
+    </div>
+
+    <!-- Pool Selector -->
+    <div class="pool-selector">
+        <h3>Select Pool</h3>
+        <div class="pool-grid" id="poolGrid">
+            <!-- Pools will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Swap Interface -->
+    <div class="swap-container" id="swapContainer" style="display: none;">
+        <!-- Buy Synthetic Runes -->
+        <div class="swap-box">
+            <h3>⚡ Buy Synthetic Runes</h3>
+            <div id="buyMessages"></div>
+            
+            <div class="input-group">
+                <div class="input-label">
+                    <span>You Pay</span>
+                    <span class="balance-info" id="btcBalance">Balance: ...</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="number" class="swap-input" id="buyAmountInput" placeholder="0" min="0" step="100">
+                    <span class="asset-label">sats</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <span>You Receive (estimated)</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="text" class="swap-input" id="buyReceiveInput" placeholder="0" readonly>
+                    <span class="asset-label" id="buyReceiveAsset">...</span>
+                </div>
+            </div>
+
+            <div class="swap-details" id="buyDetails" style="display: none;">
+                <div class="detail-row">
+                    <span>Price</span>
+                    <span class="detail-value" id="buyPrice">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Fee (0.3%)</span>
+                    <span class="detail-value" id="buyFee">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Slippage</span>
+                    <span class="detail-value" id="buySlippage">-</span>
+                </div>
+            </div>
+
+            <button class="swap-button" id="buyButton" disabled>
+                Select Pool to Start
+            </button>
+        </div>
+
+        <!-- Sell Synthetic Runes -->
+        <div class="swap-box">
+            <h3>💰 Sell Synthetic Runes</h3>
+            <div id="sellMessages"></div>
+            
+            <div class="input-group">
+                <div class="input-label">
+                    <span>You Sell</span>
+                    <span class="balance-info" id="syntheticBalance">Balance: ...</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="number" class="swap-input" id="sellAmountInput" placeholder="0" min="0" step="1">
+                    <span class="asset-label" id="sellAsset">...</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <span>You Receive (estimated)</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="text" class="swap-input" id="sellReceiveInput" placeholder="0" readonly>
+                    <span class="asset-label">sats</span>
+                </div>
+            </div>
+
+            <div class="swap-details" id="sellDetails" style="display: none;">
+                <div class="detail-row">
+                    <span>Price</span>
+                    <span class="detail-value" id="sellPrice">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Fee (0.3%)</span>
+                    <span class="detail-value" id="sellFee">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Slippage</span>
+                    <span class="detail-value" id="sellSlippage">-</span>
+                </div>
+            </div>
+
+            <button class="swap-button" id="sellButton" disabled>
+                Select Pool to Start
+            </button>
+        </div>
+    </div>
+
+    <script>
+        console.log('⚡ Lightning Swap interface loaded!');
+
+        let selectedPool = null;
+        let userAddress = null;
+        let pools = [];
+        let userBalances = {};
+
+        // Initialize
+        async function init() {
+            console.log('🎬 Initializing Lightning Swap...');
+            
+            // Get user address from parent
+            if (window.parent && window.parent.connectedAddress) {
+                userAddress = window.parent.connectedAddress;
+                console.log('✅ User address:', userAddress);
+            } else {
+                console.log('⚠️  No wallet connected');
+            }
+
+            // Load pools
+            await loadPools();
+
+            // Load balances if user connected
+            if (userAddress) {
+                await loadUserBalances();
+            }
+
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // Load available pools
+        async function loadPools() {
+            console.log('📋 Loading pools...');
+            
+            try {
+                const response = await fetch('/api/lightning-defi/list-pools');
+                const data = await response.json();
+                
+                if (data.success && data.pools && data.pools.length > 0) {
+                    pools = data.pools;
+                    renderPools(pools);
+                } else {
+                    showEmptyPools();
+                }
+            } catch (error) {
+                console.error('❌ Error loading pools:', error);
+                showEmptyPools();
+            }
+        }
+
+        // Render pools
+        function renderPools(pools) {
+            const grid = document.getElementById('poolGrid');
+            
+            if (pools.length === 0) {
+                showEmptyPools();
+                return;
+            }
+
+            grid.innerHTML = pools.map(pool => `
+                <div class="pool-card" onclick="selectPool('${pool.poolId}')">
+                    <div class="pool-name">${pool.runeName || pool.runeSymbol}</div>
+                    <div class="pool-stats">
+                        <span>BTC: ${(pool.btcAmount / 100000000).toFixed(8)}</span>
+                        <span>Runes: ${pool.runeAmount}</span>
+                    </div>
+                    <div class="pool-liquidity">
+                        TVL: ${pool.btcAmount.toLocaleString()} sats
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show empty state
+        function showEmptyPools() {
+            const grid = document.getElementById('poolGrid');
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏊</div>
+                    <div class="empty-state-text">
+                        No pools available yet.<br>
+                        Create the first pool to start trading!
+                    </div>
+                </div>
+            `;
+        }
+
+        // Select pool
+        function selectPool(poolId) {
+            selectedPool = pools.find(p => p.poolId === poolId);
+            
+            if (!selectedPool) return;
+
+            console.log('✅ Selected pool:', selectedPool);
+
+            // Update UI
+            document.querySelectorAll('.pool-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.pool-card').classList.add('selected');
+
+            // Show swap interface
+            document.getElementById('swapContainer').style.display = 'grid';
+
+            // Update asset labels
+            document.getElementById('buyReceiveAsset').textContent = selectedPool.runeSymbol || 'RUNE';
+            document.getElementById('sellAsset').textContent = selectedPool.runeSymbol || 'RUNE';
+
+            // Enable buttons if wallet connected
+            if (userAddress) {
+                document.getElementById('buyButton').disabled = false;
+                document.getElementById('buyButton').textContent = '⚡ Buy Synthetic ' + (selectedPool.runeSymbol || 'Runes');
+                
+                document.getElementById('sellButton').disabled = false;
+                document.getElementById('sellButton').textContent = '💰 Sell Synthetic ' + (selectedPool.runeSymbol || 'Runes');
+            } else {
+                document.getElementById('buyButton').textContent = 'Connect Wallet First';
+                document.getElementById('sellButton').textContent = 'Connect Wallet First';
+            }
+
+            // Load user balance for this pool
+            if (userAddress) {
+                loadPoolBalance(poolId);
+            }
+        }
+
+        // Load user balances
+        async function loadUserBalances() {
+            console.log('💰 Loading user balances...');
+            
+            const balanceSection = document.getElementById('balanceSection');
+            const balanceList = document.getElementById('balanceList');
+
+            try {
+                // Load balances for each pool
+                for (const pool of pools) {
+                    const response = await fetch(`/api/lightning-defi/virtual-balance/${userAddress}/${pool.poolId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.balance > 0) {
+                        userBalances[pool.poolId] = data.balance;
+                    }
+                }
+
+                // Render balances
+                const balanceItems = Object.entries(userBalances).map(([poolId, balance]) => {
+                    const pool = pools.find(p => p.poolId === poolId);
+                    if (!pool) return '';
+
+                    return `
+                        <div class="balance-item">
+                            <div>
+                                <div class="balance-rune">${pool.runeName || pool.runeSymbol}</div>
+                                <div class="balance-type">💎 Synthetic</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="balance-amount">${balance.toFixed(8)}</div>
+                                <button class="redeem-button" onclick="redeemRunes('${poolId}', ${balance})">
+                                    Redeem to L1
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).filter(Boolean);
+
+                if (balanceItems.length > 0) {
+                    balanceList.innerHTML = balanceItems.join('');
+                    balanceSection.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading balances:', error);
+            }
+        }
+
+        // Load balance for specific pool
+        async function loadPoolBalance(poolId) {
+            if (!userAddress) return;
+
+            try {
+                const response = await fetch(`/api/lightning-defi/virtual-balance/${userAddress}/${poolId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('syntheticBalance').textContent = `Balance: ${data.balance.toFixed(8)}`;
+                }
+            } catch (error) {
+                console.error('Error loading pool balance:', error);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Buy amount input
+            document.getElementById('buyAmountInput').addEventListener('input', async (e) => {
+                const amount = parseFloat(e.target.value);
+                if (!amount || !selectedPool) return;
+
+                await calculateBuySwap(amount);
+            });
+
+            // Sell amount input
+            document.getElementById('sellAmountInput').addEventListener('input', async (e) => {
+                const amount = parseFloat(e.target.value);
+                if (!amount || !selectedPool) return;
+
+                await calculateSellSwap(amount);
+            });
+
+            // Buy button
+            document.getElementById('buyButton').addEventListener('click', executeBuySwap);
+
+            // Sell button
+            document.getElementById('sellButton').addEventListener('click', executeSellSwap);
+        }
+
+        // Calculate buy swap
+        async function calculateBuySwap(amountSats) {
+            try {
+                const response = await fetch('/api/lightning-defi/swap-lightning', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: selectedPool.poolId,
+                        userAddress: userAddress || 'bc1p...',
+                        fromAsset: 'BTC',
+                        toAsset: selectedPool.runeId,
+                        amountIn: Math.floor(amountSats),
+                        minAmountOut: 0 // For calculation only
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI
+                    document.getElementById('buyReceiveInput').value = data.amountOut.toFixed(8);
+                    document.getElementById('buyPrice').textContent = `${data.price.toFixed(2)} sats/rune`;
+                    document.getElementById('buyFee').textContent = `${data.fee} sats`;
+                    document.getElementById('buySlippage').textContent = `${data.slippage.toFixed(2)}%`;
+                    document.getElementById('buyDetails').style.display = 'block';
+                } else {
+                    console.error('Calculation error:', data.error);
+                }
+
+            } catch (error) {
+                console.error('Error calculating swap:', error);
+            }
+        }
+
+        // Calculate sell swap
+        async function calculateSellSwap(amountRunes) {
+            try {
+                const response = await fetch('/api/lightning-defi/swap-lightning', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: selectedPool.poolId,
+                        userAddress: userAddress || 'bc1p...',
+                        fromAsset: selectedPool.runeId,
+                        toAsset: 'BTC',
+                        amountIn: amountRunes,
+                        minAmountOut: 0
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('sellReceiveInput').value = Math.floor(data.amountOut);
+                    document.getElementById('sellPrice').textContent = `${data.price.toFixed(2)} sats/rune`;
+                    document.getElementById('sellFee').textContent = `${data.fee} sats`;
+                    document.getElementById('sellSlippage').textContent = `${data.slippage.toFixed(2)}%`;
+                    document.getElementById('sellDetails').style.display = 'block';
+                } else {
+                    console.error('Calculation error:', data.error);
+                }
+
+            } catch (error) {
+                console.error('Error calculating swap:', error);
+            }
+        }
+
+        // Execute buy swap
+        async function executeBuySwap() {
+            const amount = parseFloat(document.getElementById('buyAmountInput').value);
+            if (!amount || !selectedPool || !userAddress) return;
+
+            const button = document.getElementById('buyButton');
+            const messages = document.getElementById('buyMessages');
+
+            button.disabled = true;
+            button.classList.add('loading');
+            button.innerHTML = '<span class="loading-spinner"></span> Creating invoice...';
+
+            try {
+                const response = await fetch('/api/lightning-defi/swap-lightning', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: selectedPool.poolId,
+                        userAddress,
+                        fromAsset: 'BTC',
+                        toAsset: selectedPool.runeId,
+                        amountIn: Math.floor(amount),
+                        minAmountOut: parseFloat(document.getElementById('buyReceiveInput').value) * 0.95 // 5% slippage tolerance
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.invoice) {
+                    // Show success message with invoice
+                    messages.innerHTML = `
+                        <div class="message success">
+                            ✅ Invoice created! Pay to complete swap.<br>
+                            <strong>Amount:</strong> ${amount} sats → ${data.amountOut.toFixed(8)} synthetic ${selectedPool.runeSymbol}<br>
+                            <small style="word-break: break-all;">${data.invoice}</small>
+                        </div>
+                    `;
+
+                    // TODO: Show QR code or open Lightning wallet
+                    console.log('⚡ Lightning invoice:', data.invoice);
+                    console.log('Payment hash:', data.paymentHash);
+
+                } else {
+                    throw new Error(data.error || 'Failed to create invoice');
+                }
+
+            } catch (error) {
+                console.error('❌ Error executing swap:', error);
+                messages.innerHTML = `
+                    <div class="message error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.textContent = '⚡ Buy Synthetic ' + (selectedPool.runeSymbol || 'Runes');
+            }
+        }
+
+        // Execute sell swap
+        async function executeSellSwap() {
+            const amount = parseFloat(document.getElementById('sellAmountInput').value);
+            if (!amount || !selectedPool || !userAddress) return;
+
+            const button = document.getElementById('sellButton');
+            const messages = document.getElementById('sellMessages');
+
+            button.disabled = true;
+            button.classList.add('loading');
+            button.innerHTML = '<span class="loading-spinner"></span> Processing...';
+
+            try {
+                const response = await fetch('/api/lightning-defi/swap-lightning', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        poolId: selectedPool.poolId,
+                        userAddress,
+                        fromAsset: selectedPool.runeId,
+                        toAsset: 'BTC',
+                        amountIn: amount,
+                        minAmountOut: Math.floor(parseFloat(document.getElementById('sellReceiveInput').value) * 0.95)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messages.innerHTML = `
+                        <div class="message success">
+                            ✅ Swap completed!<br>
+                            Sold ${amount} synthetic ${selectedPool.runeSymbol} for ${data.amountOut} sats.<br>
+                            <small>BTC will be sent via Lightning shortly.</small>
+                        </div>
+                    `;
+
+                    // Reload balances
+                    await loadUserBalances();
+                    await loadPoolBalance(selectedPool.poolId);
+
+                } else {
+                    throw new Error(data.error || 'Swap failed');
+                }
+
+            } catch (error) {
+                console.error('❌ Error executing swap:', error);
+                messages.innerHTML = `
+                    <div class="message error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.textContent = '💰 Sell Synthetic ' + (selectedPool.runeSymbol || 'Runes');
+            }
+        }
+
+        // Redeem synthetic runes to L1
+        async function redeemRunes(poolId, amount) {
+            if (!confirm(`Redeem ${amount.toFixed(8)} synthetic runes to L1?\n\nThis will create an on-chain transaction (fees ~2000-5000 sats).`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lightning-defi/request-redemption', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userAddress,
+                        poolId,
+                        amount
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ Redemption requested!\n\nRedemption ID: ${data.redemptionId}\n\nYour real runes will be sent on-chain soon.`);
+                    
+                    // Reload balances
+                    await loadUserBalances();
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (error) {
+                console.error('Error redeeming:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Listen for wallet connection from parent
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'CONNECT_WALLET') {
+                console.log('📡 Wallet connected from parent:', event.data.address);
+                userAddress = event.data.address;
+                init(); // Reinit with wallet
+            }
+        });
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+</html>
+

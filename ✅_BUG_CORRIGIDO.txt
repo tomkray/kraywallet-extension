@@ -1,0 +1,99 @@
+
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║                                                               ║
+   ║              🐛 BUG DOS BOTÕES CORRIGIDO! ✅                 ║
+   ║                                                               ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+
+   🔍 O PROBLEMA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Os botões "Send" e "Receive" do Bitcoin tab estavam aparecendo
+   GIGANTES na frente de tudo, inclusive na modal de runes!
+
+   Causa: z-index: 9999 !important no CSS
+
+
+   ✅ A SOLUÇÃO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Removi os z-index problemáticos de:
+   
+   ✓ .action-btn (botões Send/Receive do Bitcoin)
+   ✓ .btn-icon-only (botões de ícone)
+   ✓ .btn-icon-copy (botões de copiar)
+
+   Agora apenas modals e overlays têm z-index alto (correto!)
+
+
+   🧪 COMO TESTAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1️⃣  Recarregue a MyWallet Extension
+   
+       1. Abra: chrome://extensions/
+       2. Encontre "MyWallet"
+       3. Clique em 🔄 RELOAD
+
+   ────────────────────────────────────────────────────────────────
+
+   2️⃣  Teste o fluxo
+   
+       1. Abra a MyWallet
+       2. Vá para tab "RUNES" 🪙
+       3. Clique em uma rune (ex: DOG•GO•TO•THE•MOON)
+       4. ✅ A modal deve abrir NORMAL
+       5. ✅ Os botões Send/Receive NÃO devem aparecer por cima!
+
+   ────────────────────────────────────────────────────────────────
+
+   3️⃣  Teste os botões da modal
+   
+       1. Na modal de detalhes da rune
+       2. Clique em "Send" 📤
+       3. ✅ Abre tela de envio CORRETAMENTE
+       4. Clique em "←" para voltar
+       5. ✅ Volta para detalhes
+       6. Clique em "Receive" 📥
+       7. ✅ Vai para tela de receive
+
+
+   📂 ARQUIVOS MODIFICADOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   ✓ mywallet-extension/popup/popup.css
+
+   Mudanças:
+   - Linha 563: Removido z-index: 9999 !important
+   - Linha 274: Removido z-index: 9999 !important
+   - Linha 289: Removido z-index: 9999 !important
+
+
+   🎯 HIERARQUIA DE Z-INDEX CORRETA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   z-index: 1        → Elementos normais
+   z-index: 1000     → Modals de runes (.rune-details-screen)
+   z-index: 9999     → Overlays de modal (.modal-overlay)
+   
+   Todos os botões agora têm z-index normal (não sobrepõem modals)
+
+
+   ✅ PROBLEMA RESOLVIDO!
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Os botões agora respeitam a hierarquia correta e não aparecem
+   onde não deveriam!
+
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   🔥 RECARREGUE A EXTENSION AGORA:
+   
+   chrome://extensions/ → MyWallet → 🔄 RELOAD
+   
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+

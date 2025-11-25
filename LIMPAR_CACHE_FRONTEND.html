@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧹 Limpar Cache - KRAY WALLET</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 { font-size: 32px; margin-bottom: 20px; }
+        .btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .success { color: #4ade80; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpar Cache Frontend</h1>
+        <p>Limpe todos os dados armazenados no navegador</p>
+        
+        <button class="btn" onclick="limparTudo()">🗑️ Limpar Cache Completo</button>
+        <button class="btn" onclick="limparListings()">📋 Limpar Apenas Listings</button>
+        <button class="btn" onclick="verificarCache()">🔍 Verificar Cache</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="${type}">${message}</span>`;
+        }
+
+        function limparTudo() {
+            // Limpar localStorage
+            localStorage.clear();
+            
+            // Limpar sessionStorage
+            sessionStorage.clear();
+            
+            // Limpar IndexedDB
+            if (window.indexedDB) {
+                indexedDB.databases().then(dbs => {
+                    dbs.forEach(db => {
+                        indexedDB.deleteDatabase(db.name);
+                    });
+                });
+            }
+            
+            showStatus('✅ Cache completo limpo! Recarregue a página.', 'success');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+
+        function limparListings() {
+            // Limpar apenas dados de listings
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('listing') || key.includes('atomic') || key.includes('purchase')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            showStatus(`✅ ${keysToRemove.length} itens de listings removidos!`, 'success');
+        }
+
+        function verificarCache() {
+            const localStorageSize = Object.keys(localStorage).length;
+            const sessionStorageSize = Object.keys(sessionStorage).length;
+            
+            let message = `
+                📊 Estado do Cache:<br>
+                localStorage: ${localStorageSize} itens<br>
+                sessionStorage: ${sessionStorageSize} itens
+            `;
+            
+            showStatus(message, 'info');
+        }
+    </script>
+</body>
+</html>

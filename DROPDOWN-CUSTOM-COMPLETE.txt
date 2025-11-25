@@ -1,0 +1,103 @@
+✅ DROPDOWN CUSTOMIZADO COM THUMBNAILS!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 O QUE FOI IMPLEMENTADO:
+
+1. ✅ DROPDOWN CUSTOMIZADO
+   - Substituído <select> por botão + lista customizada
+   - Visual bonito com thumbnails
+   - Nome completo da rune
+   - Emoji symbol
+   - Amount com balance
+
+2. ✅ LISTA DE RUNES
+   Cada item mostra:
+   - [🖼️] Thumbnail 40x40px
+   - 🐶 Symbol (emoji)
+   - DOG•GO•TO•THE•MOON (nome completo)
+   - Balance: 300 (verde)
+
+3. ✅ BOTÃO SELECIONADO
+   Após selecionar mostra:
+   - [🖼️] Thumbnail 32x32px
+   - 🐶 Symbol
+   - Nome completo abaixo (pequeno)
+
+4. ✅ COMPORTAMENTO
+   - Hover: fundo verde claro
+   - Click: seleciona e fecha
+   - Click fora: fecha dropdown
+   - Balance atualizado
+   - MAX button funcionando
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 VISUAL FINAL:
+
+BOTÃO (ANTES DE SELECIONAR):
+┌────────────────────────────────┐
+│ 🎯  Select rune...        ▼   │
+└────────────────────────────────┘
+
+DROPDOWN ABERTO:
+┌────────────────────────────────┐
+│ [🖼️] 🐶 DOG•GO•TO•THE•MOON   │
+│      Balance: 300              │
+├────────────────────────────────┤
+│ [🖼️] 🐱 CAT•MEME•COIN         │
+│      Balance: 1,000            │
+└────────────────────────────────┘
+
+BOTÃO (DEPOIS DE SELECIONAR):
+┌────────────────────────────────┐
+│ [🖼️]  🐶                       │
+│       DOG•GO•TO•THE•MOON       │
+└────────────────────────────────┘
+
+BALANCE ABAIXO:
+Balance: 300 DOG (verde)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 DADOS EXIBIDOS:
+
+1. THUMBNAIL: rune.thumbnail (40x40 na lista, 32x32 no botão)
+2. SYMBOL: rune.symbol (emoji 🐶)
+3. NAME: rune.name (nome completo DOG•GO•TO•THE•MOON)
+4. AMOUNT: rune.amount (JÁ com divisibility da wallet!)
+5. BALANCE: formatado com locale (1,000 / 300 / etc)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 FUNCIONALIDADES:
+
+✅ Click no botão → abre dropdown
+✅ Click em rune → seleciona e fecha
+✅ Click fora → fecha dropdown
+✅ Hover → fundo verde
+✅ MAX button → usa selectedRuneA/B
+✅ Balance display → atualiza automático
+✅ Price calculator → funciona
+✅ BTC → mantém em BTC (não sats)
+✅ Runes → mantém como vem da wallet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 TESTE AGORA:
+
+http://localhost:3000/pool-create.html
+
+1. Clicar "Select rune..." ✅
+2. Ver lista com thumbnails ✅
+3. Ver nome completo + symbol ✅
+4. Ver balance de cada rune ✅
+5. Clicar em uma rune ✅
+6. Ver botão atualizado com thumb ✅
+7. Ver balance abaixo ✅
+8. Clicar MAX → preencher ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA SIM: DROPDOWN BONITO COM TUDO!
+   Thumbnails, symbol, nome completo, amount!
+

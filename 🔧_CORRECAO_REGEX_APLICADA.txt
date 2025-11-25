@@ -1,0 +1,152 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║           🔧 CORREÇÃO APLICADA - REGEX DO ORD SERVER HTML 🔧            ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+✅ PROBLEMA IDENTIFICADO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O endpoint `/output/{txid}:{vout}` do ORD server retorna runes em formato
+de TABELA HTML, não no formato simples que esperávamos.
+
+ANTES (formato esperado):
+<dt>runes</dt><dd><a href=/rune/DOG•GO•TO•THE•MOON>DOG•GO•TO•THE•MOON</a>: 1000🐕</dd>
+
+AGORA (formato real):
+<dt>runes</dt>
+<dd>
+  <table>
+    <tr>
+      <td><a href=/rune/DOG•GO•TO•THE•MOON>DOG•GO•TO•THE•MOON</a></td>
+      <td>1000 🐕</td>
+    </tr>
+  </table>
+</dd>
+
+✅ CORREÇÃO APLICADA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Arquivo: server/utils/runesDecoder.js
+Função: getRuneUtxos()
+
+ANTES:
+const runeInOutputPattern = new RegExp(
+  `<a[^>]*href=\\/rune\\/${runeName}[^>]*>${runeName}<\\/a>:\\s*([\\d,]+)`,
+  'i'
+);
+
+AGORA:
+// Verifica se tem <dt>runes</dt> no HTML
+if (outputHtml.includes('<dt>runes</dt>')) {
+    // Procura pela rune na tabela:
+    // <td><a href=/rune/NOME>NOME</a></td><td>AMOUNT EMOJI</td>
+    const runeInTablePattern = new RegExp(
+        `<td><a[^>]*href=\\/rune\\/${escapedRuneName}[^>]*>${escapedRuneName}<\\/a><\\/td>\\s*<td>([\\d,]+)`,
+        'i'
+    );
+}
+
+🧪 COMO TESTAR AGORA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  REINICIE O BACKEND:
+
+    Terminal → cd /Users/tomkray/Desktop/PSBT-Ordinals
+    
+    # Mate o processo antigo:
+    lsof -ti:3000 | xargs kill -9
+    
+    # Inicie o novo:
+    node server/index.js
+
+2️⃣  TESTE NA MYWALLET EXTENSION:
+
+    a) Chrome → chrome://extensions/
+    b) Recarregue a extensão MyWallet (botão ⟳)
+    c) Abra a wallet
+    d) Tab "Runes"
+    e) Clique em "DOG•GO•TO•THE•MOON"
+    f) Clique em "Send"
+    g) Preencha:
+       • Recipient: bc1pggclc3c6u4xa4u00js0hey4fmq6h8kx93ltapwgqn03kz0pk3n8q5nchag
+       • Amount: 500 (ou qualquer valor até 1000)
+       • Fee Rate: 1 sat/vB
+    h) Clique em "Send Rune"
+
+3️⃣  O QUE ESPERAR:
+
+   Backend logs devem mostrar:
+   ════════════════════════════════════════════════════════════════
+   🚀 ========== BUILD RUNE SEND PSBT ==========
+   ...
+   📡 Step 2.5: Fetching UTXOs with this rune via ORD server...
+      Found 3 outputs for this address
+      ✅ Found rune in output 0990800988bde260...a28:2 - Amount: 1000
+      ✅ Found 1 UTXOs containing "DOG•GO•TO•THE•MOON"
+   
+   🔨 Step 3: Building Runestone...
+      ✅ Runestone built
+   
+   ✅ PSBT created successfully!
+   ════════════════════════════════════════════════════════════════
+
+   Extension console deve mostrar:
+   ════════════════════════════════════════════════════════════════
+   📦 Step 1: Building PSBT...
+      ✅ PSBT received from backend
+   
+   🔐 Step 2: Signing PSBT...
+      ✅ PSBT signed locally
+   
+   📡 Step 3: Broadcasting transaction...
+      ✅ TX broadcast! TXID: abc123...
+   
+   🎉 Rune sent successfully!
+   ════════════════════════════════════════════════════════════════
+
+4️⃣  VERIFICAR TRANSAÇÃO:
+
+   a) Copie o TXID que apareceu
+   b) Acesse: https://mempool.space/tx/TXID
+   c) Veja a transação no mempool!
+   d) Aguarde confirmação (próximos blocos)
+
+5️⃣  VERIFICAR NO ORD SERVER:
+
+   Depois da confirmação:
+   
+   a) Endereço DE (remetente):
+      http://localhost/address/bc1pvz02d8z6c4d7r2m4zvx83z5ng5ggx7pkhx796hdtd9aef85hlk9q3m36gx
+      Deve mostrar: 500 DOG•GO•TO•THE•MOON (se enviou 500)
+   
+   b) Endereço PARA (destinatário):
+      http://localhost/address/bc1pggclc3c6u4xa4u00js0hey4fmq6h8kx93ltapwgqn03kz0pk3n8q5nchag
+      Deve mostrar: 500 DOG•GO•TO•THE•MOON (as que você enviou)
+
+📊 STATUS DA CORREÇÃO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Regex corrigido para formato de tabela HTML
+✅ Agora reconhece <td> ao invés de texto simples
+✅ Escape correto de caracteres especiais (•)
+✅ Verificação se seção <dt>runes</dt> existe
+
+🎯 PRÓXIMO PASSO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REINICIE O BACKEND E TESTE NA EXTENSION!
+
+Se der certo, você verá:
+✅ PSBT criado
+✅ TX assinada
+✅ TX no mempool
+✅ Runes transferidas!
+
+═══════════════════════════════════════════════════════════════════════════
+
+                    🎉 PRONTO PARA ENVIAR RUNES! 🎉
+
+═══════════════════════════════════════════════════════════════════════════
+
+

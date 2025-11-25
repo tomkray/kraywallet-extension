@@ -1,0 +1,75 @@
+
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║        ⚡ SÍMBOLOS OFICIAIS IMPLEMENTADOS! ⚡               ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✨  MUDANÇAS FEITAS:
+
+✅  Runes:     🪙 → ⧈  (Símbolo oficial de Runes)
+✅  Ordinals:  🖼️ → ◉  (Símbolo oficial de Ordinals)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁  ARQUIVOS ATUALIZADOS:
+
+Frontend:
+  ✅  mywallet-extension/popup/popup.js
+      - Runes fallback: ⧈
+      - Ordinals fallback: ◉
+      - Empty states: ◉
+      - Activity tab: ◉
+
+Backend:
+  ✅  server/utils/runesDecoder.js
+      - Default symbol: ⧈
+      
+  ✅  server/routes/runes.js
+      - Fallback symbol: ⧈
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄  PARA APLICAR AS MUDANÇAS:
+
+1️⃣  RECARREGAR BACKEND:
+    No terminal:
+    pkill -9 node
+    cd /Users/tomkray/Desktop/PSBT-Ordinals
+    node server/index.js &
+
+2️⃣  RECARREGAR EXTENSÃO:
+    chrome://extensions/
+    Encontre "MyWallet"
+    Clique em RELOAD (🔄)
+
+3️⃣  TESTAR:
+    - Tab Runes: deve mostrar ⧈
+    - Tab Ordinals: deve mostrar ◉
+    - Empty states: ◉ ao invés de 🖼️
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯  ONDE OS SÍMBOLOS APARECEM:
+
+⧈ Runes Symbol:
+  - Fallback quando não tem parent inscription
+  - Default symbol na API
+  - Header da rune (nome + ⧈)
+
+◉ Ordinals Symbol:
+  - Fallback quando imagem não carrega
+  - Empty state "No inscriptions yet"
+  - Activity tab "Inscription Transaction"
+  - Send inscription preview fallback
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅  TUDO PRONTO!
+
+Agora sua MyWallet usa os símbolos oficiais:
+  ⧈  = Runes Protocol
+  ◉  = Ordinals Protocol
+
+
+

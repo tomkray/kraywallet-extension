@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Offer - KRAY STATION</title>
+    <link rel="icon" type="image/png" href="kraywallet/logotk.png">
+    <link rel="apple-touch-icon" href="kraywallet/logotk.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="product">
+    <meta property="og:title" id="og-title" content="Bitcoin Ordinal for Sale - KRAY STATION">
+    <meta property="og:description" id="og-description" content="Check out this Bitcoin inscription on KRAY STATION marketplace">
+    <meta property="og:image" id="og-image" content="https://kraywallet.com/kraywallet/logo.png">
+    <meta property="og:url" id="og-url" content="">
+    <meta property="og:site_name" content="KRAY STATION">
+    <meta property="product:price:amount" id="og-price" content="0">
+    <meta property="product:price:currency" content="BTC">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="Bitcoin Ordinal for Sale">
+    <meta name="twitter:description" id="twitter-description" content="Check out this inscription on KRAY STATION">
+    <meta name="twitter:image" id="twitter-image" content="https://kraywallet.com/kraywallet/logo.png">
+    <meta name="twitter:site" content="@KrayWallet">
+    
+    <style>
+        .offer-hero {
+            margin-top: 80px;
+            padding: 40px 0;
+        }
+        
+        .offer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        
+        .offer-media {
+            position: sticky;
+            top: 100px;
+        }
+        
+        .offer-image-container {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .offer-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .offer-details {
+            padding: 20px 0;
+        }
+        
+        .offer-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+        
+        .offer-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        
+        .offer-seller {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .seller-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .seller-info {
+            flex: 1;
+        }
+        
+        .seller-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .seller-address {
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            margin-top: 2px;
+        }
+        
+        .btn-view-profile {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view-profile:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        .offer-post {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .post-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .post-content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #ccc;
+            white-space: pre-wrap;
+        }
+        
+        .offer-price-card {
+            padding: 32px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .price-label {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .price-value {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .price-usd {
+            font-size: 18px;
+            color: #888;
+        }
+        
+        .offer-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .btn-offer {
+            flex: 1;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-offer.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-offer.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-offer.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .btn-offer.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .offer-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .meta-item {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+        
+        .meta-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        
+        .error-screen {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 968px) {
+            .offer-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .offer-media {
+                position: relative;
+                top: 0;
+            }
+            
+            .offer-title {
+                font-size: 28px;
+            }
+            
+            .price-value {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="kraywallet/logo.png" alt="KRAY STATION Logo" class="nav-logo">
+                    <div class="nav-title">
+                        <h1>KRAY STATION</h1>
+                        <span class="nav-subtitle">Bitcoin Ordinals & Runes</span>
+                    </div>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="ordinals.html" class="nav-link">Ordinals</a>
+                <a href="runes-swap.html" class="nav-link">Runes (On-chain)</a>
+                <a href="lightning-hub.html" class="nav-link">⚡ Lightning DEX</a>
+                <button class="wallet-btn" id="connectWallet">
+                    <span class="wallet-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Offer Content -->
+    <section class="offer-hero">
+        <div id="offer-content" class="container">
+            <!-- Loading state -->
+            <div class="loading-screen">
+                <div class="loading-spinner">
+                    <span class="spinner">⏳</span>
+                </div>
+                <p style="color: #888; font-size: 16px;">Loading offer...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Share Modal -->
+    <div id="share-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(10px); align-items: center; justify-content: center;">
+        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 24px; max-width: 500px; width: 90%; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); position: relative;">
+            <button onclick="closeShareModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: #888; transition: all 0.3s ease;">
+                ✕
+            </button>
+            
+            <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">📱 Share this Offer</h2>
+            <p style="color: #888; font-size: 14px; margin-bottom: 24px;">Share on social media or copy the link</p>
+            
+            <!-- Social Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                <button onclick="shareTwitter()" style="padding: 16px; background: #1DA1F2; border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 18px;">🐦</span> Twitter
+                </button>
+                <button onclick="shareTelegram()" style="padding: 16px; background: #0088cc; border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 18px;">✈️</span> Telegram
+                </button>
+                <button onclick="shareWhatsApp()" style="padding: 16px; background: #25D366; border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 18px;">💬</span> WhatsApp
+                </button>
+                <button onclick="copyLink()" style="padding: 16px; background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 12px; color: #667eea; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 18px;">📋</span> Copy Link
+                </button>
+            </div>
+            
+            <!-- QR Code -->
+            <div style="text-align: center; padding: 20px; background: white; border-radius: 16px; margin-bottom: 16px;">
+                <div id="qr-code" style="display: flex; justify-content: center;"></div>
+                <p style="color: #666; font-size: 12px; margin-top: 12px;">Scan to view this offer</p>
+            </div>
+            
+            <!-- URL Display -->
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; color: #888; word-break: break-all;">
+                <span id="share-url"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="public/js/wallet-connect.js"></script>
+    <script>
+        // Get offer ID from URL (?id=offer_123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const offerId = urlParams.get('id');
+        
+        // Global offer data
+        let currentOffer = null;
+        
+        if (!offerId) {
+            showError('No offer ID provided');
+        } else {
+            loadOffer();
+        }
+        
+        async function loadOffer() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/offers/${offerId}`);
+                const offer = await response.json();
+                
+                if (!offer || offer.error) {
+                    throw new Error(offer.error || 'Offer not found');
+                }
+                
+                console.log('📊 Offer loaded:', offer);
+                currentOffer = offer; // Save for buy flow
+                renderOffer(offer);
+                
+            } catch (error) {
+                console.error('❌ Error loading offer:', error);
+                showError(error.message);
+            }
+        }
+        
+        function renderOffer(offer) {
+            const previewUrl = offer.type === 'inscription' 
+                ? `http://localhost:80/content/${offer.inscription_id}`
+                : `kraywallet/logo.png`;
+            
+            const title = offer.type === 'inscription'
+                ? `Inscription #${offer.inscription_number || '?'}`
+                : offer.type === 'rune_swap'
+                ? `${offer.from_rune} → ${offer.to_rune}`
+                : `${offer.from_rune} Pool`;
+            
+            const price = offer.offer_amount || offer.from_amount;
+            const priceUSD = (price * 0.00001).toFixed(2); // Mock conversion
+            
+            const date = new Date(offer.created_at);
+            const dateFormatted = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Update meta tags
+            document.getElementById('page-title').textContent = `${title} - KRAY STATION`;
+            document.getElementById('og-title').content = `${title} for ${formatSats(price)} sats`;
+            document.getElementById('og-description').content = 
+                offer.description || 'Bitcoin inscription for sale on KRAY STATION marketplace';
+            document.getElementById('og-image').content = previewUrl;
+            document.getElementById('og-url').content = window.location.href;
+            document.getElementById('og-price').content = (price / 100000000).toFixed(8);
+            document.getElementById('twitter-title').content = `${title} for ${formatSats(price)} sats`;
+            document.getElementById('twitter-description').content = 
+                offer.description || 'Check out this inscription on KRAY STATION!';
+            document.getElementById('twitter-image').content = previewUrl;
+            
+            // Render HTML
+            document.getElementById('offer-content').innerHTML = `
+                <div class="offer-container">
+                    <!-- Left: Media -->
+                    <div class="offer-media">
+                        <div class="offer-image-container">
+                            <img src="${previewUrl}" alt="${title}" class="offer-image" onerror="this.src='kraywallet/logo.png'">
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Details -->
+                    <div class="offer-details">
+                        <div class="offer-badge">
+                            ${offer.type === 'inscription' ? '🖼️ Ordinal' : offer.type === 'rune_swap' ? '🪙 Rune' : '💧 Pool'}
+                        </div>
+                        
+                        <h1 class="offer-title">${title}</h1>
+                        
+                        <!-- Seller Info -->
+                        <div class="offer-seller">
+                            <div class="seller-avatar">🎭</div>
+                            <div class="seller-info">
+                                <div class="seller-label">Owned by</div>
+                                <div class="seller-address">
+                                    ${offer.creator_address.slice(0, 12)}...${offer.creator_address.slice(-8)}
+                                </div>
+                            </div>
+                            <button class="btn-view-profile" onclick="viewProfile('${offer.creator_address}')">
+                                View Profile
+                            </button>
+                        </div>
+                        
+                        <!-- Post/Description -->
+                        ${offer.description ? `
+                            <div class="offer-post">
+                                <div class="post-label">💬 Seller's Post</div>
+                                <div class="post-content">${escapeHtml(offer.description)}</div>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Price -->
+                        <div class="offer-price-card">
+                            <div class="price-label">Current Price</div>
+                            <div class="price-value">💰 ${formatSats(price)} sats</div>
+                            <div class="price-usd">≈ $${priceUSD} USD</div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="offer-actions">
+                            <button class="btn-offer primary" onclick="buyNow()">
+                                🛒 Buy Now
+                            </button>
+                            <button class="btn-offer secondary" onclick="shareOffer()">
+                                📱 Share
+                            </button>
+                        </div>
+                        
+                        <!-- Metadata -->
+                        <div class="offer-meta">
+                            <div class="meta-item">
+                                <div class="meta-label">Status</div>
+                                <div class="meta-value">${getStatusBadge(offer.status)}</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Listed</div>
+                                <div class="meta-value">${dateFormatted}</div>
+                            </div>
+                            ${offer.type === 'inscription' ? `
+                                <div class="meta-item">
+                                    <div class="meta-label">Content Type</div>
+                                    <div class="meta-value" style="font-size: 12px;">
+                                        ${offer.content_type || 'unknown'}
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <div class="meta-label">Inscription ID</div>
+                                    <div class="meta-value" style="font-size: 11px; word-break: break-all;">
+                                        ${offer.inscription_id}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            <div class="meta-item">
+                                <div class="meta-label">Type</div>
+                                <div class="meta-value">${offer.type === 'inscription' ? 'Ordinal Inscription' : offer.type === 'rune_swap' ? 'Rune Swap' : 'Liquidity Pool'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showError(message) {
+            document.getElementById('offer-content').innerHTML = `
+                <div class="error-screen">
+                    <div class="error-icon">❌</div>
+                    <h2 style="color: #aaa; margin-bottom: 10px;">Offer Not Found</h2>
+                    <p style="color: #888; font-size: 16px;">${message}</p>
+                    <p style="margin-top: 30px;">
+                        <a href="ordinals.html" class="btn-offer primary" style="display: inline-flex; text-decoration: none;">
+                            Browse Marketplace
+                        </a>
+                    </p>
+                </div>
+            `;
+        }
+        
+        function formatSats(sats) {
+            return parseInt(sats).toLocaleString();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function getStatusBadge(status) {
+            const badges = {
+                'active': '✅ Active',
+                'completed': '✅ Sold',
+                'cancelled': '❌ Cancelled',
+                'expired': '⏰ Expired'
+            };
+            return badges[status] || status;
+        }
+        
+        function viewProfile(address) {
+            window.location.href = `profile.html?address=${address}`;
+        }
+        
+        function buyNow() {
+            if (!currentOffer) {
+                alert('❌ Offer data not loaded');
+                return;
+            }
+            
+            // Redirecionar para ordinals.html com parâmetro buy
+            // O sistema existente do app.js vai processar a compra
+            window.location.href = `ordinals.html?buy=${currentOffer.id}`;
+        }
+        
+        function shareOffer() {
+            const url = window.location.href;
+            
+            // Show share modal
+            const modal = document.getElementById('share-modal');
+            modal.style.display = 'flex';
+            
+            // Set URL
+            document.getElementById('share-url').textContent = url;
+            
+            // Generate QR Code
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = ''; // Clear previous
+            new QRCode(qrContainer, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+        
+        function closeShareModal() {
+            document.getElementById('share-modal').style.display = 'none';
+        }
+        
+        function shareTwitter() {
+            const url = window.location.href;
+            const title = document.getElementById('page-title').textContent;
+            const text = `Check out this Bitcoin inscription on KRAY STATION! 🚀\n\n${title}`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            window.open(twitterUrl, '_blank');
+        }
+        
+        function shareTelegram() {
+            const url = window.location.href;
+            const title = document.getElementById('page-title').textContent;
+            const text = `Check out this Bitcoin inscription on KRAY STATION! 🚀\n${title}`;
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            window.open(telegramUrl, '_blank');
+        }
+        
+        function shareWhatsApp() {
+            const url = window.location.href;
+            const title = document.getElementById('page-title').textContent;
+            const text = `Check out this Bitcoin inscription on KRAY STATION! 🚀\n\n${title}\n\n${url}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url);
+            
+            // Visual feedback
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span style="font-size: 18px;">✅</span> Copied!';
+            btn.style.background = '#10B981';
+            btn.style.border = 'none';
+            btn.style.color = 'white';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.background = 'rgba(102, 126, 234, 0.2)';
+                btn.style.border = '1px solid rgba(102, 126, 234, 0.3)';
+                btn.style.color = '#667eea';
+            }, 2000);
+        }
+        
+        // Close modal on backdrop click
+        document.getElementById('share-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'share-modal') {
+                closeShareModal();
+            }
+        });
+        
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeShareModal();
+            }
+        });
+    </script>
+</body>
+</html>
+

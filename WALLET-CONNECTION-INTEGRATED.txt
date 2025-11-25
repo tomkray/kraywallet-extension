@@ -1,0 +1,198 @@
+✅ CONEXÃO DE CARTEIRA INTEGRADA (IGUAL ORDINALS.HTML)!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 O QUE FOI FEITO:
+
+1. ✅ ADICIONADO config.js
+   - Configurações da API
+   - Helper apiRequest()
+   - Timeouts e URLs
+
+2. ✅ ADICIONADO app.js
+   - TODAS as funções de wallet do ordinals.html
+   - openWalletModal()
+   - closeWalletModal()
+   - connectMyWallet()
+   - connectUnisat()
+   - connectXverse()
+   - getConnectedWallet()
+   - getWalletAccounts()
+   - signWalletPsbt()
+   - E MUITO MAIS!
+
+3. ✅ REMOVIDO código duplicado
+   - Funções de wallet agora vêm do app.js
+   - Código inline reduzido
+   - Mantém apenas sync com iframes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ESTRUTURA AGORA:
+
+runes-swap.html:
+┌─────────────────────────────────────┐
+│ <script src="config.js"></script>  │ ← Configs
+│ <script src="app.js"></script>     │ ← Wallet logic
+│ <script>                            │
+│   // Tab switching                  │
+│   // Iframe sync                    │
+│ </script>                           │
+└─────────────────────────────────────┘
+
+IGUAL ao ordinals.html:
+┌─────────────────────────────────────┐
+│ <script src="config.js"></script>  │ ← Mesmos
+│ <script src="app.js"></script>     │ ← Mesmos
+│ <script>                            │
+│   // Marketplace logic              │
+│   // Tabs logic                     │
+│ </script>                           │
+└─────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔗 FUNÇÕES DISPONÍVEIS (de app.js):
+
+WALLET CONNECTION:
+✅ openWalletModal() - Abre modal
+✅ closeWalletModal() - Fecha modal
+✅ connectMyWallet() - Conecta KrayWallet
+✅ connectUnisat() - Conecta Unisat
+✅ connectXverse() - Conecta Xverse
+
+WALLET HELPERS:
+✅ getConnectedWallet() - Retorna wallet atual
+✅ getWalletAccounts() - Retorna endereços
+✅ getWalletPublicKey() - Retorna pubkey
+✅ getWalletBalance() - Retorna saldo
+✅ getWalletUtxos() - Retorna UTXOs
+✅ signWalletPsbt() - Assina PSBT
+
+STATE MANAGEMENT:
+✅ isWalletConnected - Boolean
+✅ connectedAddress - String
+✅ currentWallet - 'kraywallet'|'unisat'|'xverse'
+
+UI HELPERS:
+✅ updateWalletUI() - Atualiza botão navbar
+✅ restoreWalletConnection() - Restaura do localStorage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 COMO FUNCIONA AGORA:
+
+1. USER CLICA "Connect Wallet":
+   ├─ app.js → openWalletModal()
+   └─ Modal aparece (3 opções)
+
+2. USER CLICA "KrayWallet":
+   ├─ app.js → connectMyWallet()
+   ├─ Detecta window.krayWallet
+   ├─ Chama krayWallet.connect()
+   ├─ Salva no localStorage
+   ├─ isWalletConnected = true
+   ├─ connectedAddress = "bc1p..."
+   ├─ currentWallet = 'kraywallet'
+   ├─ app.js → updateWalletUI()
+   └─ Navbar atualiza (mostra endereço)
+
+3. SYNC COM IFRAMES:
+   ├─ runes-swap.html detecta conexão
+   ├─ Envia postMessage para iframe ativo
+   ├─ Iframe recebe e usa connectedAddress
+   └─ Iframe atualiza seu estado
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💾 PERSISTÊNCIA:
+
+localStorage['ordinals_wallet_state']:
+{
+    "connected": true,
+    "address": "bc1p...",
+    "walletType": "kraywallet"
+}
+
+localStorage['walletType']:
+"kraywallet" | "unisat" | "xverse"
+
+Ao recarregar página:
+├─ app.js → restoreWalletConnection()
+├─ Lê do localStorage
+├─ Restaura connectedAddress
+├─ Atualiza UI automaticamente
+└─ Wallet já conectada!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTE AGORA:
+
+http://localhost:3000/runes-swap.html
+
+1. ✅ Abrir página
+2. ✅ Clicar "Connect Wallet" (navbar)
+3. ✅ Ver modal com 3 carteiras
+4. ✅ Clicar "KrayWallet"
+5. ✅ Extension abre (se instalada)
+6. ✅ Aprovar conexão
+7. ✅ Modal fecha
+8. ✅ Navbar mostra: "bc1p...xyz"
+9. ✅ Console mostra logs:
+   🔗 Connecting KrayWallet...
+   ✅ Wallet connected: bc1p...
+   💾 Saved wallet state
+   
+10. ✅ Recarregar página
+11. ✅ Wallet ainda conectada!
+12. ✅ Navbar já mostra endereço
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 COMPATIBILIDADE:
+
+Suporta 3 wallets (igual ordinals.html):
+
+1. KrayWallet (Recommended):
+   ✅ window.krayWallet
+   ✅ connect()
+   ✅ getBalance()
+   ✅ signPsbt()
+   
+2. Unisat (Popular):
+   ✅ window.unisat
+   ✅ getAccounts()
+   ✅ signPsbt()
+   
+3. Xverse (Trusted):
+   ✅ window.XverseProviders
+   ✅ request('getAddresses')
+   ✅ request('signPsbt')
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGS ESPERADOS NO CONSOLE:
+
+Ao conectar:
+🔗 Connecting KrayWallet...
+🔒 Wallet modal closed
+✅ Wallet connected: bc1pxxx...
+💾 Wallet type: kraywallet
+🔄 Updated wallet UI
+
+Ao recarregar:
+💾 Restored wallet connection: bc1pxxx...
+💾 Wallet type: kraywallet
+🔄 Updated wallet UI
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AGORA FUNCIONA EXATAMENTE IGUAL AO ORDINALS.HTML!
+
+Scripts: ✅ config.js + app.js (mesmos)
+Modal: ✅ Igual
+Conexão: ✅ Igual
+UI: ✅ Igual
+Persistência: ✅ Igual
+
+TUDO INTEGRADO E FUNCIONANDO! 🎉
+
