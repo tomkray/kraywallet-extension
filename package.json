@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "type": "module",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node debug-railway.js",
     "dev": "nodemon server/index.js",
     "init-db": "node server/db/init.js",
     "test": "node test-connections.js",
