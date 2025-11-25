@@ -1,35 +1,106 @@
-# Dependencies
+# 🔒 ARQUIVOS SENSÍVEIS - NUNCA COMMITAR!
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.production
+*.env
+
+# Credenciais
+**/credentials.json
+**/secrets.json
+**/*-credentials.json
+
+# Chaves privadas
+*.pem
+*.key
+id_rsa*
+*.p12
+*.pfx
+
+# Wallets e dados sensíveis
+lnd-data/
+lnd/data/
+*.macaroon
+admin.macaroon
+wallet.db
+channel.backup
+
+# Logs
+*.log
+logs/
+server-*.log
+lnd*.log
+backend*.log
+
+# Node modules
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Logs
-logs/
-*.log
-
-# Database
-*.db
-*.db-shm
-*.db-wal
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-
 # Build
 dist/
 build/
+.next/
+out/
 
-# Temporary
+# Cache
+.cache/
+*.cache
+.DS_Store
+.turbo
+
+# Database local
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Backups
+*.backup
+*.bak
+*.old
+*-backup.*
+backups/
+
+# Temporários
 tmp/
 temp/
+*.tmp
+/tmp
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Documentação de desenvolvimento
+docs/*.md
+*_STATUS.md
+*_COMPLETO.md
+*_IMPLEMENTADO.md
+COMO_*.md
+GUIA_*.md
+TESTE_*.md
+DEBUG_*.md
+
+# Scripts de teste
+test-*.js
+check-*.js
+analyze-*.js
+scan-*.js
+find-*.js
+verify-*.js
+debug-*.js
+*-test.sh
+*-debug.sh
+
+# HTML de teste
+test-*.html
+debug-*.html

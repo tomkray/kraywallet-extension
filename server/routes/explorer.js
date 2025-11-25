@@ -4,7 +4,7 @@ import bitcoinRpc from '../utils/bitcoinRpc.js';
 import quicknode from '../utils/quicknode.js';
 import runesDecoder from '../utils/runesDecoder.js';
 import { getRuneWithParent } from '../utils/runeIdCache.js';
-import { db } from '../db/init-supabase.js';
+import { db } from '../db/init.js';
 
 const router = express.Router();
 const USE_QUICKNODE = process.env.QUICKNODE_ENABLED === 'true';

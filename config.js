@@ -2,7 +2,7 @@
 const CONFIG = {
     // URL da API
     API_URL: window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api'
+        ? 'http://localhost:4000/api'
         : '/api',
     
     // Versão do protocolo
@@ -17,17 +17,16 @@ const CONFIG = {
     PAGE_SIZE: 50,
     
     // Refresh intervals (ms)
-    REFRESH_INTERVAL: 30000, // 30s
+    REFRESH_INTERVAL: 30000,
     
     // Timeouts
-    REQUEST_TIMEOUT: 10000, // 10s
+    REQUEST_TIMEOUT: 10000,
     
     // Networks suportadas
     NETWORKS: ['mainnet', 'testnet', 'signet'],
     CURRENT_NETWORK: 'mainnet'
 };
 
-// Helper para fazer requests à API
 async function apiRequest(endpoint, options = {}) {
     const url = `${CONFIG.API_URL}${endpoint}`;
     
@@ -53,18 +52,3 @@ async function apiRequest(endpoint, options = {}) {
         throw error;
     }
 }
-// Export para uso global
-window.CONFIG = CONFIG;
-window.apiRequest = apiRequest;
-
-
-
-
-
-
-
-
-
-
-
-

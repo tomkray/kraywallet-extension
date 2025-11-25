@@ -16,9 +16,7 @@
  * Layer 2: LND + State Tracker (Runes off-chain)
  */
 
-// better-sqlite3 removido para compatibilidade com Vercel serverless
-// Usar Supabase para produção
-import { supabase } from '../db/init-supabase.js';
+import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getLNDPoolClient } from './lndPoolClient.js';
@@ -27,19 +25,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 📊 DATABASE SETUP - Usando Supabase (não SQLite local)
+// 📊 DATABASE SETUP
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Mock db para compatibilidade (funções Lightning não usam muito DB)
-const db = {
-    prepare: (sql) => ({
-        run: () => ({ changes: 0 }),
-        get: () => null,
-        all: () => []
-    }),
-    pragma: () => {},
-    exec: () => {}
-};
+const DB_PATH = path.join(__dirname, '../../data/lightning-defi.db');
+const db = new Database(DB_PATH);
+
+// Enable WAL mode para melhor concorrência
+db.pragma('journal_mode = WAL');
 
 /**
  * Inicializar tabelas do State Tracker

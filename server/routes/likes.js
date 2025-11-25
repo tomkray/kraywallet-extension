@@ -1,5 +1,5 @@
 import express from 'express';
-import { db } from '../db/init-supabase.js';
+import { db } from '../db/init.js';
 import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 

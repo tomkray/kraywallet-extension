@@ -12,7 +12,7 @@
  */
 
 import express from 'express';
-import { db } from '../db/init-supabase.js';
+import { db } from '../db/init.js';
 import { createListingTemplatePSBT, validateSellerSignedPSBT } from '../utils/atomicSwapBuilder.js';
 import { prepareBuyerPSBT, validateOutput0Immutable } from '../utils/atomicSwapPurchase.js';
 import bitcoinRpc from '../utils/bitcoinRpc.js';

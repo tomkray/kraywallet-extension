@@ -1,0 +1,30 @@
+# Backend - Arquivos sensíveis
+
+# Ambiente
+.env
+.env.local
+.env.production
+
+# Database
+db/*.db
+db/*.sqlite
+*.db
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+package-lock.json
+
+# Temporários
+tmp/
+temp/
+*.tmp
+
+# Chaves
+*.pem
+*.key
+credentials.json
+

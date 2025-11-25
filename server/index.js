@@ -50,8 +50,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir arquivos estáticos da própria pasta server (onde estão os HTMLs)
-app.use(express.static(__dirname));
+// Servir arquivos estáticos
+app.use(express.static(path.join(__dirname, '..')));
 
 // API Routes
 app.use('/api/ordinals', ordinalsRoutes);
@@ -81,8 +81,21 @@ app.use('/api/wallet', balanceRoutes);
 app.use('/api/rune-thumbnail', runeThumbnailRoutes);
 app.use('/api/rune', runeDetailsRoutes);
 
-// Rota raiz (/) agora serve index.html via express.static
-// Para ver info da API, use /api/health
+// Rota raiz (/) - Bem-vindo
+app.get('/', (req, res) => {
+    res.json({
+        name: 'Kray Station API',
+        version: '1.0.0',
+        status: 'online',
+        endpoints: {
+            health: '/api/health',
+            explorer: '/api/explorer/tx/:txid',
+            wallet: '/api/wallet/:address/runes',
+            runes: '/api/runes/build-send-psbt'
+        },
+        docs: 'https://github.com/tomkray/kray-station-backend'
+    });
+});
 
 // Health check básico
 app.get('/api/health', (req, res) => {

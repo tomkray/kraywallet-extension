@@ -724,7 +724,7 @@
         
         if (walletAddress) {
             try {
-                const response = await fetch(`http://localhost:3000/api/atomic-swap/?seller_address=${encodeURIComponent(walletAddress)}`);
+                const response = await fetch(`http://localhost:4000/api/atomic-swap/?seller_address=${encodeURIComponent(walletAddress)}`);
                 if (response.ok) {
                     const data = await response.json();
                     // Verificar se esta inscrição tem listing ativa (OPEN ou PENDING_SIGNATURES)
@@ -885,7 +885,7 @@
             try {
                 // 🔍 Step 1: Get inscription UTXO details
                 console.log('🔍 Fetching inscription details...');
-                const inscriptionResponse = await fetch(`http://localhost:3000/api/inscriptions/${inscriptionId}`);
+                const inscriptionResponse = await fetch(`http://localhost:4000/api/inscriptions/${inscriptionId}`);
                 
                 if (!inscriptionResponse.ok) {
                     throw new Error('Failed to fetch inscription details');
@@ -900,7 +900,7 @@
                 
                 // 📦 Step 2: Create atomic swap listing (template PSBT)
                 console.log('📦 Creating atomic swap listing...');
-                const createResponse = await fetch('http://localhost:3000/api/atomic-swap/', {
+                const createResponse = await fetch('http://localhost:4000/api/atomic-swap/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -962,7 +962,7 @@
                 console.log('✅ PSBT signed, publishing listing...');
                 
                 // 📤 Step 4: Send signed PSBT to backend (atomic swap seller signature)
-                const publishResponse = await fetch(`http://localhost:3000/api/atomic-swap/${listingData.order_id}/seller-signature`, {
+                const publishResponse = await fetch(`http://localhost:4000/api/atomic-swap/${listingData.order_id}/seller-signature`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1369,7 +1369,7 @@
                     submitButton.style.opacity = '0.6';
                     
                     try {
-                        const response = await fetch('http://localhost:3000/api/ord-offers/submit-psbt', {
+                        const response = await fetch('http://localhost:4000/api/ord-offers/submit-psbt', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1666,7 +1666,7 @@
         console.log('   📍 Function called from:', new Error().stack);
         
         try {
-            const response = await fetch('http://localhost:3000/api/atomic-swap/');
+            const response = await fetch('http://localhost:4000/api/atomic-swap/');
             console.log('   📡 API Response status:', response.status);
             
             if (!response.ok) {
@@ -1757,7 +1757,7 @@
         }
         
         try {
-            const response = await fetch(`http://localhost:3000/api/atomic-swap/?seller_address=${encodeURIComponent(walletAddress)}`);
+            const response = await fetch(`http://localhost:4000/api/atomic-swap/?seller_address=${encodeURIComponent(walletAddress)}`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch my listings');
@@ -1836,7 +1836,7 @@
         
         card.innerHTML = `
             <div class="ordinal-image-container" style="position: relative;">
-                <img src="http://localhost:3000/api/ordinals/${listing.inscription_id || listing.seller_txid + 'i' + listing.seller_vout}/content" 
+                <img src="http://localhost:4000/api/ordinals/${listing.inscription_id || listing.seller_txid + 'i' + listing.seller_vout}/content" 
                      alt="Inscription #${listing.inscription_number || '?'}"
                      class="ordinal-image"
                      loading="lazy"
@@ -2037,14 +2037,14 @@
         let contentHtml = `<div style="font-size: 60px;">📄</div>`;
         if (inscriptionId) {
             if (contentType && contentType.startsWith('image/')) {
-                const imgUrl = `http://localhost:3000/api/ordinals/${inscriptionId}/content`;
+                const imgUrl = `http://localhost:4000/api/ordinals/${inscriptionId}/content`;
                 console.log('      🖼️ Image URL:', imgUrl);
                 contentHtml = `<img src="${imgUrl}" alt="Inscription #${inscriptionNumber}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
             } else if (contentType && contentType.startsWith('text/')) {
                 contentHtml = `<div style="font-size: 40px;">📝</div>`;
             } else {
                 // Default: try to show as image
-                const imgUrl = `http://localhost:3000/api/ordinals/${inscriptionId}/content`;
+                const imgUrl = `http://localhost:4000/api/ordinals/${inscriptionId}/content`;
                 contentHtml = `<img src="${imgUrl}" alt="Inscription #${inscriptionNumber}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<div style=\\'font-size: 60px;\\'>📄</div>';">`;
             }
         }
@@ -2136,7 +2136,7 @@
         }
         
         try {
-            const response = await fetch(`http://localhost:3000/api/atomic-likes/${orderId}?address=${walletAddress}`);
+            const response = await fetch(`http://localhost:4000/api/atomic-likes/${orderId}?address=${walletAddress}`);
             const data = await response.json();
             
             if (data.success && data.user_liked) {
@@ -2198,7 +2198,7 @@
             
             // Enviar para API
             const method = isLiked ? 'DELETE' : 'POST';
-            const response = await fetch(`http://localhost:3000/api/atomic-likes/${orderId}`, {
+            const response = await fetch(`http://localhost:4000/api/atomic-likes/${orderId}`, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'

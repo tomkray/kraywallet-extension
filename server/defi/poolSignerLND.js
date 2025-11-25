@@ -18,7 +18,7 @@
 
 import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
-import BIP32Factory from 'bip32';
+import { BIP32Factory } from 'bip32';
 import * as crypto from 'crypto';
 import { getLNDPoolClient } from '../lightning/lndPoolClient.js';
 
@@ -30,7 +30,7 @@ const bip32 = BIP32Factory(ecc);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const USE_LND = process.env.USE_LND_FOR_POOLS === 'true';
-const POOL_MASTER_SEED = process.env.POOL_MASTER_SEED || 
+const POOL_MASTER_SEED = process.env.POOL_MASTER_SEED ||
     crypto.createHash('sha256').update('kray-station-defi-pool-master-seed-v1').digest();
 
 console.log(`\n⚡ Pool Signer Mode: ${USE_LND ? 'LND' : 'HD Wallet'}`);
@@ -45,16 +45,16 @@ console.log(`\n⚡ Pool Signer Mode: ${USE_LND ? 'LND' : 'HD Wallet'}`);
 function derivePoolKeyLocal(poolId) {
     const poolHash = crypto.createHash('sha256').update(poolId).digest();
     const poolIndex = poolHash.readUInt32LE(0) & 0x7FFFFFFF;
-    
+
     const masterNode = bip32.fromSeed(POOL_MASTER_SEED);
     const poolNode = masterNode
         .deriveHardened(86)
         .deriveHardened(0)
         .deriveHardened(0)
         .derive(poolIndex);
-    
+
     const internalKey = Buffer.from(poolNode.publicKey.slice(1));
-    
+
     return {
         privateKey: poolNode.privateKey,
         publicKey: internalKey,
@@ -79,12 +79,12 @@ async function derivePoolKeyViaLND(poolId) {
  * Gerar endereço Taproot do pool
  */
 export async function generatePoolAddress(poolId, network = 'mainnet') {
-    const btcNetwork = network === 'testnet' 
-        ? bitcoin.networks.testnet 
+    const btcNetwork = network === 'testnet'
+        ? bitcoin.networks.testnet
         : bitcoin.networks.bitcoin;
-    
+
     let publicKey;
-    
+
     if (USE_LND) {
         const poolKey = await derivePoolKeyViaLND(poolId);
         publicKey = poolKey.publicKey;
@@ -92,12 +92,12 @@ export async function generatePoolAddress(poolId, network = 'mainnet') {
         const poolKey = derivePoolKeyLocal(poolId);
         publicKey = poolKey.publicKey;
     }
-    
+
     const { address } = bitcoin.payments.p2tr({
         internalPubkey: publicKey,
         network: btcNetwork
     });
-    
+
     return {
         address,
         pubkey: publicKey.toString('hex'),
@@ -114,24 +114,24 @@ export async function generatePoolAddress(poolId, network = 'mainnet') {
  */
 async function signPoolInputLND(psbtBase64, poolId, poolInputIndex = 0) {
     console.log('\n⚡ ═══ SIGNING WITH LND ═══');
-    
+
     try {
         const lnd = getLNDPoolClient();
         const psbt = bitcoin.Psbt.fromBase64(psbtBase64);
-        
+
         // 1. Derivar chave do pool via LND
         const poolKey = await lnd.derivePoolKey(poolId);
-        
+
         console.log(`   🔑 Pool key derived via LND`);
         console.log(`   Key Locator: ${poolKey.keyLocator.keyFamily}:${poolKey.keyLocator.keyIndex}`);
-        
+
         // 2. Obter sighash para assinar
         const input = psbt.data.inputs[poolInputIndex];
-        
+
         if (!input.witnessUtxo) {
             throw new Error('witnessUtxo not found in PSBT input');
         }
-        
+
         // Compute taproot sighash
         const sighash = psbt.__CACHE.__TX.hashForWitnessV1(
             poolInputIndex,
@@ -139,39 +139,39 @@ async function signPoolInputLND(psbtBase64, poolId, poolInputIndex = 0) {
             [input.witnessUtxo.value],
             bitcoin.Transaction.SIGHASH_DEFAULT
         );
-        
+
         console.log(`   📝 Sighash: ${sighash.toString('hex').slice(0, 20)}...`);
-        
+
         // 3. Computar Taproot tweak
         const taprootTweak = bitcoin.crypto.taggedHash('TapTweak', poolKey.publicKey);
-        
+
         // 4. Assinar com LND (Schnorr)
         const signature = await lnd.signSchnorr(
             sighash,
             poolKey.keyLocator,
             taprootTweak
         );
-        
+
         console.log(`   ✅ Schnorr signature: ${signature.length} bytes`);
-        
+
         // 5. Adicionar ao PSBT
         psbt.updateInput(poolInputIndex, {
             tapKeySig: signature
         });
-        
+
         // 6. Finalizar input
         psbt.finalizeInput(poolInputIndex);
-        
+
         console.log(`   ✅ Pool input finalized (LND)`);
         console.log('═══════════════════════════════════════════════════\n');
-        
+
         return {
             psbtSigned: psbt.toBase64(),
             psbtHex: psbt.toHex(),
             method: 'LND',
             poolInputFinalized: true
         };
-        
+
     } catch (error) {
         console.error('   ❌ LND signing error:', error);
         console.log('   🔄 Falling back to HD Wallet...');
@@ -184,13 +184,13 @@ async function signPoolInputLND(psbtBase64, poolId, poolInputIndex = 0) {
  */
 function signPoolInputLocal(psbtBase64, poolId, poolInputIndex = 0) {
     console.log('\n🔑 ═══ SIGNING WITH HD WALLET (Fallback) ═══');
-    
+
     try {
         const psbt = bitcoin.Psbt.fromBase64(psbtBase64);
         const poolKey = derivePoolKeyLocal(poolId);
-        
+
         console.log(`   🔑 Pool pubkey: ${poolKey.publicKey.toString('hex').slice(0, 20)}...`);
-        
+
         // Criar tweaked signer
         const tweakedPrivKey = Buffer.from(
             ecc.privateAdd(
@@ -198,41 +198,41 @@ function signPoolInputLocal(psbtBase64, poolId, poolInputIndex = 0) {
                 bitcoin.crypto.taggedHash('TapTweak', poolKey.publicKey)
             )
         );
-        
+
         const signer = {
             publicKey: poolKey.publicKey,
             sign: (hash) => {
                 return ecc.signSchnorr(hash, tweakedPrivKey);
             }
         };
-        
+
         // Assinar input do pool
         psbt.signInput(poolInputIndex, signer);
-        
+
         console.log(`   ✅ Pool input #${poolInputIndex} signed`);
-        
+
         // Verificar assinatura
         const validated = psbt.validateSignaturesOfInput(poolInputIndex, signer.publicKey);
-        
+
         if (!validated) {
             throw new Error('Signature validation failed');
         }
-        
+
         console.log(`   ✅ Signature validated`);
-        
+
         // Finalizar input do pool
         psbt.finalizeInput(poolInputIndex);
-        
+
         console.log(`   ✅ Pool input finalized (HD Wallet)`);
         console.log('═══════════════════════════════════════════════════\n');
-        
+
         return {
             psbtSigned: psbt.toBase64(),
             psbtHex: psbt.toHex(),
             method: 'HD Wallet',
             poolInputFinalized: true
         };
-        
+
     } catch (error) {
         console.error('   ❌ HD Wallet signing error:', error);
         console.log('═══════════════════════════════════════════════════\n');
@@ -256,13 +256,13 @@ export async function signPoolInput(psbtBase64, poolId, poolInputIndex = 0) {
  */
 export function finalizeAndExtract(psbtBase64) {
     console.log('\n🏁 ═══ FINALIZING PSBT ═══');
-    
+
     try {
         const psbt = bitcoin.Psbt.fromBase64(psbtBase64);
-        
+
         // Finalizar todos os inputs restantes (usuário)
         for (let i = 0; i < psbt.inputCount; i++) {
-            if (!psbt.data.inputs[i].finalScriptWitness && 
+            if (!psbt.data.inputs[i].finalScriptWitness &&
                 !psbt.data.inputs[i].finalScriptSig) {
                 try {
                     psbt.finalizeInput(i);
@@ -272,24 +272,24 @@ export function finalizeAndExtract(psbtBase64) {
                 }
             }
         }
-        
+
         // Extrair transação
         const tx = psbt.extractTransaction();
         const txHex = tx.toHex();
         const txid = tx.getId();
-        
+
         console.log(`   ✅ Transaction extracted`);
         console.log(`   TXID: ${txid}`);
         console.log(`   Size: ${tx.virtualSize()} vB`);
         console.log('═══════════════════════════════════════════════════\n');
-        
+
         return {
             tx,
             txHex,
             txid,
             size: tx.virtualSize()
         };
-        
+
     } catch (error) {
         console.error('   ❌ Finalization error:', error);
         console.log('═══════════════════════════════════════════════════\n');
@@ -315,23 +315,23 @@ function logSigning({ poolId, txid, inputIndex, userAddress, amount, type, metho
         type,
         method // 'LND' or 'HD Wallet'
     };
-    
+
     signingLog.push(entry);
-    
+
     if (signingLog.length > MAX_LOG_SIZE) {
         signingLog.shift();
     }
-    
+
     console.log(`📝 Signing logged: ${type} ${amount} for ${userAddress} (${method})`);
 }
 
 export function getSigningLog({ limit = 100, poolId = null }) {
     let logs = signingLog.slice(-limit);
-    
+
     if (poolId) {
         logs = logs.filter(l => l.poolId === poolId);
     }
-    
+
     return logs;
 }
 
@@ -359,7 +359,7 @@ export async function signPoolInputSafe(...args) {
     if (KILL_SWITCH_ACTIVE) {
         throw new Error('KILL SWITCH ACTIVE: Pool signing is disabled');
     }
-    
+
     return signPoolInput(...args);
 }
 
@@ -377,11 +377,11 @@ export async function testLNDIntegration() {
             message: 'LND integration disabled (USE_LND_FOR_POOLS=false)'
         };
     }
-    
+
     try {
         const lnd = getLNDPoolClient();
         const status = await lnd.testConnection();
-        
+
         return {
             enabled: true,
             connected: status.connected,
@@ -401,7 +401,7 @@ export async function testLNDIntegration() {
  */
 export async function getPoolSignerStatus() {
     const lndTest = await testLNDIntegration();
-    
+
     return {
         mode: USE_LND ? 'LND' : 'HD Wallet',
         lnd: lndTest,

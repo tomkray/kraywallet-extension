@@ -5,8 +5,8 @@
  * Backend: /api/lightning-defi/* e /api/lightning/*
  */
 
-const LIGHTNING_API = 'http://localhost:3000/api/lightning-defi';
-const LND_API = 'http://localhost:3000/api/lightning';
+const LIGHTNING_API = 'http://localhost:4000/api/lightning-defi';
+const LND_API = 'http://localhost:4000/api/lightning';
 
 // Estado global
 let hubInfo = null;

@@ -69,7 +69,7 @@ async function loadTransaction(txid) {
         document.getElementById('tx-content').style.display = 'none';
         document.getElementById('address-content').style.display = 'none';
         
-        const response = await fetch(`/api/explorer/tx/${txid}`);
+        const response = await fetch(`${CONFIG.API_URL}/explorer/tx/${txid}`);
         const data = await response.json();
         
         if (!data.success) {
@@ -111,7 +111,7 @@ async function loadInscription(inscriptionId) {
         document.getElementById('address-content').style.display = 'none';
         document.getElementById('inscription-content').style.display = 'none';
         
-        const response = await fetch(`/api/explorer/inscription/${inscriptionId}`);
+        const response = await fetch(`${CONFIG.API_URL}/explorer/inscription/${inscriptionId}`);
         const data = await response.json();
         
         if (!data.success) {
@@ -153,7 +153,7 @@ async function loadAddress(address) {
         document.getElementById('tx-content').style.display = 'none';
         document.getElementById('address-content').style.display = 'none';
         
-        const response = await fetch(`/api/explorer/address/${address}`);
+        const response = await fetch(`${CONFIG.API_URL}/explorer/address/${address}`);
         const data = await response.json();
         
         if (!data.success) {
@@ -184,7 +184,7 @@ async function loadAddress(address) {
 // RENDER TRANSACTION (Estilo Uniscan)
 // ============================================================================
 
-function renderTransaction(data) {
+async function renderTransaction(data) {
     const { tx, block, inscriptions, runes, analysis } = data;
     const container = document.getElementById('tx-content');
     
@@ -241,7 +241,7 @@ function renderTransaction(data) {
     `;
     
     // Activities Section (Estilo Uniscan)
-    html += renderActivities(tx, inscriptions, runes);
+    html += await renderActivities(tx, inscriptions, runes);
     
     // Inputs & Outputs Section (Estilo Uniscan)
     html += renderInputsOutputs(tx);
@@ -262,6 +262,111 @@ async function renderActivities(tx, inscriptions, runes) {
             </div>
     `;
     
+    // Runes detectadas nos outputs (via ord_getOutput - SEM OP_RETURN)
+    const runesInOutputs = [];
+    if (tx && tx.vout) {
+        for (let i = 0; i < tx.vout.length; i++) {
+            const output = tx.vout[i];
+            if (output.enrichment?.type === 'rune' && output.enrichment.data) {
+                runesInOutputs.push({
+                    output: i,
+                    ...output.enrichment.data
+                });
+            }
+        }
+    }
+    
+    // Mostrar runes dos outputs PRIMEIRO (se não tem Runestone)
+    if (runesInOutputs.length > 0 && (!runes || !runes.edicts || runes.edicts.length === 0)) {
+        for (const rune of runesInOutputs) {
+            const outputData = tx.vout[rune.output];
+            const address = outputData?.scriptpubkey_address || outputData?.scriptPubKey?.address || 'N/A';
+            
+            // Formatar amount
+            const displayAmount = rune.divisibility > 0 
+                ? (rune.amount / Math.pow(10, rune.divisibility)).toLocaleString('en-US', {
+                    minimumFractionDigits: rune.divisibility,
+                    maximumFractionDigits: rune.divisibility
+                })
+                : rune.amount.toLocaleString();
+            
+            html += `
+                <div class="activity-card">
+                    <div class="activity-type">
+                        <span class="activity-type-icon">⧈</span>
+                        Runes Transfer (Detected in Output)
+                    </div>
+                    <div class="activity-content">
+                        ${rune.thumbnail ? `
+                            <div class="activity-thumbnail">
+                                <img src="${rune.thumbnail}" alt="${rune.name}">
+                            </div>
+                        ` : `
+                            <div class="activity-thumbnail" style="display: flex; align-items: center; justify-content: center; font-size: 48px;">
+                                ${rune.symbol || '⧈'}
+                            </div>
+                        `}
+                        <div class="activity-details">
+                            <div class="activity-title">${rune.name} ${rune.symbol}</div>
+                            <div class="activity-info-grid">
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">Amount</div>
+                                    <div class="activity-info-value">${displayAmount}</div>
+                                </div>
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">Rune ID</div>
+                                    <div class="activity-info-value">${rune.runeId}</div>
+                                </div>
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">Output Index</div>
+                                    <div class="activity-info-value">#${rune.output}</div>
+                                </div>
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">To Address</div>
+                                    <div class="activity-info-value">${address.substring(0, 20)}...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // Inscriptions Activities
+    if (inscriptions && inscriptions.length > 0) {
+        for (const insc of inscriptions) {
+            html += `
+                <div class="activity-card" style="border-left: 4px solid #9333ea;">
+                    <div class="activity-type">
+                        <span class="activity-type-icon">◉</span>
+                        Inscription Transfer
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-thumbnail" style="background: linear-gradient(135deg, #9333ea, #7e22ce); border: 2px solid #a855f7;">
+                            <img src="${insc.contentUrl}" alt="Inscription #${insc.inscriptionNumber}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-title">Inscription #${insc.inscriptionNumber}</div>
+                            <div class="activity-info-grid">
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">Inscription ID</div>
+                                    <div class="activity-info-value" style="font-size: 11px;">${insc.inscriptionId.substring(0, 20)}...</div>
+                                </div>
+                                <div class="activity-info-item">
+                                    <div class="activity-info-label">View</div>
+                                    <div class="activity-info-value">
+                                        <a href="${insc.inscriptionUrl}" target="_blank" style="color: #9333ea;">Ordinals.com →</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
     // Runes Activities
     if (runes && runes.edicts && runes.edicts.length > 0) {
         // ✅ OTIMIZAÇÃO: Buscar TODAS as runes em PARALELO
@@ -272,21 +377,17 @@ async function renderActivities(tx, inscriptions, runes) {
             let divisibility = 0;
             
             try {
-                const runeResponse = await fetch(`http://localhost:80/rune/${edict.runeId}`);
+                // Usar nova API de rune details (retorna JSON)
+                const runeResponse = await fetch(`http://localhost:4000/api/rune/${edict.runeId}`);
                 if (runeResponse.ok) {
-                    const runeHtml = await runeResponse.text();
+                    const runeData = await runeResponse.json();
                     
-                    const nameMatch = runeHtml.match(/<h1>([^<]+)<\/h1>/);
-                    if (nameMatch) runeName = nameMatch[1];
-                    
-                    const symbolMatch = runeHtml.match(/symbol<\/dt>\s*<dd>([^<]+)<\/dd>/i);
-                    if (symbolMatch) runeSymbol = symbolMatch[1].trim();
-                    
-                    const divisibilityMatch = runeHtml.match(/divisibility<\/dt>\s*<dd>(\d+)<\/dd>/i);
-                    if (divisibilityMatch) divisibility = parseInt(divisibilityMatch[1]);
-                    
-                    const parentMatch = runeHtml.match(/<dt>parent<\/dt>\s*<dd[^>]*>\s*<a[^>]+>([a-f0-9]{64}i\d+)<\/a>/i);
-                    if (parentMatch) runeThumbnail = `http://localhost:80/content/${parentMatch[1]}`;
+                    if (runeData.success) {
+                        runeName = runeData.name;
+                        runeSymbol = runeData.symbol;
+                        divisibility = runeData.divisibility;
+                        runeThumbnail = runeData.thumbnail;
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching rune details:', error);
@@ -684,7 +785,7 @@ async function loadInscriptionDetails(txid, vout) {
         console.log(`◉  Loading inscription for ${txid}:${vout}...`);
         
         // Buscar do ord server
-        const response = await fetch(`http://localhost:80/output/${txid}:${vout}`);
+        const response = await fetch(`http://localhost:4000/api/output/${txid}:${vout}`);
         if (!response.ok) {
             return '<div style="color: var(--color-text-secondary); font-size: 12px;">No inscription found</div>';
         }
@@ -701,7 +802,7 @@ async function loadInscriptionDetails(txid, vout) {
         console.log(`   ✅ Found inscription: ${inscriptionId}`);
         
         // Buscar detalhes da inscription
-        const inscResponse = await fetch(`http://localhost:80/inscription/${inscriptionId}`);
+        const inscResponse = await fetch(`http://localhost:4000/api/ordinals/${inscriptionId}`);
         if (!inscResponse.ok) {
             return '<div style="color: var(--color-text-secondary); font-size: 12px;">Could not load inscription details</div>';
         }
@@ -723,8 +824,8 @@ async function loadInscriptionDetails(txid, vout) {
         }
         
         // URL da preview
-        const previewUrl = `http://localhost:80/preview/${inscriptionId}`;
-        const contentUrl = `http://localhost:80/content/${inscriptionId}`;
+        const previewUrl = `https://ordinals.com/preview/${inscriptionId}`;
+        const contentUrl = `http://localhost:4000/api/rune-thumbnail/${inscriptionId}`;
         
         return `
             <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--color-border); border-radius: 8px; padding: 16px; margin-top: 12px;">
@@ -865,40 +966,27 @@ async function decodeRunestoneDetails(scriptHex) {
         let divisibility = 0;
         
         if (runeId !== 'N/A') {
-        try {
+            try {
                 console.log(`   🔍 Fetching rune details for ${runeId}...`);
-                const runeResponse = await fetch(`http://localhost:80/rune/${runeId}`);
-            if (runeResponse.ok) {
-                const html = await runeResponse.text();
+                const runeResponse = await fetch(`http://localhost:4000/api/rune/${runeId}`);
                 
-                    // Extrair nome
-                const nameMatch = html.match(/<h1>([^<]+)<\/h1>/);
-                if (nameMatch) {
-                    runeName = nameMatch[1];
-                        console.log(`   ✅ Found rune name: ${runeName}`);
-                }
-                
-                    // Extrair símbolo
-                const symbolMatch = html.match(/symbol<\/dt>\s*<dd>([^<]+)<\/dd>/i);
-                if (symbolMatch) {
-                    runeSymbol = symbolMatch[1].trim();
-                }
-                
-                    // Extrair divisibility
-                    const divisibilityMatch = html.match(/divisibility<\/dt>\s*<dd>(\d+)<\/dd>/i);
-                    if (divisibilityMatch) {
-                        divisibility = parseInt(divisibilityMatch[1]);
-                        console.log(`   ✅ Found divisibility: ${divisibility}`);
-                    }
+                if (runeResponse.ok) {
+                    const runeData = await runeResponse.json();
                     
-                    // Extrair parent (thumbnail)
-                const parentMatch = html.match(/<dt>parent<\/dt>\s*<dd[^>]*>\s*<a[^>]+>([a-f0-9]{64}i\d+)<\/a>/i);
-                if (parentMatch) {
-                    runeThumbnail = `http://localhost:80/content/${parentMatch[1]}`;
-                        console.log(`   ✅ Found thumbnail: ${runeThumbnail}`);
+                    if (runeData.success) {
+                        runeName = runeData.name;
+                        runeSymbol = runeData.symbol;
+                        divisibility = runeData.divisibility;
+                        runeThumbnail = runeData.thumbnail;
+                        
+                        console.log(`   ✅ Found rune name: ${runeName}`);
+                        console.log(`   ✅ Found divisibility: ${divisibility}`);
+                        if (runeThumbnail) {
+                            console.log(`   ✅ Found thumbnail: ${runeThumbnail}`);
+                        }
+                    }
                 }
-            }
-        } catch (error) {
+            } catch (error) {
                 console.warn(`   ⚠️  Could not fetch rune details:`, error);
             }
         }
@@ -1011,7 +1099,7 @@ function renderAncestorsTree(ancestors, currentInscriptionId) {
                     ${greatGrandparentsArray.slice(0, 8).map(id => `
                         <a href="/krayscan.html?inscription=${id}" class="family-node parent-node">
                             <div class="family-node-preview">
-                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                     </div>
                             <div class="family-node-id">${id.substring(0, 8)}...${id.substring(id.length - 4)}</div>
                         </a>
@@ -1038,7 +1126,7 @@ function renderAncestorsTree(ancestors, currentInscriptionId) {
                     ${grandparentsArray.slice(0, 8).map(id => `
                         <a href="/krayscan.html?inscription=${id}" class="family-node parent-node">
                             <div class="family-node-preview">
-                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                     </div>
                             <div class="family-node-id">${id.substring(0, 8)}...${id.substring(id.length - 4)}</div>
                         </a>
@@ -1065,7 +1153,7 @@ function renderAncestorsTree(ancestors, currentInscriptionId) {
                     ${parentsArray.slice(0, 8).map(id => `
                         <a href="/krayscan.html?inscription=${id}" class="family-node parent-node">
                             <div class="family-node-preview">
-                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                             </div>
                             <div class="family-node-id">${id.substring(0, 8)}...${id.substring(id.length - 4)}</div>
                         </a>
@@ -1124,7 +1212,7 @@ function renderDescendantsTree(descendants, currentInscriptionId) {
                     ${grandchildrenArray.slice(0, 44).map(id => `
                         <a href="/krayscan.html?inscription=${id}" class="family-node child-node">
                             <div class="family-node-preview">
-                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${id}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                             </div>
                             <div class="family-node-id">${id.substring(0, 8)}...${id.substring(id.length - 4)}</div>
                         </a>
@@ -1268,7 +1356,7 @@ function renderInscription(inscription, offer = null, familyTree = null) {
                                 ${inscription.parents.slice(0, 6).map((parentId, index) => `
                                     <a href="/krayscan.html?inscription=${parentId}" class="family-node parent-node">
                                         <div class="family-node-preview">
-                                            <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${parentId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                            <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${parentId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                                         </div>
                                         <div class="family-node-id">${parentId.substring(0, 8)}...${parentId.substring(parentId.length - 4)}</div>
                                     </a>
@@ -1303,7 +1391,7 @@ function renderInscription(inscription, offer = null, familyTree = null) {
                                     ${inscription.children.slice(0, 44).map((childId, index) => `
                                         <a href="/krayscan.html?inscription=${childId}" class="family-node child-node">
                                             <div class="family-node-preview">
-                                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${childId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                                                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${childId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
                                             </div>
                                             <div class="family-node-id">${childId.substring(0, 8)}...${childId.substring(childId.length - 4)}</div>
                                         </a>
@@ -1374,7 +1462,7 @@ function loadMoreChildren(inscriptionId, currentLoaded) {
     const newChildrenHtml = nextBatch.map(childId => `
         <a href="/krayscan.html?inscription=${childId}" class="family-node child-node">
             <div class="family-node-preview">
-                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="http://localhost:80/preview/${childId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                <iframe sandbox="allow-scripts" scrolling="no" loading="lazy" src="https://ordinals.com/preview/${childId}" style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
             </div>
             <div class="family-node-id">${childId.substring(0, 8)}...${childId.substring(childId.length - 4)}</div>
         </a>
@@ -1438,8 +1526,13 @@ function renderAddress(data) {
 
         <!-- Bitcoin Balance -->
         <div class="balance-card">
-            <div class="balance-amount">${formatBTC(bitcoin.total)}</div>
-            <div class="balance-label">Total Balance</div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <img src="/public/images/bitcoin.png" alt="Bitcoin" style="width: 32px; height: 32px;">
+                <div>
+                    <div class="balance-amount">${formatBTC(bitcoin.total)}</div>
+                    <div class="balance-label">Bitcoin Balance</div>
+                </div>
+            </div>
             ${bitcoin.unconfirmed !== 0 ? `
                 <div style="margin-top: var(--spacing-md); font-size: 12px; color: var(--color-text-tertiary);">
                     Confirmed: ${formatBTC(bitcoin.confirmed)} | Unconfirmed: ${formatBTC(bitcoin.unconfirmed)}
@@ -1545,8 +1638,11 @@ function renderAddress(data) {
         
         transactions.forEach((tx, index) => {
             html += `
-                <div class="list-item" onclick="window.location.href='krayscan.html?txid=${tx.txid}'">
-                    <div class="item-index">TX #${index + 1}</div>
+                <div class="list-item" onclick="window.location.href='krayscan.html?txid=${tx.txid}'" style="cursor: pointer;">
+                    <div class="item-index">
+                        <img src="/public/images/bitcoin.png" alt="Bitcoin" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                        TX #${index + 1}
+                    </div>
                     <div class="item-content">${tx.txid}</div>
                     <div class="item-value">Fee: ${tx.fee.toLocaleString()} sats</div>
                     <div class="item-script">

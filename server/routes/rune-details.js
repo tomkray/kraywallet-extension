@@ -19,18 +19,18 @@ const CACHE_TTL = 3600000; // 1 hora
 router.get('/:runeId', async (req, res) => {
     try {
         const { runeId } = req.params;
-
+        
         console.log(`🪙 Fetching rune details: ${runeId}`);
-
+        
         // Check cache
         const cached = runeCache.get(runeId);
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
             return res.json(cached.data);
         }
-
+        
         // Buscar via QuickNode
         const runeData = await quicknode.getRune(runeId);
-
+        
         const result = {
             success: true,
             runeId: runeId,
@@ -46,20 +46,20 @@ router.get('/:runeId', async (req, res) => {
             etching: runeData.entry.etching,
             mintable: runeData.mintable,
             parent: runeData.parent,
-            parentPreview: runeData.parent ? `/api/rune-thumbnail/${runeData.parent}` : null,
-            thumbnail: runeData.parent ? `/api/rune-thumbnail/${runeData.parent}` : null
+            parentPreview: runeData.parent ? `http://localhost:4000/api/rune-thumbnail/${runeData.parent}` : null,
+            thumbnail: runeData.parent ? `http://localhost:4000/api/rune-thumbnail/${runeData.parent}` : null
         };
-
+        
         console.log(`   ✅ ${result.name} ${result.symbol} (divisibility: ${result.divisibility})`);
-
+        
         // Save cache
         runeCache.set(runeId, {
             data: result,
             timestamp: Date.now()
         });
-
+        
         res.json(result);
-
+        
     } catch (error) {
         console.error(`❌ Error fetching rune ${req.params.runeId}:`, error.message);
         res.status(500).json({

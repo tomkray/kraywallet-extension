@@ -20,7 +20,7 @@ class BitcoinRPC {
         this.rpcUser = BITCOIN_RPC_USER;
         this.rpcPassword = BITCOIN_RPC_PASSWORD;
         this.useQuickNode = USE_QUICKNODE;
-
+        
         console.log(`₿  Bitcoin RPC initialized (QuickNode: ${this.useQuickNode ? 'ENABLED ✅' : 'disabled'})`);
     }
 
@@ -65,7 +65,7 @@ class BitcoinRPC {
                 return await this.callLocal(method, params);
             }
         }
-
+        
         return await this.callLocal(method, params);
     }
 
@@ -163,26 +163,12 @@ class BitcoinRPC {
     // ==========================================
 
     async getUtxos(address) {
-        // QuickNode não tem scantxoutset, usar Mempool.space ou local
+        // QuickNode não tem scantxoutset, usar local
         if (this.useQuickNode) {
-            try {
-                console.log(`🔍 Fetching UTXOs for ${address} via Mempool.space...`);
-                const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`);
-                const utxos = response.data;
-
-                return utxos.map(utxo => ({
-                    txid: utxo.txid,
-                    vout: utxo.vout,
-                    value: utxo.value,
-                    scriptPubKey: null, // Mempool API doesn't return scriptPubKey directly
-                    height: utxo.status.block_height
-                }));
-            } catch (error) {
-                console.warn('⚠️  Mempool.space failed, trying local scantxoutset...');
-                return await this.getUtxosLocal(address);
-            }
+            console.warn('⚠️  getUtxos requires local bitcoind (scantxoutset)');
+            return await this.getUtxosLocal(address);
         }
-
+        
         return await this.getUtxosLocal(address);
     }
 
@@ -190,11 +176,11 @@ class BitcoinRPC {
         try {
             const descriptor = `addr(${address})`;
             const result = await this.callLocal('scantxoutset', ['start', [descriptor]]);
-
+            
             if (!result || !result.unspents) {
                 return [];
             }
-
+            
             return result.unspents.map(utxo => ({
                 txid: utxo.txid,
                 vout: utxo.vout,
@@ -204,23 +190,7 @@ class BitcoinRPC {
             }));
         } catch (error) {
             console.error('Error scanning UTXOs:', error.message);
-            // Fallback to Mempool.space if local fails
-            try {
-                console.log(`🔍 Fallback: Fetching UTXOs for ${address} via Mempool.space...`);
-                const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`);
-                const utxos = response.data;
-
-                return utxos.map(utxo => ({
-                    txid: utxo.txid,
-                    vout: utxo.vout,
-                    value: utxo.value,
-                    scriptPubKey: null,
-                    height: utxo.status.block_height
-                }));
-            } catch (mempoolError) {
-                console.error('Error fetching UTXOs from Mempool fallback:', mempoolError.message);
-                throw error;
-            }
+            throw error;
         }
     }
 
