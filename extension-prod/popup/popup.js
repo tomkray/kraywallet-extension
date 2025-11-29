@@ -2122,29 +2122,28 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                         if (tag !== 0) {
                             console.log(`   ⚠️  CENOTAPH DETECTED! Invalid Tag ${tag} - Runes were BURNED!`);
                             
-                            // Tentar extrair informações mesmo assim (valores ficam deslocados)
+                            // Cenotaph (burn) - get info from explorer, not from OP_RETURN decode
                             let burnedRuneName = 'Unknown Rune';
                             let burnedRuneSymbol = '🔥';
                             
+                            // For cenotaph, we still need the rune ID to identify it
                             if (values.length >= 5) {
-                                // Com Tag 10, os valores são: [10, 0, 840000, 35, 2000, 2]
-                                // Formato correto seria: [0, 840000, 35, 2000, 2]
-                                // Então: block=values[2], tx=values[3], amount=values[4]
                                 const runeId = `${values[2]}:${values[3]}`;
-                                runeAmount = values[4] ? values[4].toString() : '';
+                                // DON'T use values[4] for amount - it's unreliable!
+                                // Amount will be fetched from explorer below
                                 
-                                // Buscar nome da rune pelo ID
                                 if (runesIdToNameMap.has(runeId)) {
                                     burnedRuneName = runesIdToNameMap.get(runeId);
                                     burnedRuneSymbol = runesSymbolsMap.get(burnedRuneName) || '🔥';
-                                    console.log(`   🔥 Burned Rune: ${burnedRuneName} ${burnedRuneSymbol} (${runeAmount})`);
+                                    console.log(`   🔥 Cenotaph Rune ID: ${runeId} = ${burnedRuneName}`);
                                 } else {
-                                    console.log(`   🔍 Cenotaph Rune ID: ${runeId}, Amount: ${runeAmount} (name not found in map)`);
+                                    console.log(`   🔍 Cenotaph Rune ID: ${runeId} (name not in map)`);
                                 }
                             }
                             
                             runeName = `🔥 ${burnedRuneName}`;
                             runeSymbol = burnedRuneSymbol;
+                            // runeAmount will be fetched from explorer below
                         } else if (values.length >= 3) {
                             const runeId = `${values[1]}:${values[2]}`;
                             console.log(`   🆔 Decoded Rune ID: ${runeId}`);
