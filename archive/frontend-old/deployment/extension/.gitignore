@@ -1,0 +1,36 @@
+# ====================================
+# KRAYWALLET EXTENSION - .gitignore
+# ====================================
+
+# Build output
+dist/
+*.zip
+
+# Não commitar keys (mesmo que não devam existir)
+*.key
+*.pem
+secrets/
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Chrome Extension specifics
+*.crx
+*.pem
+
+# Logs
+*.log
+
+# Cache
+.cache/
+
+
+
+
+
+

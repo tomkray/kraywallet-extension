@@ -1,0 +1,29 @@
+{
+  "name": "kraywallet-backend",
+  "version": "1.0.0",
+  "description": "KrayWallet Backend API - Serverless",
+  "main": "api/health.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "test": "node test/health.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.2",
+    "bitcoinjs-lib": "^6.1.5",
+    "tiny-secp256k1": "^2.2.3"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
+
+
+
+
+
+

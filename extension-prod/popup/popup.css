@@ -2914,3 +2914,30 @@ textarea.input-field {
     background: var(--color-bg-quaternary);
 }
 
+/* ==========================================
+   PENDING WITHDRAWALS ANIMATIONS
+   ========================================== */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes progressGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+    }
+}
+
+.pending-withdrawal-card {
+    animation: progressGlow 2s ease-in-out infinite;
+}
+

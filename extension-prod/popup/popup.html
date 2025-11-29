@@ -538,6 +538,16 @@
                 </div>
             </div>
 
+            <!-- Pending Withdrawals (Challenge Period) -->
+            <div id="l2-pending-section" style="padding: 0 16px 16px; display: none;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+                    <span style="animation: pulse 2s infinite;">⏳</span> Pending Withdrawals
+                </div>
+                <div id="l2-pending-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Pending withdrawals will be populated here -->
+                </div>
+            </div>
+
             <!-- Recent L2 Transactions -->
             <div style="padding: 0 16px 16px;">
                 <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Recent Transactions</div>
@@ -1632,14 +1642,14 @@
             <span class="helper-text">Minimum: 1 KRAY (integer only)</span>
         </div>
 
-        <!-- Gas Fee -->
-        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+        <!-- Gas Fee (dynamic based on membership) -->
+        <div id="l2-transfer-fee-box" style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-size: 12px; color: var(--color-text-secondary);">Gas Fee</div>
-                <div style="font-size: 14px; font-weight: 600; color: #10b981;">FREE ⚡</div>
+                <div id="l2-transfer-fee-display" style="font-size: 14px; font-weight: 600; color: #fbbf24;">1 KRAY</div>
             </div>
-            <div style="font-size: 10px; color: var(--color-text-tertiary); margin-top: 4px;">
-                Instant transfers are free on KRAY L2!
+            <div id="l2-transfer-fee-hint" style="font-size: 10px; color: var(--color-text-tertiary); margin-top: 4px;">
+                Get a <a href="#" id="l2-membership-link" style="color: #10b981; cursor: pointer;">Membership Card</a> for FREE transfers!
             </div>
         </div>
 
@@ -1651,7 +1661,7 @@
         <!-- Features -->
         <div style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
             <div style="font-size: 11px; color: #10b981; text-align: center;">
-                ⚡ Instant confirmation • 🔒 Secure • 💰 Zero fees
+                ⚡ Instant confirmation • 🔒 Secure
             </div>
         </div>
     </div>
@@ -1682,7 +1692,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-size: 12px; color: var(--color-text-secondary);">Fee:</span>
-                        <span style="font-size: 12px; color: #10b981; font-weight: 600;">FREE ⚡</span>
+                        <span id="l2-confirm-fee" style="font-size: 12px; font-weight: 600; color: #fbbf24;">1 KRAY</span>
                     </div>
                 </div>
             </div>
@@ -1799,53 +1809,234 @@
             <div></div>
         </div>
 
-        <!-- Balance Display -->
+        <!-- Balance Display with MAX button -->
         <div style="background: var(--color-bg-secondary); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-            <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px;">L2 Balance</div>
-            <div style="display: flex; align-items: baseline; gap: 8px;">
-                <div id="l2-withdraw-balance" style="font-size: 24px; font-weight: 700; color: #ffffff;">0.000</div>
-                <div style="font-size: 14px; color: var(--color-text-secondary);">KRAY</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px;">L2 Balance</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <div id="l2-withdraw-balance" style="font-size: 24px; font-weight: 700; color: #ffffff;">0</div>
+                        <div style="font-size: 14px; color: var(--color-text-secondary);">KRAY</div>
+                    </div>
+                </div>
+                <button id="l2-withdraw-max-btn" style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #a78bfa; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">MAX</button>
             </div>
         </div>
 
         <!-- Amount -->
         <div class="form-group">
             <label>Amount (KRAY)</label>
-            <input type="number" id="l2-withdraw-amount" class="input-field" placeholder="0.000" step="0.001" min="1" />
-            <span class="helper-text">Minimum: 1 KRAY (whole numbers only)</span>
+            <input type="number" id="l2-withdraw-amount" class="input-field" placeholder="0" step="1" min="1" />
+            <span class="helper-text">Minimum: 1 KRAY (integers only, 1:1 with L1)</span>
         </div>
 
-        <!-- L1 Address -->
+        <!-- L1 Address (LOCKED - same as sender for security) -->
         <div class="form-group">
             <label>L1 Destination Address</label>
-            <input type="text" id="l2-withdraw-address" class="input-field" placeholder="bc1p..." />
-            <span class="helper-text">Your Bitcoin Taproot address</span>
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="font-size: 14px;">🔒</span>
+                    <span style="font-size: 11px; color: #10b981; font-weight: 600;">SECURED - Same as your wallet address</span>
+                </div>
+                <div id="l2-withdraw-address" style="font-family: 'SF Mono', Monaco, monospace; font-size: 11px; color: #ffffff; word-break: break-all; line-height: 1.5;">Loading...</div>
+            </div>
+            <span class="helper-text" style="color: #10b981;">✓ Withdrawals always go to YOUR address for maximum security</span>
         </div>
 
         <!-- Challenge Period Warning -->
-        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
             <div style="font-size: 12px; color: #f59e0b; font-weight: 600; margin-bottom: 6px;">⏰ 24 Hour Challenge Period</div>
             <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">
-                After requesting withdrawal, there's a 24 hour security period. If no fraud is detected, KRAY will be sent to your L1 address.
+                After requesting withdrawal, there's a 24 hour security period. If no fraud is detected, KRAY will be sent to your L1 address automatically.
             </div>
         </div>
 
-        <!-- Fee Info -->
-        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="font-size: 11px; color: var(--color-text-secondary);">Withdrawal Fee</span>
-                <span style="font-size: 12px; color: #ffffff;">0.100 KRAY</span>
+        <!-- Bitcoin Network Fee Selection -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid rgba(247, 147, 26, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <img src="../images/bitcoin.png" style="width: 18px; height: 18px;" alt="BTC">
+                <span style="font-size: 12px; color: #f7931a; font-weight: 600;">Bitcoin Network Fee</span>
+                <span id="l2-withdraw-mempool-status" style="font-size: 10px; color: var(--color-text-tertiary); margin-left: auto;">Loading...</span>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span style="font-size: 11px; color: var(--color-text-secondary);">L1 Transaction Fee</span>
-                <span style="font-size: 12px; color: #fbbf24;">~10-50 sats</span>
+            
+            <!-- Fee Rate Selector -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                <button id="fee-btn-low" class="fee-rate-btn" data-fee-rate="low" style="background: var(--color-bg-tertiary); border: 2px solid var(--color-border); border-radius: 10px; padding: 10px 8px; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 14px; margin-bottom: 4px;">🐢</div>
+                    <div style="font-size: 10px; color: var(--color-text-secondary);">Low</div>
+                    <div id="fee-low-rate" style="font-size: 11px; color: #fff; font-weight: 600;">- s/vB</div>
+                    <div id="fee-low-sats" style="font-size: 10px; color: #10b981;">- sats</div>
+                </button>
+                <button id="fee-btn-medium" class="fee-rate-btn selected" data-fee-rate="medium" style="background: rgba(139, 92, 246, 0.15); border: 2px solid #8b5cf6; border-radius: 10px; padding: 10px 8px; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 14px; margin-bottom: 4px;">🚗</div>
+                    <div style="font-size: 10px; color: var(--color-text-secondary);">Medium</div>
+                    <div id="fee-medium-rate" style="font-size: 11px; color: #fff; font-weight: 600;">- s/vB</div>
+                    <div id="fee-medium-sats" style="font-size: 10px; color: #fbbf24;">- sats</div>
+                </button>
+                <button id="fee-btn-high" class="fee-rate-btn" data-fee-rate="high" style="background: var(--color-bg-tertiary); border: 2px solid var(--color-border); border-radius: 10px; padding: 10px 8px; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-size: 14px; margin-bottom: 4px;">🚀</div>
+                    <div style="font-size: 10px; color: var(--color-text-secondary);">High</div>
+                    <div id="fee-high-rate" style="font-size: 11px; color: #fff; font-weight: 600;">- s/vB</div>
+                    <div id="fee-high-sats" style="font-size: 10px; color: #ef4444;">- sats</div>
+                </button>
+            </div>
+            
+            <!-- BTC Balance Check -->
+            <div id="l2-withdraw-btc-check" style="font-size: 10px; color: var(--color-text-tertiary); text-align: center;">
+                Your BTC balance: <span id="l2-withdraw-btc-balance">-</span> sats
+            </div>
+            
+            <!-- UTXO Selection (for advanced users) -->
+            <details style="margin-top: 12px;">
+                <summary style="font-size: 10px; color: var(--color-text-tertiary); cursor: pointer;">⚙️ Advanced: Select specific UTXO</summary>
+                <div id="l2-withdraw-utxo-list" style="margin-top: 8px; max-height: 120px; overflow-y: auto; font-size: 10px;">
+                    Loading UTXOs...
+                </div>
+            </details>
+        </div>
+
+        <!-- Fee Summary -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+            <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 10px; font-weight: 600;">📋 Summary</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">You withdraw</span>
+                <span id="l2-withdraw-amount-display" style="font-size: 12px; color: #ffffff; font-weight: 600;">0 KRAY</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">L2 Fee</span>
+                <span id="l2-withdraw-l2-fee" style="font-size: 12px; font-weight: 600; color: #fbbf24;">1 KRAY</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">L1 Network Fee</span>
+                <span id="l2-withdraw-l1-fee" style="font-size: 12px; color: #f7931a; font-weight: 600;">- sats</span>
+            </div>
+            <div style="border-top: 1px solid var(--color-border); margin: 8px 0; padding-top: 8px; display: flex; justify-content: space-between;">
+                <span style="font-size: 12px; color: #ffffff; font-weight: 600;">You receive on L1</span>
+                <span id="l2-withdraw-receive" style="font-size: 14px; color: #10b981; font-weight: 700;">0 KRAY</span>
+            </div>
+        </div>
+
+        <!-- Membership Hint -->
+        <div id="l2-withdraw-membership-hint" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 16px; display: none;">
+            <div style="font-size: 11px; color: #a78bfa; line-height: 1.4;">
+                💎 <strong>Get a Membership Card</strong> for FREE L2 fees on withdrawals!
+                <a href="#" onclick="window.open('https://kray.space', '_blank'); return false;" style="color: #fbbf24; text-decoration: underline; margin-left: 4px;">View Cards</a>
+            </div>
+        </div>
+
+        <!-- Important Notice -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+            <div style="font-size: 11px; color: #f59e0b; line-height: 1.4;">
+                ⚠️ <strong>YOU PAY THE BITCOIN FEE</strong> - Make sure you have enough sats in your wallet. The fee rate you choose determines confirmation speed.
             </div>
         </div>
 
         <!-- Withdraw Button -->
-        <button id="l2-withdraw-execute-btn" class="btn btn-primary btn-large" disabled>
+        <button id="l2-withdraw-execute-btn" class="btn btn-primary btn-large">
             📤 Request Withdrawal
         </button>
+        
+        <!-- Pending Withdrawals Section -->
+        <div id="l2-pending-withdrawals" style="margin-top: 20px; display: none;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; font-weight: 600;">⏳ Pending Withdrawals</div>
+            <div id="l2-pending-withdrawals-list"></div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KRAY L2: WITHDRAWAL CONFIRMATION SCREEN
+         ======================================== -->
+    <div id="l2-withdraw-confirm-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-withdraw-confirm-btn" class="btn-back">←</button>
+            <h2>Confirm Withdrawal</h2>
+            <div></div>
+        </div>
+
+        <!-- Withdrawal Summary -->
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(247, 147, 26, 0.1)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">You are withdrawing</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px;">
+                <img src="../assets/kray-space.webp" style="width: 32px; height: 32px; border-radius: 8px;" alt="KRAY">
+                <span id="l2-withdraw-confirm-amount" style="font-size: 32px; font-weight: 800; color: #ffffff;">0</span>
+                <span style="font-size: 16px; color: var(--color-text-secondary);">KRAY</span>
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-tertiary);">L2 → L1 (Bitcoin Mainnet)</div>
+        </div>
+
+        <!-- Destination Address (SECURED) -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 14px;">🔒</span>
+                <span style="font-size: 11px; color: #10b981; font-weight: 600;">Destination (Your Wallet - Secured)</span>
+            </div>
+            <div id="l2-withdraw-confirm-address" style="font-family: 'SF Mono', Monaco, monospace; font-size: 11px; color: #ffffff; word-break: break-all; line-height: 1.5;">bc1p...</div>
+            <div style="font-size: 10px; color: #10b981; margin-top: 8px;">✓ Cannot be changed - always your address</div>
+        </div>
+
+        <!-- Fee Details -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; font-weight: 600;">💰 Fee Breakdown</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">L2 Fee (KRAY)</span>
+                <span id="l2-withdraw-confirm-l2fee" style="font-size: 12px; font-weight: 600; color: #fbbf24;">1 KRAY</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">L1 Network Fee (BTC)</span>
+                <span id="l2-withdraw-confirm-l1fee" style="font-size: 12px; font-weight: 600; color: #f7931a;">- sats</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">Fee Rate</span>
+                <span id="l2-withdraw-confirm-feerate" style="font-size: 12px; color: var(--color-text-secondary);">- sat/vB</span>
+            </div>
+            <div style="border-top: 1px solid var(--color-border); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between;">
+                <span style="font-size: 12px; color: #10b981; font-weight: 600;">You receive on L1</span>
+                <span id="l2-withdraw-confirm-receive" style="font-size: 14px; color: #10b981; font-weight: 700;">0 KRAY</span>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; font-weight: 600;">📋 Timeline</div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">1</div>
+                    <div style="font-size: 10px; color: #fff;">Balance locked + fees deducted</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">2</div>
+                    <div style="font-size: 10px; color: #fff;">24h challenge period</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">3</div>
+                    <div style="font-size: 10px; color: #fff;">Validators broadcast to Bitcoin</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">✓</div>
+                    <div style="font-size: 10px; color: #10b981; font-weight: 600;">KRAY arrives at your L1!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Input -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">🔐 Enter Password to Sign</div>
+            <input type="password" id="l2-withdraw-confirm-password" class="input-field" placeholder="Enter your wallet password" autocomplete="off" style="margin-bottom: 0;" />
+        </div>
+
+        <!-- Disclaimer Checkbox -->
+        <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 12px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px;">
+            <input type="checkbox" id="l2-withdraw-confirm-checkbox" style="margin-top: 2px; accent-color: #10b981;">
+            <label for="l2-withdraw-confirm-checkbox" style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; cursor: pointer;">
+                I confirm this withdrawal to <strong style="color: #10b981;">MY OWN ADDRESS</strong>. I understand it will take ~24 hours to complete and is <strong style="color: #f59e0b;">irreversible</strong>.
+            </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px;">
+            <button id="l2-withdraw-confirm-cancel-btn" class="btn btn-secondary btn-large" style="flex: 1;">Cancel</button>
+            <button id="l2-withdraw-confirm-sign-btn" class="btn btn-primary btn-large" style="flex: 1;" disabled>🔐 Sign & Request</button>
+        </div>
     </div>
 
     <script src="TEST_VERSION.js"></script>

@@ -7345,11 +7345,13 @@ async function switchNetwork(network) {
             if (balanceLabel) {
                 balanceLabel.textContent = 'Total Balance';
             }
-            // Update balance icon to Bitcoin
+            // Update balance icon to Bitcoin (normal size)
             if (balanceNetworkIcon) {
                 balanceNetworkIcon.src = '../images/bitcoin.png';
                 balanceNetworkIcon.style.display = 'inline';
                 balanceNetworkIcon.style.borderRadius = '0';
+                balanceNetworkIcon.style.width = '40px';
+                balanceNetworkIcon.style.height = '40px';
                 balanceNetworkEmoji.style.display = 'none';
             }
             
@@ -7384,11 +7386,13 @@ async function switchNetwork(network) {
             if (balanceLabel) {
                 balanceLabel.textContent = 'L2 Balance';
             }
-            // Update balance icon to KRAY L2
+            // Update balance icon to KRAY L2 (40% bigger than Bitcoin icon)
             if (balanceNetworkIcon && balanceNetworkEmoji) {
                 balanceNetworkIcon.src = '../assets/kray-space.webp';
                 balanceNetworkIcon.style.display = 'inline';
-                balanceNetworkIcon.style.borderRadius = '3px';
+                balanceNetworkIcon.style.borderRadius = '8px';
+                balanceNetworkIcon.style.width = '56px';
+                balanceNetworkIcon.style.height = '56px';
                 balanceNetworkEmoji.style.display = 'none';
             }
             

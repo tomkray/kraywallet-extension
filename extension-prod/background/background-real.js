@@ -361,6 +361,10 @@ async function handleMessage(request, sender) {
             // Sign L2 message with explicit password (for popup flow)
             return await signL2MessageWithPasswordAction(data)
         
+        case 'signPsbtWithPassword':
+            // Sign PSBT with password (for L2 withdrawals)
+            return await signPsbtWithPasswordAction(data);
+        
         default:
             throw new Error(`Unknown action: ${action}`);
     }
@@ -1417,6 +1421,76 @@ async function signL2MessageWithPasswordAction(data) {
         
     } catch (error) {
         console.error('❌ Error in signL2MessageWithPasswordAction:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Sign PSBT with password for L2 withdrawals
+ * 
+ * Signs only the specified inputs (typically input 0 for user's fee UTXO)
+ */
+async function signPsbtWithPasswordAction(data) {
+    try {
+        const { psbt: psbtBase64, password, inputsToSign = [0] } = data;
+        
+        console.log('\n🔐 ===== SIGN PSBT WITH PASSWORD =====');
+        console.log('   PSBT length:', psbtBase64?.length);
+        console.log('   Inputs to sign:', inputsToSign);
+        console.log('   Password provided:', password ? 'YES ✅' : 'NO ❌');
+        
+        if (!psbtBase64) {
+            throw new Error('PSBT is required');
+        }
+        
+        if (!password) {
+            throw new Error('Password is required');
+        }
+        
+        // Get encrypted wallet (key is 'walletEncrypted', not 'encryptedWallet')
+        const result = await chrome.storage.local.get(['walletEncrypted']);
+        if (!result.walletEncrypted) {
+            throw new Error('No wallet found');
+        }
+        
+        // Decrypt wallet using decryptData (same as other functions)
+        console.log('🔓 Decrypting wallet for PSBT signing...');
+        const decrypted = await decryptData(result.walletEncrypted, password);
+        
+        if (!decrypted || !decrypted.mnemonic) {
+            throw new Error('Failed to decrypt wallet');
+        }
+        
+        console.log('✅ Wallet decrypted, signing PSBT...');
+        
+        // Call backend to sign the PSBT
+        const response = await fetch(`https://kraywallet-backend.onrender.com/api/kraywallet/sign-psbt`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mnemonic: decrypted.mnemonic,
+                psbt: psbtBase64,
+                inputsToSign: inputsToSign
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to sign PSBT');
+        }
+        
+        const signResult = await response.json();
+        
+        console.log('✅ PSBT signed successfully');
+        console.log('   Signed PSBT length:', signResult.signedPsbt?.length);
+        
+        return {
+            success: true,
+            signedPsbt: signResult.signedPsbt
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in signPsbtWithPasswordAction:', error);
         return { success: false, error: error.message };
     }
 }

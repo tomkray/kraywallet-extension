@@ -39,6 +39,9 @@ async function findWorkingL2API() {
 let l2Account = null;
 let l2Balance = null;
 let l2Transactions = [];
+let l2Membership = null;  // Current membership status
+let l2CurrentFee = 1;     // Default fee (no membership)
+let currentL2Balance = 0; // Current balance as integer (for withdrawal/transfer)
 
 /**
  * Initialize L2
@@ -75,6 +78,9 @@ async function initL2() {
 
         // Setup L2 listeners
         setupL2Listeners();
+        
+        // Start auto-refresh for pending withdrawals
+        startPendingWithdrawalsRefresh();
 
     } catch (error) {
         console.error('❌ L2 initialization failed:', error);
@@ -133,6 +139,9 @@ async function loadL2Data(updateUI = true) {
         // Get recent transactions
         await updateL2Transactions();
 
+        // Get pending withdrawals
+        await updatePendingWithdrawals();
+
         // Get membership status
         await updateMembershipStatus();
 
@@ -140,6 +149,7 @@ async function loadL2Data(updateUI = true) {
         if (updateUI) {
             displayL2Balance();
             displayL2Transactions();
+            displayPendingWithdrawals();
         }
 
         console.log('✅ L2 data loaded');
@@ -238,6 +248,9 @@ async function updateL2Balance() {
         l2Balance = await response.json();
         console.log(`💰 L2 Balance received:`, l2Balance);
         console.log(`💰 L2 Balance: ${l2Balance.balance_kray} KRAY (${l2Balance.balance_credits} credits)`);
+        
+        // Update currentL2Balance (integer for withdrawal/transfer)
+        currentL2Balance = parseInt(l2Balance.balance_credits || l2Balance.balance_kray || '0');
 
     } catch (error) {
         console.error('❌ Error fetching L2 balance:', error);
@@ -275,6 +288,145 @@ async function updateL2Transactions() {
         console.error('❌ Error fetching L2 transactions:', error);
         l2Transactions = [];
     }
+}
+
+// Pending withdrawals cache
+let pendingWithdrawals = [];
+
+/**
+ * Fetch and display pending withdrawals
+ */
+async function updatePendingWithdrawals() {
+    if (!l2Account) return;
+    
+    try {
+        const response = await fetch(`${L2_API_URL}/bridge/withdrawals/${l2Account}`);
+        
+        if (!response.ok) {
+            pendingWithdrawals = [];
+            return;
+        }
+        
+        const data = await response.json();
+        pendingWithdrawals = (data.withdrawals || []).filter(w => 
+            w.status === 'pending' || 
+            w.status === 'pending_user_signature' || 
+            w.status === 'challenge_period'
+        );
+        
+        console.log(`⏳ Found ${pendingWithdrawals.length} pending withdrawals`);
+        
+        displayPendingWithdrawals();
+        
+    } catch (error) {
+        console.warn('Could not fetch pending withdrawals:', error);
+        pendingWithdrawals = [];
+    }
+}
+
+/**
+ * Display pending withdrawals in UI
+ */
+function displayPendingWithdrawals() {
+    const section = document.getElementById('l2-pending-section');
+    const list = document.getElementById('l2-pending-list');
+    
+    if (!section || !list) return;
+    
+    if (pendingWithdrawals.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    section.style.display = 'block';
+    
+    list.innerHTML = pendingWithdrawals.map(w => {
+        const challengeEnd = new Date(w.challenge_deadline);
+        const now = new Date();
+        const timeRemaining = challengeEnd - now;
+        const hoursRemaining = Math.max(0, Math.ceil(timeRemaining / (1000 * 60 * 60)));
+        const minutesRemaining = Math.max(0, Math.ceil(timeRemaining / (1000 * 60)));
+        
+        let timeText, statusColor, statusIcon, statusText;
+        
+        if (w.status === 'pending_user_signature') {
+            statusIcon = '✍️';
+            statusText = 'Awaiting Signature';
+            statusColor = '#f59e0b';
+            timeText = 'Sign to continue';
+        } else if (timeRemaining > 0) {
+            statusIcon = '⏳';
+            statusText = 'Challenge Period';
+            statusColor = '#f59e0b';
+            if (hoursRemaining > 1) {
+                timeText = `${hoursRemaining}h remaining`;
+            } else {
+                timeText = `${minutesRemaining}m remaining`;
+            }
+        } else {
+            statusIcon = '🚀';
+            statusText = 'Processing';
+            statusColor = '#10b981';
+            timeText = 'Broadcasting soon...';
+        }
+        
+        // Calculate progress (0-100%)
+        const totalChallenge = 24 * 60 * 60 * 1000; // 24h in ms
+        const elapsed = totalChallenge - timeRemaining;
+        const progress = Math.min(100, Math.max(0, (elapsed / totalChallenge) * 100));
+        
+        return `
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">${statusIcon}</span>
+                        <span style="font-size: 12px; color: ${statusColor}; font-weight: 600;">${statusText}</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--color-text-tertiary);">${timeText}</div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: 700; color: #ffffff;">${parseInt(w.amount_l1 || w.credits_burned).toLocaleString()} KRAY</div>
+                        <div style="font-size: 10px; color: var(--color-text-tertiary);">→ ${w.l1_address?.substring(0, 12)}...${w.l1_address?.substring(54)}</div>
+                    </div>
+                    <img src="../images/bitcoin.png" style="width: 28px; height: 28px; opacity: 0.7;" alt="L1">
+                </div>
+                
+                <!-- Progress Bar -->
+                <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 6px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, #f59e0b, #10b981); height: 100%; width: ${progress}%; transition: width 1s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; color: var(--color-text-tertiary);">
+                    <span>Requested</span>
+                    <span>Challenge</span>
+                    <span>Complete</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Calculate time remaining for withdrawal
+ */
+function getWithdrawalTimeRemaining(challengeDeadline) {
+    const end = new Date(challengeDeadline);
+    const now = new Date();
+    const diff = end - now;
+    
+    if (diff <= 0) return { text: 'Ready!', progress: 100 };
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    const totalMs = 24 * 60 * 60 * 1000;
+    const progress = ((totalMs - diff) / totalMs) * 100;
+    
+    if (hours > 0) {
+        return { text: `${hours}h ${minutes}m`, progress };
+    }
+    return { text: `${minutes}m`, progress };
 }
 
 /**
@@ -370,6 +522,19 @@ function displayMembershipStatus(data) {
             statusEl.style.color = '#f59e0b';
         }
     }
+    
+    // Store membership and calculate current fee
+    l2Membership = { tier, limits, usage };
+    const remaining = (limits.freeTxPerDay || 0) - (usage.dailyUsed || 0);
+    
+    // Fee is FREE if has remaining free TX, otherwise 1 KRAY
+    if (tier !== 'none' && remaining > 0) {
+        l2CurrentFee = 0;  // FREE!
+    } else {
+        l2CurrentFee = 1;  // Pay 1 KRAY
+    }
+    
+    console.log(`💰 Current transfer fee: ${l2CurrentFee} KRAY (tier: ${tier}, remaining: ${remaining})`);
 }
 
 /**
@@ -470,7 +635,13 @@ function displayL2Transactions() {
         return;
     }
 
-    container.innerHTML = l2Transactions.map(tx => `
+    container.innerHTML = l2Transactions.map(tx => {
+        // 1:1 mapping - no division, KRAY is integer (divisibility: 0)
+        const amount = parseInt(tx.amount) || 0;
+        const gasFee = parseInt(tx.gas_fee) || 0;
+        const isSent = tx.from === l2Account;
+        
+        return `
         <div class="l2-transaction-item">
             <div class="l2-transaction-icon">${getTransactionIcon(tx.type)}</div>
             <div class="l2-transaction-info">
@@ -478,13 +649,13 @@ function displayL2Transactions() {
                 <div class="l2-transaction-time">${new Date(tx.created_at).toLocaleString()}</div>
             </div>
             <div class="l2-transaction-amount">
-                <div class="l2-transaction-amount-value ${tx.from === l2Account ? 'negative' : 'positive'}">
-                    ${tx.from === l2Account ? '-' : '+'}${(parseInt(tx.amount) / 1000).toFixed(3)} KRAY
+                <div class="l2-transaction-amount-value ${isSent ? 'negative' : 'positive'}">
+                    ${isSent ? '-' : '+'}${amount} KRAY
                 </div>
-                <div class="l2-transaction-gas">Gas: ${(parseInt(tx.gas_fee) / 1000).toFixed(3)}</div>
+                <div class="l2-transaction-gas">${gasFee === 0 ? 'FREE ⚡' : `Gas: ${gasFee} KRAY`}</div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 /**
@@ -560,6 +731,9 @@ function setupL2Listeners() {
 
     // Setup L2 transfer confirmation listeners
     setupL2ConfirmListeners();
+    
+    // Setup L2 withdrawal confirmation listeners
+    setupL2WithdrawConfirmListeners();
 
     console.log('✅ L2 listeners configured');
 }
@@ -616,6 +790,9 @@ async function showL2DepositScreen() {
 
 /**
  * Show L2 Withdraw Screen
+ * 
+ * 🔒 SECURITY: Withdrawal ALWAYS goes to user's own address
+ *    This prevents phishing, hacking, and user errors
  */
 async function showL2WithdrawScreen() {
     console.log('📤 Opening L2 withdraw screen...');
@@ -631,32 +808,79 @@ async function showL2WithdrawScreen() {
     }
     
     // Update balance display
-    if (l2Balance) {
-        document.getElementById('l2-withdraw-balance').textContent = l2Balance.balance_kray;
-    }
+    updateWithdrawBalance();
     
-    // Pre-fill L1 address from wallet
+    // 🔒 SECURITY: Always use user's own address (cannot be changed)
     try {
         const result = await chrome.runtime.sendMessage({ action: 'getWalletInfo' });
         if (result.success) {
-            document.getElementById('l2-withdraw-address').value = result.data.address;
+            const addressDisplay = document.getElementById('l2-withdraw-address');
+            if (addressDisplay) {
+                addressDisplay.textContent = result.data.address;
+            }
+            
+            // Also update BTC balance
+            userBtcBalance = result.data.balance?.total || 0;
+            const btcBalanceEl = document.getElementById('l2-withdraw-btc-balance');
+            if (btcBalanceEl) {
+                btcBalanceEl.textContent = userBtcBalance.toLocaleString();
+            }
         }
     } catch (error) {
         console.error('Error getting wallet address:', error);
     }
     
-    // Setup withdraw button
+    // Fetch current mempool fees
+    await fetchMempoolFees();
+    updateFeeDisplay();
+    
+    // Setup fee rate buttons (using event listeners instead of inline onclick)
+    ['low', 'medium', 'high'].forEach(rate => {
+        const btn = document.getElementById(`fee-btn-${rate}`);
+        if (btn) {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`🔘 Fee button clicked: ${rate}`);
+                window.selectFeeRate(rate);
+            };
+        }
+    });
+    
+    // Select medium fee by default
+    selectedFeeRate = 'medium';
+    window.selectFeeRate('medium');
+    
+    // Setup MAX button
+    const maxBtn = document.getElementById('l2-withdraw-max-btn');
+    if (maxBtn) {
+        maxBtn.onclick = () => {
+            const amountInput = document.getElementById('l2-withdraw-amount');
+            if (amountInput && currentL2Balance > 0) {
+                // Account for L2 fee when using MAX
+                const l2FeeInfo = getWithdrawalL2Fee();
+                const maxAmount = Math.max(1, currentL2Balance);
+                amountInput.value = maxAmount;
+                updateWithdrawPreview();
+            }
+        };
+    }
+    
+    // Setup amount input
     const amountInput = document.getElementById('l2-withdraw-amount');
+    if (amountInput) {
+        amountInput.value = '';
+        amountInput.oninput = updateWithdrawPreview;
+    }
+    
+    // Setup execute button
     const executeBtn = document.getElementById('l2-withdraw-execute-btn');
+    if (executeBtn) {
+        executeBtn.onclick = showL2WithdrawConfirm;
+    }
     
-    amountInput.oninput = () => {
-        const amount = parseFloat(amountInput.value);
-        executeBtn.disabled = !amount || amount < 1;
-    };
-    
-    executeBtn.onclick = async () => {
-        await executeWithdrawal();
-    };
+    // Initial preview update
+    updateWithdrawPreview();
 }
 
 /**
@@ -686,6 +910,30 @@ async function showL2TransferScreen() {
     
     // Setup token selection
     setupTokenSelection();
+    
+    // Update fee display based on membership
+    updateTransferFeeDisplay();
+    
+    // Setup membership link to go back to home
+    const membershipLink = document.getElementById('l2-membership-link');
+    if (membershipLink) {
+        membershipLink.onclick = (e) => {
+            e.preventDefault();
+            // Go back to wallet home screen
+            if (showScreenFn) {
+                showScreenFn('wallet');
+            } else if (typeof showScreen !== 'undefined') {
+                showScreen('wallet');
+            }
+            // Scroll to membership section (if visible)
+            setTimeout(() => {
+                const membershipSection = document.getElementById('l2-membership-section');
+                if (membershipSection) {
+                    membershipSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        };
+    }
     
     // Setup MAX button
     const maxBtn = document.getElementById('l2-transfer-max-btn');
@@ -828,6 +1076,52 @@ function setupTokenSelection() {
 }
 
 /**
+ * Update transfer fee display based on membership status
+ */
+function updateTransferFeeDisplay() {
+    const feeDisplay = document.getElementById('l2-transfer-fee-display');
+    const feeHint = document.getElementById('l2-transfer-fee-hint');
+    
+    if (!feeDisplay) return;
+    
+    if (l2CurrentFee === 0) {
+        // FREE - has membership with remaining free TX
+        feeDisplay.textContent = 'FREE ⚡';
+        feeDisplay.style.color = '#10b981';
+        
+        const remaining = l2Membership?.usage ? 
+            (l2Membership.limits.freeTxPerDay - l2Membership.usage.dailyUsed) : 0;
+        
+        if (feeHint) {
+            feeHint.innerHTML = `<span style="color: #10b981;">✨ ${remaining} free transfers remaining today</span>`;
+        }
+    } else {
+        // Paying 1 KRAY
+        feeDisplay.textContent = '1 KRAY';
+        feeDisplay.style.color = '#fbbf24';
+        
+        if (feeHint) {
+            if (l2Membership?.tier && l2Membership.tier !== 'none') {
+                feeHint.innerHTML = `<span style="color: #f59e0b;">⚠️ Daily limit reached - paying 1 KRAY</span>`;
+            } else {
+                feeHint.innerHTML = `Get a <a href="#" id="l2-membership-link" style="color: #10b981; cursor: pointer;">Membership Card</a> for FREE transfers!`;
+                // Re-setup the link listener
+                const link = document.getElementById('l2-membership-link');
+                if (link) {
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        if (showScreenFn) showScreenFn('wallet');
+                        else if (typeof showScreen !== 'undefined') showScreen('wallet');
+                    };
+                }
+            }
+        }
+    }
+    
+    console.log(`💰 Fee display updated: ${l2CurrentFee === 0 ? 'FREE' : '1 KRAY'}`);
+}
+
+/**
  * Show L2 Swap Screen
  */
 async function showL2SwapScreen() {
@@ -908,6 +1202,18 @@ function showL2TransferConfirm() {
     document.getElementById('l2-confirm-amount').textContent = `${amount} KRAY`;
     document.getElementById('l2-confirm-recipient').textContent = 
         recipient.substring(0, 12) + '...' + recipient.substring(recipient.length - 8);
+    
+    // Update fee display
+    const confirmFee = document.getElementById('l2-confirm-fee');
+    if (confirmFee) {
+        if (l2CurrentFee === 0) {
+            confirmFee.textContent = 'FREE ⚡';
+            confirmFee.style.color = '#10b981';
+        } else {
+            confirmFee.textContent = `${l2CurrentFee} KRAY`;
+            confirmFee.style.color = '#fbbf24';
+        }
+    }
     
     // Clear password field
     const passwordInput = document.getElementById('l2-confirm-password');
@@ -1003,16 +1309,22 @@ async function executeTransferWithPassword() {
         }
         
         console.log('✅ Transfer successful!', result);
-        window.showNotification(`✅ Sent ${amount} KRAY instantly!`, 'success');
         
         // Clear pending transfer
         pendingL2Transfer = null;
         
-        // Refresh balance
-        await refreshL2Data();
+        // Show success immediately - go back to wallet screen
+        if (showScreenFn) {
+            showScreenFn('wallet');
+        } else if (typeof showScreen !== 'undefined') {
+            showScreen('wallet');
+        }
         
-        // Go back to L2 home
-        window.switchNetwork('kray-l2');
+        // Show success notification
+        window.showNotification(`⚡ Sent ${amount} KRAY instantly!`, 'success');
+        
+        // Refresh balance in background (don't await)
+        refreshL2Data();
         
     } catch (error) {
         console.error('❌ Transfer error:', error);
@@ -1068,40 +1380,503 @@ async function signL2TransactionWithPassword(messageData, password) {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// L2 WITHDRAWAL (L2 → L1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Pending withdrawal data
+let pendingL2Withdrawal = null;
+
+// Fee rates from mempool
+let withdrawalFeeRates = { low: 10, medium: 20, high: 30 };
+let selectedFeeRate = 'medium';
+let userBtcBalance = 0;
+
+// Estimated tx size for withdrawal (PSBT with Runestone)
+const WITHDRAWAL_TX_VBYTES = 250;
+
 /**
- * Execute L2 Withdrawal (L2 → L1)
- * 
- * 🔥 SIMPLIFIED: 1:1 mapping - amount in KRAY L2 = amount in KRAY L1
+ * Fetch current fee rates from mempool.space
  */
-async function executeWithdrawal() {
-    console.log('📤 Executing withdrawal...');
+async function fetchMempoolFees() {
+    try {
+        const response = await fetch('https://mempool.space/api/v1/fees/recommended');
+        if (response.ok) {
+            const fees = await response.json();
+            withdrawalFeeRates = {
+                low: fees.hourFee || 10,
+                medium: fees.halfHourFee || 20,
+                high: fees.fastestFee || 30
+            };
+            console.log('⛽ Mempool fees:', withdrawalFeeRates);
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not fetch mempool fees, using defaults');
+    }
+    return withdrawalFeeRates;
+}
+
+/**
+ * Calculate fee in sats for given rate
+ */
+function calculateFeeSats(feeRate) {
+    return Math.ceil(WITHDRAWAL_TX_VBYTES * feeRate);
+}
+
+/**
+ * Update fee display in UI
+ */
+function updateFeeDisplay() {
+    console.log('🔄 Updating fee display with rates:', withdrawalFeeRates);
     
-    const amount = parseInt(document.getElementById('l2-withdraw-amount').value);
-    const l1Address = document.getElementById('l2-withdraw-address').value.trim();
+    // Update fee rate buttons (with null checks)
+    const lowRate = document.getElementById('fee-low-rate');
+    const medRate = document.getElementById('fee-medium-rate');
+    const highRate = document.getElementById('fee-high-rate');
     
-    if (!amount || !l1Address) {
-        window.showNotification('Please fill all fields', 'error');
-        return;
+    if (lowRate) lowRate.textContent = `${withdrawalFeeRates.low} s/vB`;
+    if (medRate) medRate.textContent = `${withdrawalFeeRates.medium} s/vB`;
+    if (highRate) highRate.textContent = `${withdrawalFeeRates.high} s/vB`;
+    
+    // Update fee amounts (with null checks)
+    const lowSats = document.getElementById('fee-low-sats');
+    const medSats = document.getElementById('fee-medium-sats');
+    const highSats = document.getElementById('fee-high-sats');
+    
+    if (lowSats) lowSats.textContent = `~${calculateFeeSats(withdrawalFeeRates.low).toLocaleString()} sats`;
+    if (medSats) medSats.textContent = `~${calculateFeeSats(withdrawalFeeRates.medium).toLocaleString()} sats`;
+    if (highSats) highSats.textContent = `~${calculateFeeSats(withdrawalFeeRates.high).toLocaleString()} sats`;
+    
+    // Update mempool status
+    const statusEl = document.getElementById('l2-withdraw-mempool-status');
+    if (statusEl) {
+        statusEl.textContent = `mempool.space ✓`;
+        statusEl.style.color = '#10b981';
     }
     
-    if (amount < 1) {
+    // Update selected fee in summary
+    const selectedRate = withdrawalFeeRates[selectedFeeRate];
+    const selectedSats = calculateFeeSats(selectedRate);
+    
+    console.log(`   Selected: ${selectedFeeRate} = ${selectedRate} s/vB = ${selectedSats} sats`);
+    
+    const l1FeeEl = document.getElementById('l2-withdraw-l1-fee');
+    if (l1FeeEl) {
+        l1FeeEl.textContent = `~${selectedSats.toLocaleString()} sats`;
+    }
+}
+
+/**
+ * Select fee rate (called from UI buttons)
+ */
+window.selectFeeRate = function(rate) {
+    console.log(`⛽ Selecting fee rate: ${rate}`);
+    selectedFeeRate = rate;
+    
+    // Update button styles
+    ['low', 'medium', 'high'].forEach(r => {
+        const btn = document.getElementById(`fee-btn-${r}`);
+        if (btn) {
+            if (r === rate) {
+                btn.style.background = 'rgba(139, 92, 246, 0.15)';
+                btn.style.borderColor = '#8b5cf6';
+                btn.classList.add('selected');
+                console.log(`   ✅ ${r} button selected`);
+            } else {
+                btn.style.background = 'var(--color-bg-tertiary)';
+                btn.style.borderColor = 'var(--color-border)';
+                btn.classList.remove('selected');
+            }
+        }
+    });
+    
+    // Update fee display
+    const selectedRate = withdrawalFeeRates[rate];
+    const selectedSats = calculateFeeSats(selectedRate);
+    
+    const l1FeeEl = document.getElementById('l2-withdraw-l1-fee');
+    if (l1FeeEl) {
+        l1FeeEl.textContent = `~${selectedSats.toLocaleString()} sats`;
+    }
+    
+    // Check if user has enough BTC
+    checkBtcBalance(selectedSats);
+    
+    // Update preview
+    updateWithdrawPreview();
+};
+
+// User's UTXOs for fee selection
+let userUtxos = [];
+let selectedFeeUtxo = null;
+
+/**
+ * Check if user has enough BTC for fee and load UTXOs
+ */
+async function checkBtcBalance(neededSats) {
+    try {
+        const result = await chrome.runtime.sendMessage({ action: 'getWalletInfo' });
+        if (result.success && result.data.balance) {
+            userBtcBalance = result.data.balance.total || 0;
+            
+            const btcBalanceEl = document.getElementById('l2-withdraw-btc-balance');
+            const btcCheckEl = document.getElementById('l2-withdraw-btc-check');
+            
+            if (btcBalanceEl) {
+                btcBalanceEl.textContent = userBtcBalance.toLocaleString();
+            }
+            
+            if (btcCheckEl) {
+                if (userBtcBalance >= neededSats) {
+                    btcCheckEl.style.color = '#10b981';
+                    btcCheckEl.innerHTML = `Your BTC balance: <span style="color:#10b981;font-weight:600;">${userBtcBalance.toLocaleString()} sats ✓</span>`;
+                } else {
+                    btcCheckEl.style.color = '#ef4444';
+                    btcCheckEl.innerHTML = `⚠️ Need ${neededSats.toLocaleString()} sats, you have <span style="color:#ef4444;font-weight:600;">${userBtcBalance.toLocaleString()} sats</span>`;
+                }
+            }
+            
+            // Load UTXOs for selection
+            await loadUserUtxos(result.data.address, neededSats);
+        }
+    } catch (error) {
+        console.warn('Could not check BTC balance:', error);
+    }
+}
+
+/**
+ * Load user's UTXOs and find clean ones for fee
+ */
+async function loadUserUtxos(address, neededSats) {
+    try {
+        // Fetch UTXOs from our explorer API
+        const response = await fetch(`${L2_API_URL.replace('/l2', '')}/api/explorer/address/${address}`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        userUtxos = data.utxos || [];
+        
+        // Filter clean UTXOs (no inscriptions/runes) that have enough sats
+        const cleanUtxos = userUtxos.filter(utxo => {
+            // Check if UTXO has inscriptions or runes
+            const hasInscriptions = utxo.inscriptions && utxo.inscriptions.length > 0;
+            const hasRunes = utxo.runes && Object.keys(utxo.runes).length > 0;
+            const hasEnough = utxo.value >= neededSats;
+            return !hasInscriptions && !hasRunes && hasEnough;
+        });
+        
+        // Sort by value (smallest first that's still enough)
+        cleanUtxos.sort((a, b) => a.value - b.value);
+        
+        // Auto-select the best UTXO (smallest that covers fee)
+        if (cleanUtxos.length > 0) {
+            selectedFeeUtxo = cleanUtxos[0];
+            console.log(`✅ Auto-selected UTXO for fee: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout} (${selectedFeeUtxo.value} sats)`);
+        }
+        
+        // Update UTXO list in UI
+        const utxoListEl = document.getElementById('l2-withdraw-utxo-list');
+        if (utxoListEl) {
+            if (cleanUtxos.length === 0) {
+                utxoListEl.innerHTML = '<div style="color:#ef4444;">No clean UTXOs available for fee. You need a UTXO without inscriptions/runes.</div>';
+            } else {
+                utxoListEl.innerHTML = cleanUtxos.map((utxo, i) => `
+                    <div onclick="selectUtxoForFee(${i})" style="padding:6px;margin:4px 0;background:${selectedFeeUtxo === utxo ? 'rgba(16,185,129,0.2)' : 'var(--color-bg-tertiary)'};border:1px solid ${selectedFeeUtxo === utxo ? '#10b981' : 'var(--color-border)'};border-radius:6px;cursor:pointer;">
+                        <div style="font-family:monospace;color:#888;">${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}</div>
+                        <div style="color:#10b981;font-weight:600;">${utxo.value.toLocaleString()} sats ${selectedFeeUtxo === utxo ? '✓' : ''}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+    } catch (error) {
+        console.warn('Could not load UTXOs:', error);
+    }
+}
+
+/**
+ * Select specific UTXO for fee (called from UI)
+ */
+window.selectUtxoForFee = function(index) {
+    const cleanUtxos = userUtxos.filter(utxo => {
+        const hasInscriptions = utxo.inscriptions && utxo.inscriptions.length > 0;
+        const hasRunes = utxo.runes && Object.keys(utxo.runes).length > 0;
+        return !hasInscriptions && !hasRunes;
+    });
+    
+    if (cleanUtxos[index]) {
+        selectedFeeUtxo = cleanUtxos[index];
+        console.log(`Selected UTXO: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout}`);
+        
+        // Refresh the list to show selection
+        const neededSats = calculateFeeSats(withdrawalFeeRates[selectedFeeRate]);
+        loadUserUtxos(l2Account, neededSats);
+    }
+};
+
+/**
+ * Get L2 withdrawal fee based on membership
+ */
+function getWithdrawalL2Fee() {
+    // Check if user has membership with remaining free tx
+    if (l2Membership && l2Membership.usage) {
+        const remaining = (l2Membership.limits?.freeTxPerDay || 0) - (l2Membership.usage?.dailyUsed || 0);
+        if (remaining > 0) {
+            return { fee: 0, isFree: true, remaining };
+        }
+    }
+    return { fee: 1, isFree: false, remaining: 0 };
+}
+
+/**
+ * Update withdrawal preview (fee, receive amount)
+ */
+function updateWithdrawPreview() {
+    const amount = parseInt(document.getElementById('l2-withdraw-amount')?.value) || 0;
+    const l2FeeInfo = getWithdrawalL2Fee();
+    const l2Fee = l2FeeInfo.fee;
+    const receiveAmount = Math.max(0, amount - l2Fee);
+    
+    // Update amount display
+    const amountDisplayEl = document.getElementById('l2-withdraw-amount-display');
+    if (amountDisplayEl) {
+        amountDisplayEl.textContent = `${amount.toLocaleString()} KRAY`;
+    }
+    
+    // Update L2 fee display
+    const l2FeeEl = document.getElementById('l2-withdraw-l2-fee');
+    if (l2FeeEl) {
+        if (l2FeeInfo.isFree) {
+            l2FeeEl.textContent = 'FREE ✓';
+            l2FeeEl.style.color = '#10b981';
+        } else {
+            l2FeeEl.textContent = '1 KRAY';
+            l2FeeEl.style.color = '#fbbf24';
+        }
+    }
+    
+    // Update receive amount
+    const receiveEl = document.getElementById('l2-withdraw-receive');
+    if (receiveEl) {
+        receiveEl.textContent = `${receiveAmount.toLocaleString()} KRAY`;
+    }
+    
+    // Show/hide membership hint
+    const hintEl = document.getElementById('l2-withdraw-membership-hint');
+    if (hintEl) {
+        hintEl.style.display = l2FeeInfo.isFree ? 'none' : 'block';
+    }
+}
+
+/**
+ * Update withdrawal balance display
+ */
+function updateWithdrawBalance() {
+    const balanceEl = document.getElementById('l2-withdraw-balance');
+    if (balanceEl) {
+        balanceEl.textContent = currentL2Balance.toLocaleString();
+    }
+}
+
+/**
+ * Show withdrawal confirmation screen
+ * 
+ * 🔒 SECURITY: Address is ALWAYS user's own address (from display, not input)
+ */
+function showL2WithdrawConfirm() {
+    console.log('📤 Showing withdrawal confirmation...');
+    
+    const amount = parseInt(document.getElementById('l2-withdraw-amount')?.value);
+    
+    // 🔒 Get address from display (not editable input)
+    const l1Address = document.getElementById('l2-withdraw-address')?.textContent?.trim();
+    
+    // Validate amount
+    if (!amount || amount < 1) {
         window.showNotification('Minimum withdrawal: 1 KRAY', 'error');
         return;
     }
     
-    // Validate bc1p address
-    if (!l1Address.startsWith('bc1p') || l1Address.length !== 62) {
-        window.showNotification('Invalid Bitcoin address (must be bc1p...)', 'error');
+    if (amount > currentL2Balance) {
+        window.showNotification('Insufficient balance', 'error');
         return;
+    }
+    
+    // Validate address exists (should always be there)
+    if (!l1Address || l1Address === 'Loading...') {
+        window.showNotification('Error loading your address. Please try again.', 'error');
+        return;
+    }
+    
+    // Calculate fees
+    const l2FeeInfo = getWithdrawalL2Fee();
+    const l2Fee = l2FeeInfo.fee;
+    const feeRate = withdrawalFeeRates[selectedFeeRate];
+    const l1FeeSats = calculateFeeSats(feeRate);
+    const receiveAmount = Math.max(0, amount - l2Fee);
+    
+    // Check BTC balance
+    if (userBtcBalance < l1FeeSats) {
+        window.showNotification(`Insufficient BTC! Need ~${l1FeeSats.toLocaleString()} sats for network fee`, 'error');
+        return;
+    }
+    
+    // Store pending withdrawal with all fee data
+    pendingL2Withdrawal = { 
+        amount, 
+        l1Address,
+        l2Fee,
+        l1FeeSats,
+        feeRate,
+        receiveAmount
+    };
+    
+    // Update confirmation screen
+    document.getElementById('l2-withdraw-confirm-amount').textContent = amount.toLocaleString();
+    document.getElementById('l2-withdraw-confirm-address').textContent = l1Address;
+    
+    // Update fee details
+    const l2FeeEl = document.getElementById('l2-withdraw-confirm-l2fee');
+    if (l2FeeEl) {
+        if (l2FeeInfo.isFree) {
+            l2FeeEl.textContent = 'FREE ✓';
+            l2FeeEl.style.color = '#10b981';
+        } else {
+            l2FeeEl.textContent = `${l2Fee} KRAY`;
+            l2FeeEl.style.color = '#fbbf24';
+        }
+    }
+    
+    const l1FeeEl = document.getElementById('l2-withdraw-confirm-l1fee');
+    if (l1FeeEl) {
+        l1FeeEl.textContent = `~${l1FeeSats.toLocaleString()} sats`;
+    }
+    
+    const feeRateEl = document.getElementById('l2-withdraw-confirm-feerate');
+    if (feeRateEl) {
+        feeRateEl.textContent = `${feeRate} sat/vB (${selectedFeeRate})`;
+    }
+    
+    const receiveEl = document.getElementById('l2-withdraw-confirm-receive');
+    if (receiveEl) {
+        receiveEl.textContent = `${receiveAmount.toLocaleString()} KRAY`;
+    }
+    
+    // Reset password and checkbox
+    const passwordInput = document.getElementById('l2-withdraw-confirm-password');
+    const checkbox = document.getElementById('l2-withdraw-confirm-checkbox');
+    const signBtn = document.getElementById('l2-withdraw-confirm-sign-btn');
+    
+    if (passwordInput) passwordInput.value = '';
+    if (checkbox) checkbox.checked = false;
+    if (signBtn) signBtn.disabled = true;
+    
+    // Show confirmation screen
+    if (showScreenFn) {
+        showScreenFn('l2-withdraw-confirm');
+    }
+}
+
+/**
+ * Setup withdrawal confirmation listeners
+ */
+function setupL2WithdrawConfirmListeners() {
+    // Back button
+    const backBtn = document.getElementById('back-from-l2-withdraw-confirm-btn');
+    if (backBtn) {
+        backBtn.onclick = () => {
+            pendingL2Withdrawal = null;
+            if (showScreenFn) showScreenFn('l2-withdraw');
+        };
+    }
+    
+    // Cancel button
+    const cancelBtn = document.getElementById('l2-withdraw-confirm-cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.onclick = () => {
+            pendingL2Withdrawal = null;
+            if (showScreenFn) showScreenFn('l2-withdraw');
+        };
+    }
+    
+    // Checkbox enables sign button
+    const checkbox = document.getElementById('l2-withdraw-confirm-checkbox');
+    const signBtn = document.getElementById('l2-withdraw-confirm-sign-btn');
+    
+    if (checkbox && signBtn) {
+        checkbox.onchange = () => {
+            const password = document.getElementById('l2-withdraw-confirm-password')?.value;
+            signBtn.disabled = !checkbox.checked || !password;
+        };
+    }
+    
+    // Password input enables sign button
+    const passwordInput = document.getElementById('l2-withdraw-confirm-password');
+    if (passwordInput && signBtn && checkbox) {
+        passwordInput.oninput = () => {
+            signBtn.disabled = !checkbox.checked || !passwordInput.value;
+        };
+        
+        // Enter key submits
+        passwordInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !signBtn.disabled) {
+                executeWithdrawalWithPassword();
+            }
+        };
+    }
+    
+    // Sign button
+    if (signBtn) {
+        signBtn.onclick = executeWithdrawalWithPassword;
+    }
+}
+
+/**
+ * Execute withdrawal with password (main function)
+ * 
+ * Uses PSBT Colaborativo:
+ * 1. User provides UTXO for fee
+ * 2. Backend creates PSBT with user input + bridge input
+ * 3. User signs their input
+ * 4. After 24h, validators sign bridge input and broadcast
+ */
+async function executeWithdrawalWithPassword() {
+    console.log('📤 Executing withdrawal with password...');
+    
+    if (!pendingL2Withdrawal) {
+        window.showNotification('No pending withdrawal', 'error');
+        return;
+    }
+    
+    const { amount, l1Address, l2Fee, l1FeeSats, feeRate, receiveAmount } = pendingL2Withdrawal;
+    const password = document.getElementById('l2-withdraw-confirm-password')?.value;
+    
+    if (!password) {
+        window.showNotification('Please enter your password', 'error');
+        return;
+    }
+    
+    // Check if we have a UTXO selected for fee
+    if (!selectedFeeUtxo) {
+        window.showNotification('No UTXO selected for fee. Please select a clean UTXO.', 'error');
+        return;
+    }
+    
+    // Update button state
+    const signBtn = document.getElementById('l2-withdraw-confirm-sign-btn');
+    if (signBtn) {
+        signBtn.disabled = true;
+        signBtn.textContent = '⏳ Creating PSBT...';
     }
     
     try {
         console.log(`   Amount: ${amount} KRAY`);
+        console.log(`   L2 Fee: ${l2Fee} KRAY`);
+        console.log(`   L1 Fee: ${l1FeeSats} sats (${feeRate} sat/vB)`);
+        console.log(`   Receive: ${receiveAmount} KRAY`);
         console.log(`   L1 Address: ${l1Address}`);
         console.log(`   L2 Account: ${l2Account}`);
-        
-        // 1:1 mapping - amount in KRAY = amount in credits
-        const credits = amount;
+        console.log(`   Fee UTXO: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout} (${selectedFeeUtxo.value} sats)`);
         
         // Get current nonce from account
         const accountResponse = await fetch(`${L2_API_URL}/account/${l2Account}/balance`);
@@ -1114,75 +1889,141 @@ async function executeWithdrawal() {
         
         console.log(`   Nonce: ${nonce}`);
         
-        // TODO: Withdrawal needs password confirmation screen like transfer
-        // For now, show message that withdrawal is not yet available
-        window.showNotification('⚠️ Withdrawal coming soon! Use Transfer for now.', 'warning');
-        return;
-        
-        /* DISABLED - needs password confirmation screen
-        // Sign withdrawal request with nonce for replay protection
+        // Sign L2 authorization (proves user owns the L2 account)
         const { signature, pubkey } = await signL2TransactionWithPassword({
             from: l2Account,
-            to: '',  // Withdrawal, no recipient
-            amount: credits,
-            nonce: nonce,  // Include nonce for replay protection!
+            to: '',  // Withdrawal has no L2 recipient
+            amount: amount,
+            nonce: nonce,
             type: 'withdrawal'
-        }, password);  // TODO: Get password from confirmation screen
-        */
+        }, password);
         
-        console.log(`   Signature: ${signature?.substring(0, 20)}...`);
+        console.log(`   L2 Signature: ${signature?.substring(0, 20)}...`);
         console.log(`   Pubkey: ${pubkey?.substring(0, 20)}...`);
         
-        const response = await fetch(`${L2_API_URL}/bridge/withdrawal/request`, {
+        if (signBtn) signBtn.textContent = '⏳ Requesting PSBT...';
+        
+        // Step 1: Request withdrawal with UTXO - backend creates PSBT
+        const response = await fetch(`${L2_API_URL}/bridge/withdrawal/user-funded`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                account_id: l2Account,  // Backend accepts L1 address
-                credits_amount: credits.toString(),
+                account_id: l2Account,
+                amount: amount,
                 l1_address: l1Address,
                 signature,
                 pubkey,
-                nonce  // Send nonce for verification
+                nonce,
+                fee_rate: withdrawalFeeRates[selectedFeeRate],
+                fee_utxo: {
+                    txid: selectedFeeUtxo.txid,
+                    vout: selectedFeeUtxo.vout,
+                    value: selectedFeeUtxo.value,
+                    scriptPubKey: selectedFeeUtxo.scriptPubKey || ''
+                },
+                l2_fee: l2Fee
             })
         });
         
         const result = await response.json();
         
         if (!response.ok) {
-            throw new Error(result.error || 'Withdrawal request failed');
+            throw new Error(result.error || 'Failed to create withdrawal PSBT');
         }
         
-        console.log('✅ Withdrawal requested!', result);
+        console.log('✅ PSBT created:', result.withdrawal_id);
         
-        // Show success with challenge period info
-        const challengeEnd = new Date(result.challenge_end);
+        if (signBtn) signBtn.textContent = '⏳ Signing PSBT...';
+        
+        // Step 2: Sign the PSBT (user's input only)
+        const signedPsbt = await signWithdrawalPsbt(result.partial_psbt, password);
+        
+        console.log('✅ PSBT signed by user');
+        
+        if (signBtn) signBtn.textContent = '⏳ Submitting...';
+        
+        // Step 3: Submit signed PSBT back to backend
+        const submitResponse = await fetch(`${L2_API_URL}/bridge/withdrawal/${result.withdrawal_id}/submit-signed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                signed_psbt: signedPsbt
+            })
+        });
+        
+        const submitResult = await submitResponse.json();
+        
+        if (!submitResponse.ok) {
+            throw new Error(submitResult.error || 'Failed to submit signed PSBT');
+        }
+        
+        console.log('✅ Withdrawal submitted!', submitResult);
+        
+        // Clear pending withdrawal
+        pendingL2Withdrawal = null;
+        selectedFeeUtxo = null;
+        
+        // Calculate time remaining
+        const challengeEnd = new Date(submitResult.challenge_deadline || result.challenge_deadline);
         const hoursRemaining = Math.ceil((challengeEnd - Date.now()) / (1000 * 60 * 60));
         
+        // Show success
         window.showNotification(
-            `✅ Withdrawal requested!\n${amount} KRAY will be sent to L1 after ${hoursRemaining}h challenge period.`, 
+            `✅ Withdrawal signed! ${receiveAmount} KRAY will arrive at your L1 address after ~${hoursRemaining}h challenge period.`, 
             'success'
         );
         
-        // Refresh balance
-        await loadL2Data();
+        // Go back to wallet screen
+        if (showScreenFn) {
+            showScreenFn('wallet');
+        }
         
-        // Go back to L2 dashboard
-        window.switchNetwork('kray-l2');
+        // Refresh data in background
+        refreshL2Data();
         
     } catch (error) {
         console.error('❌ Withdrawal error:', error);
         window.showNotification('Withdrawal failed: ' + error.message, 'error');
+        
+        // Reset button
+        if (signBtn) {
+            signBtn.disabled = false;
+            signBtn.textContent = '🔐 Sign & Request';
+        }
     }
 }
 
 /**
+ * Sign withdrawal PSBT (user's input only)
+ */
+async function signWithdrawalPsbt(psbtBase64, password) {
+    console.log('✍️ Signing withdrawal PSBT...');
+    
+    // Send to background script to sign
+    const result = await chrome.runtime.sendMessage({
+        action: 'signPsbtWithPassword',
+        data: { 
+            psbt: psbtBase64, 
+            password,
+            inputsToSign: [0]  // Only sign input 0 (user's fee UTXO)
+        }
+    });
+    
+    if (!result || !result.success) {
+        throw new Error(result?.error || 'Failed to sign PSBT');
+    }
+    
+    return result.signedPsbt;
+}
+
+/**
  * Get swap quote
+ * 🔥 1:1 mapping - KRAY is integer (divisibility: 0)
  */
 async function getSwapQuote(amountIn) {
     try {
-        // TODO: Get real pool ID
         const poolId = 'pool_kray_btc';
-        const credits = Math.floor(amountIn * 1000);
+        const amount = parseInt(amountIn); // 1:1, no conversion
         
         const response = await fetch(`${L2_API_URL}/defi/quote`, {
             method: 'POST',
@@ -1190,14 +2031,14 @@ async function getSwapQuote(amountIn) {
             body: JSON.stringify({
                 pool_id: poolId,
                 token_in: 'KRAY',
-                amount_in: credits.toString()
+                amount_in: amount.toString()
             })
         });
         
         if (response.ok) {
             const quote = await response.json();
             
-            // Display quote
+            // Display quote (BTC has 8 decimals)
             document.getElementById('l2-swap-amount-out').value = (parseInt(quote.amount_out) / 100000000).toFixed(8);
             document.getElementById('l2-swap-price').textContent = `1 KRAY = ${quote.effective_price.toFixed(8)} BTC`;
             document.getElementById('l2-swap-impact').textContent = `${quote.price_impact.toFixed(2)}%`;
@@ -1222,7 +2063,7 @@ async function executeSwap() {
     }
     
     try {
-        const credits = Math.floor(amountIn * 1000);
+        const amount = parseInt(amountIn); // 1:1, no conversion
         const poolId = `pool_kray_${tokenOut.toLowerCase()}`;
         
         const response = await fetch(`${L2_API_URL}/defi/swap`, {
@@ -1232,7 +2073,7 @@ async function executeSwap() {
                 pool_id: poolId,
                 account_id: l2Account,
                 token_in: 'KRAY',
-                amount_in: credits.toString(),
+                amount_in: amount.toString(),
                 min_amount_out: '0'
             })
         });
@@ -1304,10 +2145,63 @@ async function refreshL2Data() {
     
     await updateL2Balance();
     await updateL2Transactions();
+    await updatePendingWithdrawals();
     displayL2Balance();
     displayL2Transactions();
+    displayPendingWithdrawals();
     
     console.log('✅ L2 data refreshed');
+}
+
+// Auto-refresh interval for pending withdrawals (every 30 seconds)
+let pendingRefreshInterval = null;
+
+/**
+ * Start auto-refresh for pending withdrawals
+ */
+function startPendingWithdrawalsRefresh() {
+    // Clear existing interval
+    if (pendingRefreshInterval) {
+        clearInterval(pendingRefreshInterval);
+    }
+    
+    // Refresh every 30 seconds
+    pendingRefreshInterval = setInterval(async () => {
+        if (pendingWithdrawals.length > 0) {
+            console.log('🔄 Auto-refreshing pending withdrawals...');
+            await updatePendingWithdrawals();
+            displayPendingWithdrawals();
+            
+            // Check for status changes and notify user
+            checkWithdrawalStatusChanges();
+        }
+    }, 30000);
+    
+    console.log('⏰ Pending withdrawals auto-refresh started (30s interval)');
+}
+
+/**
+ * Check for withdrawal status changes and notify user
+ */
+let lastWithdrawalStatuses = {};
+
+function checkWithdrawalStatusChanges() {
+    for (const w of pendingWithdrawals) {
+        const lastStatus = lastWithdrawalStatuses[w.id];
+        
+        if (lastStatus && lastStatus !== w.display_status) {
+            // Status changed!
+            if (w.display_status === 'processing') {
+                window.showNotification?.('🚀 Withdrawal is now processing! Broadcasting soon...', 'success');
+            } else if (w.status === 'completed') {
+                window.showNotification?.(`✅ Withdrawal of ${parseInt(w.amount_l1).toLocaleString()} KRAY completed!`, 'success');
+            } else if (w.status === 'failed') {
+                window.showNotification?.(`❌ Withdrawal failed: ${w.error_message || 'Unknown error'}`, 'error');
+            }
+        }
+        
+        lastWithdrawalStatuses[w.id] = w.display_status;
+    }
 }
 
 // Make showScreen available in module scope
