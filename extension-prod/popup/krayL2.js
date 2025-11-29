@@ -8,8 +8,8 @@
 // L2 API Configuration
 // Try production first, fallback to localhost for development
 const L2_API_URLS = [
-    'https://kray-l2.onrender.com',  // Production (Render)
-    'http://localhost:5002'           // Development (local)
+    'https://kraywallet-backend.onrender.com/l2',  // Production (Render - integrated)
+    'http://localhost:5002'                         // Development (local standalone)
 ];
 
 let L2_API_URL = L2_API_URLS[0]; // Default to production
