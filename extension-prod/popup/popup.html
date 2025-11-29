@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyWallet - Bitcoin Wallet</title>
+    <link rel="icon" type="image/png" href="../assets/icon-48.png">
+    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="krayL2.css">
+</head>
+<body>
+    
+    <!-- ========================================
+         TELA: LOADING (Initial load)
+         ======================================== -->
+    <div id="loading-screen" class="screen">
+        <div class="loading-container">
+            <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading wallet...</p>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         TELA: UNLOCK WALLET (Wallet Locked)
+         ======================================== -->
+    <div id="unlock-screen" class="screen hidden">
+        <div class="unlock-container">
+            <img src="../assets/logo.png" alt="MyWallet" class="logo-large" />
+            <h1 class="unlock-title">Welcome back</h1>
+            <p class="unlock-subtitle">Enter your password to unlock</p>
+            
+            <div class="unlock-form">
+                <div class="form-group">
+                    <input 
+                        type="password" 
+                        id="unlock-password" 
+                        class="input-field unlock-input" 
+                        placeholder="Enter password"
+                        autocomplete="off"
+                        autofocus 
+                    />
+                </div>
+                
+                <button id="unlock-wallet-btn" class="btn btn-primary btn-large">
+                    Unlock Wallet
+                </button>
+                
+                <div class="unlock-links">
+                    <button id="forgot-wallet-btn" class="btn-text">
+                        Forgot password? <strong>Restore wallet</strong>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: BEM-VINDO (No Wallet)
+         ======================================== -->
+    <div id="no-wallet-screen" class="screen hidden">
+        <div class="welcome-container">
+            <img src="../assets/logo.png" alt="MyWallet" class="logo-large" />
+            <h1>MyWallet</h1>
+            <p class="subtitle">Your Bitcoin Ordinals Wallet</p>
+            
+            <div class="welcome-actions">
+                <button id="create-wallet-btn" class="btn btn-primary btn-large">Create New Wallet</button>
+                <button id="restore-wallet-btn" class="btn btn-secondary btn-large">Restore Wallet</button>
+            </div>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <span class="feature-icon">⚡</span>
+                    <span>Taproot Support</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🔒</span>
+                    <span>Secure & Private</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🎨</span>
+                    <span>Ordinals & Runes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: CRIAR WALLET
+         ======================================== -->
+    <div id="create-wallet-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-create-btn" class="btn-back">←</button>
+            <h2>Create Wallet</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label>Mnemonic Length</label>
+                <select id="mnemonic-length" class="input-field">
+                    <option value="12">12 words (Recommended)</option>
+                    <option value="24">24 words (More secure)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="create-password" class="input-field" placeholder="Enter password" autocomplete="new-password" />
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirm-password" class="input-field" placeholder="Confirm password" autocomplete="new-password" />
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button type="button" id="generate-mnemonic-btn" class="btn btn-primary btn-large">Generate Wallet</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: MOSTRAR MNEMONIC
+         ======================================== -->
+    <div id="show-mnemonic-screen" class="screen hidden">
+        <div class="screen-header">
+            <div></div>
+            <h2>Backup Phrase</h2>
+            <div></div>
+        </div>
+        
+        <div class="alert alert-warning">
+            <strong>⚠️ Important</strong>
+            <p>Write down these words in order and keep them safe. Never share your recovery phrase with anyone.</p>
+        </div>
+
+        <div id="mnemonic-display" class="mnemonic-display"></div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="mnemonic-saved-check" />
+            <label for="mnemonic-saved-check">I have securely saved my recovery phrase</label>
+        </div>
+
+        <div class="form-footer">
+            <button id="mnemonic-saved-btn" class="btn btn-primary btn-large" disabled>Continue</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: RESTAURAR WALLET
+         ======================================== -->
+    <div id="restore-wallet-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-restore-btn" class="btn-back">←</button>
+            <h2>Restore Wallet</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label>Recovery Phrase</label>
+                <textarea id="restore-mnemonic" class="input-field textarea-field" placeholder="Enter your 12 or 24 word recovery phrase" rows="4"></textarea>
+                <span class="helper-text">Separate each word with a space</span>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="restore-password" class="input-field" placeholder="Create new password" autocomplete="new-password" />
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button id="restore-btn" class="btn btn-primary btn-large">Restore Wallet</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: WALLET PRINCIPAL
+         ======================================== -->
+    <div id="wallet-screen" class="screen hidden">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="network-selector">
+                <button id="network-dropdown-btn" class="network-dropdown-btn">
+                    <span id="current-network-label">
+                        <img src="../images/bitcoin.png" 
+                             alt="Bitcoin" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                             style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px; display: inline;" />
+                        <span style="display: none;">🔗</span>
+                        Mainnet
+                    </span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div id="network-dropdown-menu" class="network-dropdown-menu hidden">
+                    <button class="network-option" data-network="mainnet">
+                        <span class="network-icon">
+                            <img src="../images/bitcoin.png" 
+                                 alt="Bitcoin" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                                 style="width: 14px; height: 14px; vertical-align: middle; display: inline;" />
+                            <span style="display: none;">🔗</span>
+                        </span>
+                        <span class="network-name">Mainnet</span>
+                    </button>
+                    <!-- Lightning (commented for now - using KRAY L2 instead) 
+                    <button class="network-option" data-network="lightning">
+                        <span class="network-icon">⚡</span>
+                        <span class="network-name">Lightning</span>
+                    </button>
+                    -->
+                    <button class="network-option" data-network="kray-l2">
+                        <span class="network-icon">
+                            <img src="../assets/kray-space.webp" 
+                                 alt="KRAY L2" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                                 style="width: 14px; height: 14px; vertical-align: middle; display: inline; border-radius: 3px;" />
+                            <span style="display: none;">⚡</span>
+                        </span>
+                        <span class="network-name">KRAY L2</span>
+                    </button>
+                    <button class="network-option" data-network="testnet">
+                        <span class="network-icon">🧪</span>
+                        <span class="network-name">Testnet</span>
+                    </button>
+                </div>
+            </div>
+            <button id="settings-btn" class="btn-icon-only">⚙️</button>
+        </div>
+
+        <!-- Account Card -->
+        <div class="account-card">
+            <div class="account-info">
+                <span class="account-label">My Wallet</span>
+                <div class="address-container">
+                    <span id="wallet-address" class="address-text">bc1p...</span>
+                    <button id="copy-address-btn" class="btn-icon-copy" title="Copy address">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Section -->
+        <div class="balance-section">
+            <div class="balance-icon-container" id="balance-icon-container">
+                <img src="../images/bitcoin.png" 
+                     alt="Bitcoin" 
+                     class="balance-network-icon" 
+                     id="balance-network-icon"
+                     onerror="this.style.display='none'; document.getElementById('balance-network-emoji').style.display='inline';" />
+                <span class="balance-network-emoji" id="balance-network-emoji" style="display: none;">₿</span>
+            </div>
+            <span id="balance-label" class="balance-label">Total Balance</span>
+            <div id="wallet-balance" class="balance-amount">0 sats</div>
+            <div id="wallet-balance-btc" class="balance-fiat">0.00000000 BTC</div>
+            <!-- Lightning info (hidden by default) -->
+            <div id="lightning-info" class="lightning-info hidden">
+                <div class="lightning-stat">📡 <span id="lightning-channels-text">0 channels active</span></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons (Mainnet & Lightning) -->
+        <div class="action-buttons">
+            <button id="send-btn" class="action-btn">
+                <span class="action-icon">↑</span>
+                <span>Send</span>
+            </button>
+            <button id="receive-btn" class="action-btn">
+                <span class="action-icon">↓</span>
+                <span>Receive</span>
+            </button>
+        </div>
+
+        <!-- Lightning Network Actions (hidden by default) -->
+        <div id="lightning-actions" class="lightning-actions hidden">
+            <!-- Lightning Send & Receive (Principal) -->
+            <div class="lightning-main-actions">
+                <button id="send-lightning-btn" class="lightning-main-btn">
+                    <span class="lightning-main-icon">↑</span>
+                    <span class="lightning-main-label">Send</span>
+                </button>
+                <button id="receive-lightning-btn" class="lightning-main-btn">
+                    <span class="lightning-main-icon">↓</span>
+                    <span class="lightning-main-label">Receive</span>
+                </button>
+            </div>
+            
+            <!-- Advanced Lightning Functions -->
+            <div class="lightning-actions-header">
+                <span class="lightning-actions-title">Advanced Functions</span>
+            </div>
+            <div class="lightning-actions-grid">
+                <button id="open-channel-btn" class="lightning-action-btn">
+                    <span class="lightning-action-icon">📡</span>
+                    <span class="lightning-action-label">Open Channel</span>
+                </button>
+                <button id="deposit-lightning-btn" class="lightning-action-btn">
+                    <span class="lightning-action-icon">💰</span>
+                    <span class="lightning-action-label">Deposit</span>
+                </button>
+                <button id="withdraw-lightning-btn" class="lightning-action-btn">
+                    <span class="lightning-action-icon">📤</span>
+                    <span class="lightning-action-label">Withdraw</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab active" data-tab="ordinals">Ordinals</button>
+            <button class="tab" data-tab="runes">Runes</button>
+            <button class="tab" data-tab="swap">Swap</button>
+            <button class="tab" data-tab="activity">Activity</button>
+        </div>
+
+        <!-- Tab Content: Ordinals -->
+        <div id="ordinals-tab" class="tab-content">
+            <div id="ordinals-list" class="grid-list">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading inscriptions...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Runes -->
+        <div id="runes-tab" class="tab-content hidden">
+            <!-- Create New Rune Button -->
+            <div style="padding: 16px 16px 8px;">
+                <button id="create-rune-btn" class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 20px;">✨</span>
+                    <span>Create New Rune</span>
+                </button>
+            </div>
+            
+            <div id="runes-list" class="grid-list">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading runes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Activity -->
+        <div id="activity-tab" class="tab-content hidden">
+            <div id="activity-list" class="list-view">
+                <div class="empty-state">
+                    <span class="empty-icon">📜</span>
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Swap (DEX) -->
+        <div id="swap-tab" class="tab-content hidden">
+            <!-- Create Pool Button -->
+            <div style="padding: 16px 16px 8px;">
+                <button id="create-pool-btn" class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 20px;">🏊</span>
+                    <span>Create Liquidity Pool</span>
+                </button>
+            </div>
+
+            <!-- Pool List -->
+            <div id="pools-list" style="padding: 16px;">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading liquidity pools...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KRAY L2 Content (shows when network = kray-l2) -->
+        <div id="kray-l2-content" class="hidden" style="padding-bottom: 20px;">
+            <!-- L2 Multi-Token Balances -->
+            <div style="padding: 20px 16px; background: var(--color-bg-secondary); margin: 16px; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">⚡</span>
+                        <div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">KRAY SPACE</div>
+                            <div style="font-size: 15px; font-weight: 700; color: #ffffff;">Layer 2</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); padding: 5px 10px; border-radius: 20px;">
+                        <span id="l2-status-dot" style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                        <span id="l2-status-text" style="font-size: 11px; color: #10b981; font-weight: 500;">Connected</span>
+                    </div>
+                </div>
+                
+                <!-- Multi-Token Balances -->
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 10px;">Your Tokens</div>
+                    <div style="display: grid; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; color: #888;">⚡ KRAY</span>
+                            <div style="text-align: right;">
+                                <div id="l2-balance-kray" style="font-size: 18px; font-weight: 700; color: #ffffff;">0.000</div>
+                                <div style="font-size: 10px; color: #666;">Gas Token</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="l2-dog-row">
+                            <span style="font-size: 13px; color: #888;">🐕 DOG</span>
+                            <div id="l2-balance-dog" style="font-size: 16px; font-weight: 600; color: #ffffff;">0.00000</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="l2-dogsocial-row">
+                            <span style="font-size: 13px; color: #888;">🎭 DOGSOCIAL</span>
+                            <div id="l2-balance-dogsocial" style="font-size: 16px; font-weight: 600; color: #ffffff;">0.00000</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="l2-radiola-row">
+                            <span style="font-size: 13px; color: #888;">🎵 RADIOLA</span>
+                            <div id="l2-balance-radiola" style="font-size: 16px; font-weight: 600; color: #ffffff;">0.00000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button id="l2-deposit-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                    <span style="font-size: 22px;">📥</span>
+                    <span style="font-size: 12px; color: #ffffff; font-weight: 500;">Deposit</span>
+                </button>
+                <button id="l2-withdraw-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                    <span style="font-size: 22px;">📤</span>
+                    <span style="font-size: 12px; color: #ffffff; font-weight: 500;">Withdraw</span>
+                </button>
+            </div>
+
+            <!-- L2 Features -->
+            <div style="padding: 0 16px; margin-bottom: 20px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #ffffff;">L2 Features</div>
+                
+                <div style="display: grid; gap: 10px;">
+                    <!-- Transfer -->
+                    <button id="l2-transfer-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+                        <div style="font-size: 24px;">⚡</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff;">Instant Transfer</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary);">Send KRAY in < 1 second</div>
+                        </div>
+                        <div style="color: var(--color-text-secondary); font-size: 18px;">→</div>
+                    </button>
+
+                    <!-- Swap -->
+                    <button id="l2-swap-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+                        <div style="font-size: 24px;">🔄</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff;">DeFi Swap</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary);">Trade instantly on L2</div>
+                        </div>
+                        <div style="color: var(--color-text-secondary); font-size: 18px;">→</div>
+                    </button>
+
+                    <!-- Marketplace -->
+                    <button id="l2-marketplace-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+                        <div style="font-size: 24px;">🏪</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff;">L2 Marketplace</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary);">Buy/Sell with zero wait</div>
+                        </div>
+                        <div style="color: var(--color-text-secondary); font-size: 18px;">→</div>
+                    </button>
+
+                    <!-- Rewards -->
+                    <button id="l2-rewards-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+                        <div style="font-size: 24px;">🎁</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff;">Rewards</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary);"><span id="l2-rewards-count">0</span> pending rewards</div>
+                        </div>
+                        <div style="color: var(--color-text-secondary); font-size: 18px;">→</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent L2 Transactions -->
+            <div style="padding: 0 16px 16px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Recent Transactions</div>
+                <div id="l2-transactions-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="empty-state" style="padding: 32px 16px; text-align: center; background: var(--color-bg-secondary); border-radius: 10px; border: 1px solid var(--color-border);">
+                        <span style="font-size: 40px; opacity: 0.3;">⚡</span>
+                        <p style="font-size: 12px; color: var(--color-text-secondary); margin: 12px 0 0;">No L2 transactions yet</p>
+                        <p style="font-size: 11px; color: var(--color-text-tertiary); margin: 6px 0 0;">Start using Layer 2 for instant transfers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: ENVIAR
+         ======================================== -->
+    <div id="send-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-send-btn" class="btn-back">←</button>
+            <h2>Send Bitcoin</h2>
+            <div></div>
+        </div>
+        
+        <!-- Protection Notice -->
+        <div style="margin: 16px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; border-radius: 8px;">
+            <div style="display: flex; align-items: start; gap: 12px;">
+                <div style="font-size: 24px; line-height: 1;">🛡️</div>
+                <div style="flex: 1;">
+                    <p style="font-size: 13px; font-weight: 600; color: #10b981; margin: 0 0 6px 0;">
+                        Protected UTXOs
+                    </p>
+                    <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0; line-height: 1.4;">
+                        Your Inscriptions and Runes are automatically protected. Only pure Bitcoin UTXOs will be used for this transaction.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label>Recipient Address</label>
+                <input type="text" id="send-address" class="input-field" placeholder="bc1p..." />
+            </div>
+
+            <div class="form-group">
+                <label>Amount (sats)</label>
+                <input type="number" id="send-amount" class="input-field" placeholder="0" />
+            </div>
+
+            <div class="form-group">
+                <label>Fee Rate (sat/vB)</label>
+                <select id="send-fee" class="input-field">
+                    <option value="loading" disabled selected>Loading fees...</option>
+                </select>
+                <div id="send-fee-custom-container" class="fee-custom-input" style="display: none;">
+                    <input type="number" id="send-fee-custom" class="input-field" placeholder="Enter custom fee rate" min="1" />
+                    <span class="helper-text">Minimum: 1 sat/vB</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button id="send-confirm-btn" class="btn btn-primary btn-large">Send Transaction</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: RECEBER
+         ======================================== -->
+    <div id="receive-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-receive-btn" class="btn-back">←</button>
+            <h2>Receive Bitcoin</h2>
+            <div></div>
+        </div>
+        
+        <div class="receive-container">
+            <div id="qr-code" class="qr-container">
+                <div class="qr-placeholder">⏳</div>
+            </div>
+            
+            <div class="receive-address-box">
+                <label>Your Address</label>
+                <div id="receive-address" class="receive-address">bc1p...</div>
+            </div>
+
+            <button id="copy-receive-address-btn" class="btn btn-primary btn-large">Copy Address</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: ENVIAR INSCRIPTION
+         ======================================== -->
+    <div id="send-inscription-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-send-inscription-btn" class="btn-back">←</button>
+            <h2>📤 Send Inscription</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <!-- Preview da Inscription -->
+            <div class="send-inscription-preview-container">
+                <div id="send-inscription-preview" class="send-inscription-preview">
+                    <div class="qr-placeholder">🖼️</div>
+                </div>
+                <div class="send-inscription-info">
+                    <div style="font-weight: 600; font-size: 14px;">Inscription <span id="send-inscription-id">#?</span></div>
+                    <div id="send-inscription-details" style="margin-top: 8px;">
+                        <!-- Preenchido dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning" style="margin-top: 16px;">
+                <strong>⚠️  Important!</strong>
+                <p style="font-size: 12px; margin-top: 4px;">
+                    Sending an inscription transfers it permanently to the recipient address.
+                    Make sure the address is correct!
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label>Recipient Address</label>
+                <input type="text" id="send-inscription-recipient" class="input-field" placeholder="bc1p..." />
+                <span class="helper-text">Taproot address (bc1p...)</span>
+            </div>
+
+            <div class="form-group">
+                <label>Fee Rate (sat/vB)</label>
+                <input type="number" id="send-inscription-fee" class="input-field" value="1" />
+                <span class="helper-text">Recommended: 1-5 sat/vB for inscriptions</span>
+            </div>
+
+            <!-- Info sobre o que vai ser enviado -->
+            <div class="transaction-summary">
+                <div class="summary-row">
+                    <span>Inscription Value:</span>
+                    <span id="send-inscription-value">600 sats</span>
+                </div>
+                <div class="summary-row">
+                    <span>Estimated Fee:</span>
+                    <span id="send-inscription-estimated-fee">~300 sats</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Required:</span>
+                    <span id="send-inscription-total">~900 sats</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button id="send-inscription-confirm-btn" class="btn btn-primary btn-large">Send Inscription</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: CONFIRM PSBT SIGNING
+         ======================================== -->
+    <div id="confirm-psbt-screen" class="screen hidden">
+        <div class="screen-header">
+            <div></div>
+            <h2>🔏 Sign Transaction</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info">
+                <strong>📋 Marketplace Transaction</strong>
+                <p>A website is requesting you to sign a transaction.</p>
+            </div>
+            
+            <div id="psbt-details-container" class="transaction-details">
+                <!-- Será preenchido dinamicamente pelo JavaScript -->
+                <div class="detail-row">
+                    <span class="label">Loading PSBT details...</span>
+                    <span class="value">⏳</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="psbt-confirm-password" class="input-field" placeholder="Enter your password" autocomplete="off" autofocus />
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="psbt-cancel-btn" class="btn btn-secondary btn-large">Cancel</button>
+            <button id="psbt-sign-btn" class="btn btn-primary btn-large">Sign & Send</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: SIGN MESSAGE (Para Likes)
+         ======================================== -->
+    <div id="sign-message-screen" class="screen hidden">
+        <div class="screen-header">
+            <div></div>
+            <h2>✍️ Sign Message</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info">
+                <strong>💝 Like Authentication</strong>
+                <p>Sign this message to authenticate your like.</p>
+            </div>
+            
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="label">Message:</span>
+                    <span class="value" id="message-to-sign" style="word-break: break-all; font-family: monospace; font-size: 11px;">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="message-sign-password" class="input-field" placeholder="Enter your password" autocomplete="off" autofocus />
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="message-cancel-btn" class="btn btn-secondary btn-large">Cancel</button>
+            <button id="message-sign-btn" class="btn btn-primary btn-large">Sign Message</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: CONFIRM LIGHTNING PAYMENT
+         ======================================== -->
+    <div id="confirm-lightning-payment-screen" class="screen hidden">
+        <div class="screen-header">
+            <div></div>
+            <h2>⚡ Lightning Payment</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(255, 159, 0, 0.1), rgba(255, 159, 0, 0.05)); border: 1px solid rgba(255, 159, 0, 0.3);">
+                <strong>⚡ Lightning Network Payment</strong>
+                <p>A website is requesting you to pay a Lightning invoice.</p>
+            </div>
+            
+            <div id="lightning-payment-details" class="transaction-details">
+                <div class="detail-row">
+                    <span class="label">Amount:</span>
+                    <span class="value" id="lightning-amount">⏳ Loading...</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Description:</span>
+                    <span class="value" id="lightning-description" style="word-break: break-word;">⏳ Loading...</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Destination:</span>
+                    <span class="value" id="lightning-destination" style="font-family: monospace; font-size: 10px; word-break: break-all;">⏳ Loading...</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Payment Hash:</span>
+                    <span class="value" id="lightning-payment-hash" style="font-family: monospace; font-size: 10px; word-break: break-all;">⏳ Loading...</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Expires:</span>
+                    <span class="value" id="lightning-expiry">⏳ Loading...</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="lightning-payment-password" class="input-field" placeholder="Enter your password" autocomplete="off" autofocus />
+            </div>
+            
+            <div id="lightning-payment-status" class="alert hidden" style="margin-top: 12px;">
+                <span id="lightning-payment-status-text"></span>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="lightning-payment-cancel-btn" class="btn btn-secondary btn-large">Cancel</button>
+            <button id="lightning-payment-confirm-btn" class="btn btn-primary btn-large" style="background: linear-gradient(135deg, #ff9f00, #ff7f00);">
+                ⚡ Pay Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: SEND LIGHTNING
+         ======================================== -->
+    <div id="send-lightning-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-send-lightning-btn" class="btn-back">←</button>
+            <h2>⚡ Send Lightning</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(255, 159, 0, 0.1), rgba(255, 159, 0, 0.05)); border: 1px solid rgba(255, 159, 0, 0.3);">
+                <strong>⚡ Lightning Network</strong>
+                <p>Pay Lightning invoices instantly with low fees.</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Lightning Invoice</label>
+                <textarea 
+                    id="send-lightning-invoice" 
+                    class="input-field" 
+                    rows="4"
+                    placeholder="lnbc..."
+                    style="font-family: monospace; font-size: 11px; resize: vertical;"
+                ></textarea>
+            </div>
+            
+            <div id="send-lightning-decoded-info" class="transaction-details hidden" style="margin-top: 12px;">
+                <div class="detail-row">
+                    <span class="label">Amount:</span>
+                    <span class="value" id="send-lightning-amount">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Description:</span>
+                    <span class="value" id="send-lightning-description">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="send-lightning-decode-btn" class="btn btn-secondary btn-large">Decode Invoice</button>
+            <button id="send-lightning-pay-btn" class="btn btn-primary btn-large" disabled style="background: linear-gradient(135deg, #ff9f00, #ff7f00);">
+                ⚡ Pay Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: RECEIVE LIGHTNING
+         ======================================== -->
+    <div id="receive-lightning-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-receive-lightning-btn" class="btn-back">←</button>
+            <h2>⚡ Receive Lightning</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(255, 159, 0, 0.1), rgba(255, 159, 0, 0.05)); border: 1px solid rgba(255, 159, 0, 0.3);">
+                <strong>⚡ Lightning Network</strong>
+                <p>Create an invoice to receive Lightning payments.</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Amount (sats)</label>
+                <input 
+                    type="number" 
+                    id="receive-lightning-amount" 
+                    class="input-field" 
+                    placeholder="1000"
+                    min="1"
+                    step="1"
+                />
+            </div>
+            
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <input 
+                    type="text" 
+                    id="receive-lightning-description" 
+                    class="input-field" 
+                    placeholder="Payment for..."
+                    maxlength="100"
+                />
+            </div>
+            
+            <div id="receive-lightning-invoice-display" class="hidden" style="margin-top: 16px;">
+                <div class="alert alert-success" style="background: #10b981; color: white;">
+                    <strong>✅ Invoice Created!</strong>
+                </div>
+                
+                <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; margin-top: 12px;">
+                    <label style="font-size: 11px; color: var(--color-text-secondary); display: block; margin-bottom: 6px;">Lightning Invoice:</label>
+                    <textarea 
+                        id="receive-lightning-invoice-text" 
+                        readonly
+                        style="width: 100%; font-family: monospace; font-size: 10px; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: 4px; padding: 8px; color: var(--color-text-primary); resize: none;"
+                        rows="4"
+                    ></textarea>
+                </div>
+                
+                <div id="receive-lightning-qr" style="text-align: center; margin-top: 16px;">
+                    <!-- QR Code será inserido aqui -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="receive-lightning-create-btn" class="btn btn-primary btn-large" style="background: linear-gradient(135deg, #ff9f00, #ff7f00);">
+                ⚡ Create Invoice
+            </button>
+            <button id="receive-lightning-copy-btn" class="btn btn-secondary btn-large hidden">
+                📋 Copy Invoice
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: OPEN CHANNEL
+         ======================================== -->
+    <div id="open-channel-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-open-channel-btn" class="btn-back">←</button>
+            <h2>📡 Open Channel</h2>
+            <div></div>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(255, 159, 0, 0.1), rgba(255, 159, 0, 0.05)); border: 1px solid rgba(255, 159, 0, 0.3);">
+                <strong>📡 Lightning Channel</strong>
+                <p>Open a channel to another Lightning node to send/receive payments.</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Node Public Key</label>
+                <input 
+                    type="text" 
+                    id="open-channel-pubkey" 
+                    class="input-field" 
+                    placeholder="03abc123..."
+                    style="font-family: monospace; font-size: 11px;"
+                />
+            </div>
+            
+            <div class="form-group">
+                <label>Channel Capacity (sats)</label>
+                <input 
+                    type="number" 
+                    id="open-channel-amount" 
+                    class="input-field" 
+                    placeholder="100000"
+                    min="20000"
+                    step="1000"
+                />
+                <span style="font-size: 10px; color: var(--color-text-secondary); display: block; margin-top: 4px;">
+                    Minimum: 20,000 sats (~0.0002 BTC)
+                </span>
+            </div>
+            
+            <div class="form-group">
+                <label>Host (optional)</label>
+                <input 
+                    type="text" 
+                    id="open-channel-host" 
+                    class="input-field" 
+                    placeholder="example.com:9735"
+                />
+                <span style="font-size: 10px; color: var(--color-text-secondary); display: block; margin-top: 4px;">
+                    Leave empty if node is already known
+                </span>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button id="open-channel-confirm-btn" class="btn btn-primary btn-large" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                📡 Open Channel
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: CONFIGURAÇÕES
+         ======================================== -->
+    <div id="settings-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-settings-btn" class="btn-back">←</button>
+            <h2>Settings</h2>
+            <div></div>
+        </div>
+        
+        <div class="settings-container">
+            <!-- Security Section -->
+            <div class="settings-section">
+                <h3>🔐 Security</h3>
+                <button id="view-mnemonic-btn" class="settings-item">
+                    <span>View Recovery Phrase</span>
+                    <span class="chevron">›</span>
+                </button>
+                <button id="view-private-key-btn" class="settings-item">
+                    <span>View Private Key</span>
+                    <span class="chevron">›</span>
+                </button>
+                <button id="export-wallet-btn" class="settings-item">
+                    <span>Export Wallet</span>
+                    <span class="chevron">›</span>
+                </button>
+            </div>
+
+            <!-- Security Section -->
+            <div class="settings-section">
+                <h3>🔒 Security</h3>
+                <div class="settings-item-static">
+                    <label>Auto-Lock Timer</label>
+                    <select id="autolock-timeout" class="input-field">
+                        <option value="5">5 minutes</option>
+                        <option value="15" selected>15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="0">Never</option>
+                    </select>
+                </div>
+                <button id="lock-wallet-btn" class="settings-item warning">
+                    <span>🔒 Lock Wallet Now</span>
+                    <span class="chevron">›</span>
+                </button>
+            </div>
+
+            <!-- Wallet Tools -->
+            <div class="settings-section">
+                <h3>🛠️ Wallet Tools</h3>
+                <button id="my-profile-btn" class="settings-item">
+                    <span>🎭 My Public Profile</span>
+                    <span class="chevron">›</span>
+                </button>
+                <button id="my-offers-btn" class="settings-item">
+                    <span>📋 My Market Listings</span>
+                    <span class="chevron">›</span>
+                </button>
+                <button id="split-utxos-btn" class="settings-item">
+                    <span>✂️ Split / Consolidate UTXOs</span>
+                    <span class="chevron">›</span>
+                </button>
+                <p class="helper-text" style="color: #888; font-size: 12px; margin-top: 8px; padding: 0 16px;">
+                    Separate Inscriptions, Runes, and pure BTC into different UTXOs
+                </p>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-section">
+                <h3>⚠️ Danger Zone</h3>
+                <button id="reset-wallet-btn" class="settings-item danger">
+                    <span>Reset Wallet</span>
+                    <span class="chevron">›</span>
+                </button>
+                <p class="warning-text">This will delete your wallet. Make sure you have saved your recovery phrase!</p>
+            </div>
+
+            <!-- About -->
+            <div class="settings-section">
+                <h3>ℹ️ About</h3>
+                <div class="info-row">
+                    <span>Version</span>
+                    <span>1.0.0</span>
+                </div>
+                <div class="info-row">
+                    <span>Network</span>
+                    <span id="current-network">Mainnet</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: VER MNEMONIC
+         ======================================== -->
+    <div id="view-mnemonic-security-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-mnemonic-view-btn" class="btn-back">←</button>
+            <h2>Recovery Phrase</h2>
+            <div></div>
+        </div>
+        
+        <div class="alert alert-danger">
+            <strong>⚠️ Never Share This</strong>
+            <p>Anyone with your recovery phrase can access your funds.</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-group">
+                <label>Enter Password</label>
+                <input type="password" id="view-mnemonic-password" class="input-field" placeholder="Password" autocomplete="off" />
+            </div>
+        </div>
+
+        <div id="mnemonic-display-security" class="mnemonic-display hidden"></div>
+
+        <div class="form-footer">
+            <button id="reveal-mnemonic-btn" class="btn btn-primary btn-large">Reveal Phrase</button>
+            <button id="copy-mnemonic-btn" class="btn btn-secondary btn-large hidden">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: SPLIT UTXOs
+         ======================================== -->
+    <!-- ========================================
+         TELA: LIST ON MARKET (Full Screen)
+         ======================================== -->
+    <div id="list-market-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-list-market-btn" class="btn-back">←</button>
+            <h2>🛒 List on Market</h2>
+            <div></div>
+        </div>
+        
+        <div class="list-market-content" style="padding: 16px; overflow-y: auto; max-height: calc(600px - 60px);">
+            <!-- Inscription Preview (Compact) -->
+            <div class="inscription-preview-large" style="margin-bottom: 16px;">
+                <div style="width: 100%; max-width: 240px; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--color-bg-secondary); display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-border); margin: 0 auto;">
+                    <img id="list-inscription-preview-large" src="" alt="Inscription" style="width: 100%; height: 100%; object-fit: contain;" />
+                </div>
+                <div style="margin-top: 12px; text-align: center;">
+                    <p id="list-inscription-number-large" style="font-size: 14px; font-weight: 600; margin: 0 0 4px 0; color: var(--color-text-primary);">Inscription #...</p>
+                    <p id="list-inscription-id-large" style="font-size: 9px; color: var(--color-text-secondary); margin: 0; font-family: monospace; opacity: 0.6;">ID: ...</p>
+                </div>
+            </div>
+            
+            <!-- Form Section -->
+            <div class="form-section">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label for="list-price-screen" style="font-size: 12px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px; display: block;">
+                        💰 Price
+                    </label>
+                    <input 
+                        type="number" 
+                        id="list-price-screen" 
+                        class="input-field"
+                        placeholder="10,000"
+                        min="1000"
+                        step="1000"
+                        style="width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-bg-secondary); color: var(--color-text-primary);"
+                    />
+                    <span style="font-size: 10px; color: var(--color-text-secondary); display: block; margin-top: 4px; opacity: 0.7;">
+                        Minimum: 1,000 sats
+                    </span>
+                </div>
+                
+                
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label for="list-description-screen" style="font-size: 12px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px; display: block;">
+                        💬 Description (optional)
+                    </label>
+                    <textarea 
+                        id="list-description-screen" 
+                        class="input-field"
+                        rows="3"
+                        placeholder="Tell the story..."
+                        style="width: 100%; font-size: 12px; line-height: 1.5; padding: 10px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-bg-secondary); resize: vertical; color: var(--color-text-primary);"
+                        maxlength="500"
+                    ></textarea>
+                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 4px;">
+                        <span id="char-count" style="font-size: 9px; color: var(--color-text-secondary); opacity: 0.6;">
+                            0 / 500
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Summary Card -->
+                <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; margin: 12px 0;">
+                    <div style="text-align: center;">
+                        <p style="font-size: 10px; color: var(--color-text-secondary); margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; opacity: 0.7;">You Receive</p>
+                        <p id="summary-total-screen" style="font-size: 24px; font-weight: 700; margin: 0; color: var(--color-primary);">0 sats</p>
+                        <p style="font-size: 10px; color: var(--color-text-secondary); margin: 8px 0 0 0; opacity: 0.6;">
+                            Buyer pays fees
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Info Box -->
+                <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                    <p style="margin: 0 0 6px 0; font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">📋 Listed on marketplace</p>
+                    <p style="margin: 0 0 6px 0; font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">🔒 Stays in your wallet</p>
+                    <p style="margin: 0; font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">✅ Cancel anytime</p>
+                </div>
+                
+                <!-- Action Button -->
+                <button id="list-create-btn-screen" class="btn btn-primary btn-large" style="width: 100%; padding: 14px; font-size: 14px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, var(--color-primary), #5a67d8); border: none; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.25); transition: all 0.2s ease;">
+                    🛒 Create Listing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: MY MARKET LISTINGS
+         ======================================== -->
+    <div id="my-offers-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-my-offers-btn" class="btn-back">←</button>
+            <h2>📋 My Market Listings</h2>
+            <div></div>
+        </div>
+        
+        <div class="my-offers-container" style="padding: 16px;">
+            <!-- Loading state -->
+            <div id="my-offers-loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your listings...</p>
+            </div>
+            
+            <!-- Empty state -->
+            <div id="my-offers-empty" class="empty-state hidden">
+                <span class="empty-icon">📭</span>
+                <p>No active listings</p>
+                <p style="color: #888; font-size: 13px; margin-top: 8px;">
+                    List inscriptions from the Ordinals tab to start selling
+                </p>
+            </div>
+            
+            <!-- Offers list -->
+            <div id="my-offers-list" class="hidden">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: MY PUBLIC PROFILE
+         ======================================== -->
+    <div id="my-profile-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-profile-btn" class="btn-back">←</button>
+            <h2>🎭 My Public Profile</h2>
+            <div></div>
+        </div>
+        
+        <div class="profile-container" style="padding: 16px;">
+            <!-- Profile Header -->
+            <div class="profile-header" style="text-align: center; padding: 24px 16px; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); border-radius: 12px; margin-bottom: 16px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 3px solid rgba(255,255,255,0.3);">
+                    🎭
+                </div>
+                <p id="profile-address" style="font-size: 13px; color: rgba(255,255,255,0.9); word-break: break-all; font-family: monospace; margin: 0 0 8px 0;">
+                    Loading...
+                </p>
+                <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin: 0;">
+                    Your decentralized marketplace profile
+                </p>
+            </div>
+            
+            <!-- Stats -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div style="text-align: center; padding: 16px; background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);">
+                    <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);" id="profile-listings-count">0</div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">Listings</div>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);">
+                    <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);" id="profile-inscriptions-count">0</div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">Inscriptions</div>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);">
+                    <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);" id="profile-runes-count">0</div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">Runes</div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button id="open-external-profile-btn" class="btn btn-primary" style="width: 100%; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600;">
+                    <span>🌐</span>
+                    <span>Open Full Profile (External)</span>
+                    <span style="opacity: 0.7;">↗</span>
+                </button>
+                
+                <button id="share-profile-btn" class="btn btn-secondary" style="width: 100%; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);">
+                    <span>📱</span>
+                    <span>Share Profile Link</span>
+                </button>
+            </div>
+            
+            <!-- Loading state -->
+            <div id="profile-loading" class="loading-state hidden" style="margin-top: 24px;">
+                <div class="spinner"></div>
+                <p>Loading profile data...</p>
+            </div>
+            
+            <!-- Tabs -->
+            <div id="profile-tabs" class="hidden" style="margin-top: 24px;">
+                <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--color-border); margin-bottom: 16px;">
+                    <button class="profile-tab active" data-tab="ordinals" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid var(--color-primary); color: var(--color-primary); font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: -2px; transition: all 0.3s;">
+                        🖼️ Ordinals
+                    </button>
+                    <button class="profile-tab" data-tab="runes" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--color-text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: -2px; transition: all 0.3s;">
+                        🪙 Runes
+                    </button>
+                    <button class="profile-tab" data-tab="pools" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--color-text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: -2px; transition: all 0.3s;">
+                        💧 Pools
+                    </button>
+                </div>
+                
+                <!-- Tab Content: Ordinals -->
+                <div id="profile-tab-ordinals" class="profile-tab-content">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="font-size: 14px; font-weight: 600; margin: 0;">Active Listings</h3>
+                        <button id="view-all-ordinals-btn" style="background: none; border: none; color: var(--color-primary); font-size: 12px; cursor: pointer; padding: 4px 8px;">
+                            View All →
+                        </button>
+                    </div>
+                    
+                    <!-- Empty state -->
+                    <div id="profile-ordinals-empty" class="hidden" style="text-align: center; padding: 40px 16px; color: var(--color-text-secondary);">
+                        <div style="font-size: 40px; margin-bottom: 12px;">📭</div>
+                        <p style="font-size: 13px; margin: 0;">No Ordinals listings</p>
+                    </div>
+                    
+                    <!-- Listings -->
+                    <div id="profile-ordinals-list">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Tab Content: Runes -->
+                <div id="profile-tab-runes" class="profile-tab-content hidden">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="font-size: 14px; font-weight: 600; margin: 0;">Active Listings</h3>
+                    </div>
+                    
+                    <!-- Empty state -->
+                    <div id="profile-runes-empty" style="text-align: center; padding: 40px 16px; color: var(--color-text-secondary);">
+                        <div style="font-size: 40px; margin-bottom: 12px;">📭</div>
+                        <p style="font-size: 13px; margin: 0;">No Runes listings</p>
+                    </div>
+                    
+                    <!-- Listings -->
+                    <div id="profile-runes-list" class="hidden">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Tab Content: Liquidity Pools -->
+                <div id="profile-tab-pools" class="profile-tab-content hidden">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="font-size: 14px; font-weight: 600; margin: 0;">Active Listings</h3>
+                    </div>
+                    
+                    <!-- Empty state -->
+                    <div id="profile-pools-empty" style="text-align: center; padding: 40px 16px; color: var(--color-text-secondary);">
+                        <div style="font-size: 40px; margin-bottom: 12px;">📭</div>
+                        <p style="font-size: 13px; margin: 0;">No Pool listings</p>
+                    </div>
+                    
+                    <!-- Listings -->
+                    <div id="profile-pools-list" class="hidden">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: SPLIT UTXOs
+         ======================================== -->
+    <div id="split-utxos-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-split-btn" class="btn-back">←</button>
+            <h2>✂️ Split UTXOs</h2>
+            <div></div>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div class="alert" style="background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; padding: 12px; margin-bottom: 20px;">
+                <strong>💡 Tip</strong>
+                <p style="font-size: 13px; margin-top: 4px;">Use this to separate Inscriptions, Runes, and pure BTC into individual UTXOs for better control.</p>
+            </div>
+
+            <!-- UTXO Selection -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #ccc; font-size: 14px; margin-bottom: 8px; font-weight: 600;">Select UTXOs to Split:</label>
+                <div id="split-utxo-list" style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto;">
+                    <div style="color: #888; text-align: center; padding: 20px;">Loading UTXOs...</div>
+                </div>
+            </div>
+
+            <!-- Output Configuration -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #ccc; font-size: 14px; margin-bottom: 8px; font-weight: 600;">Output Configuration:</label>
+                <div id="split-outputs-list" style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px; max-height: 250px; overflow-y: auto;">
+                    <!-- Outputs will be added dynamically -->
+                </div>
+                <button id="add-split-output-btn" class="btn btn-secondary" style="width: 100%; margin-top: 12px; padding: 10px; font-size: 13px;">
+                    + Add Output
+                </button>
+            </div>
+
+            <!-- Summary -->
+            <div id="split-summary" style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 20px; display: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #888;">Total Input:</span>
+                    <span id="split-total-input" style="color: #fff; font-weight: 600;">0 sats</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #888;">Total Output:</span>
+                    <span id="split-total-output" style="color: #fff; font-weight: 600;">0 sats</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #888;">Est. Fee:</span>
+                    <span id="split-est-fee" style="color: #fbbf24; font-weight: 600;">0 sats</span>
+                </div>
+            </div>
+
+            <!-- Execute Button -->
+            <button id="execute-split-btn" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 600; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);" disabled>
+                ✂️ Execute Split
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         TELA: VER PRIVATE KEY
+         ======================================== -->
+    <div id="view-private-key-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-key-view-btn" class="btn-back">←</button>
+            <h2>Private Key</h2>
+            <div></div>
+        </div>
+        
+        <div class="alert alert-danger">
+            <strong>⚠️ Extremely Sensitive</strong>
+            <p>This key gives full control of your wallet. Never share it.</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-group">
+                <label>Enter Password</label>
+                <input type="password" id="view-key-password" class="input-field" placeholder="Password" autocomplete="off" />
+            </div>
+        </div>
+
+        <div id="private-key-display" class="key-display hidden"></div>
+
+        <div class="form-footer">
+            <button id="reveal-key-btn" class="btn btn-primary btn-large">Reveal Key</button>
+            <button id="copy-key-btn" class="btn btn-secondary btn-large hidden">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner-large"></div>
+        <p id="loading-text" class="loading-text">Processing...</p>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Password Confirmation Modal -->
+    <div id="password-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>🔐 Confirm Transaction</h3>
+                <button id="close-password-modal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Enter your password to authorize this transaction:</p>
+                
+                <div class="transaction-summary">
+                    <div class="summary-row">
+                        <span class="summary-label">To:</span>
+                        <span id="confirm-to-address" class="summary-value"></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Amount:</span>
+                        <span id="confirm-amount" class="summary-value"></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Fee Rate:</span>
+                        <span id="confirm-fee-rate" class="summary-value"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="confirm-password-input" class="input-field" placeholder="Enter your password" autocomplete="off" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-send-btn" class="btn btn-secondary btn-large">Cancel</button>
+                <button id="confirm-send-btn" class="btn btn-primary btn-large">Confirm & Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KRAY L2: DEPOSIT SCREEN
+         ======================================== -->
+    <div id="l2-deposit-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-deposit-btn" class="btn-back">←</button>
+            <h2>Deposit to L2</h2>
+            <div></div>
+        </div>
+
+        <!-- Info Card -->
+        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 600; color: #8b5cf6; margin-bottom: 8px;">📥 How it Works</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.5;">
+                1. Send KRAY to the bridge address<br>
+                2. Wait 6 confirmations (~60 min)<br>
+                3. Credits minted automatically on L2<br>
+                4. Start using instant L2 features!
+            </div>
+        </div>
+
+        <!-- Bridge Address -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #ffffff; font-size: 14px; margin-bottom: 10px; font-weight: 600;">
+                Bridge Multisig Address
+            </label>
+            <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 12px;">
+                <div style="flex: 1; font-family: monospace; font-size: 11px; color: #ffffff; word-break: break-all;" id="l2-bridge-address">
+                    Loading...
+                </div>
+                <button id="copy-bridge-address-btn" style="background: rgba(139, 92, 246, 0.2); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: #8b5cf6; font-size: 11px; font-weight: 600;">
+                    Copy
+                </button>
+            </div>
+        </div>
+
+        <!-- QR Code -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div id="l2-bridge-qr" style="display: inline-block; padding: 16px; background: white; border-radius: 12px;">
+                <div style="width: 180px; height: 180px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #888;">
+                    Loading QR...
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">Conversion Rate</div>
+            <div style="font-size: 18px; font-weight: 700; color: #ffffff;">1 KRAY = 1,000 credits</div>
+            <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px;">3 decimal places on L2</div>
+        </div>
+
+        <!-- Warning -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px;">
+            <div style="font-size: 12px; color: #f59e0b; font-weight: 600; margin-bottom: 6px;">⚠️ Important</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">
+                Only send KRAY•SPACE to this address. Other assets will be lost. Minimum deposit: 1 KRAY.
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KRAY L2: TRANSFER SCREEN
+         ======================================== -->
+    <div id="l2-transfer-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-transfer-btn" class="btn-back">←</button>
+            <h2>L2 Transfer</h2>
+            <div></div>
+        </div>
+
+        <!-- Token Selector -->
+        <div class="form-group">
+            <label>Select Token</label>
+            <select id="l2-transfer-token" class="input-field" style="background: var(--color-bg-secondary); color: #ffffff;">
+                <option value="KRAY">⚡ KRAY (Gas Token)</option>
+                <option value="DOG">🐕 DOG•GO•TO•THE•MOON</option>
+                <option value="DOGSOCIAL">🎭 DOG•SOCIAL•CLUB</option>
+                <option value="RADIOLA">🎵 RADIOLA•MUSIC</option>
+            </select>
+            <span class="helper-text" id="l2-token-balance">Balance: Loading...</span>
+        </div>
+
+        <!-- Recipient -->
+        <div class="form-group">
+            <label>Recipient Address</label>
+            <input type="text" id="l2-transfer-recipient" class="input-field" placeholder="bc1p..." />
+            <span class="helper-text">Recipient's Bitcoin Taproot address (bc1p...)</span>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+            <label>Amount (KRAY)</label>
+            <input type="number" id="l2-transfer-amount" class="input-field" placeholder="0.000" step="0.001" min="0.001" />
+            <span class="helper-text">Minimum: 0.001 KRAY (1 credit)</span>
+        </div>
+
+        <!-- Gas Fee -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 12px; color: var(--color-text-secondary);">Gas Fee</div>
+                <div style="font-size: 14px; font-weight: 600; color: #10b981;">0.001 KRAY</div>
+            </div>
+            <div style="font-size: 10px; color: var(--color-text-tertiary); margin-top: 4px;">
+                50% burned • 50% to validators
+            </div>
+        </div>
+
+        <!-- Send Button -->
+        <button id="l2-transfer-send-btn" class="btn btn-primary btn-large" disabled>
+            ⚡ Send Instantly
+        </button>
+
+        <!-- Features -->
+        <div style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+            <div style="font-size: 11px; color: #10b981; text-align: center;">
+                ⚡ Instant confirmation • 🔥 50% gas burned • 💰 Low fees
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KRAY L2: SWAP SCREEN
+         ======================================== -->
+    <div id="l2-swap-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-swap-btn" class="btn-back">←</button>
+            <h2>L2 DeFi Swap</h2>
+            <div></div>
+        </div>
+
+        <!-- Balance Display -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px;">Available Balance</div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div id="l2-swap-balance" style="font-size: 24px; font-weight: 700; color: #ffffff;">0.000</div>
+                <div style="font-size: 14px; color: var(--color-text-secondary);">KRAY</div>
+            </div>
+        </div>
+
+        <!-- Swap Interface -->
+        <div style="margin-bottom: 16px;">
+            <!-- From Token -->
+            <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 8px;">
+                <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px;">From</div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="number" id="l2-swap-amount-in" class="input-field" placeholder="0.000" step="0.001" style="flex: 1; background: var(--color-bg-tertiary); border: none;" />
+                    <div style="background: rgba(139, 92, 246, 0.2); padding: 8px 16px; border-radius: 8px; color: #8b5cf6; font-weight: 600; font-size: 13px;">
+                        KRAY
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swap Arrow -->
+            <div style="text-align: center; margin: -4px 0;">
+                <div style="background: var(--color-bg-primary); display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--color-border);">
+                    <span style="font-size: 18px;">↓</span>
+                </div>
+            </div>
+
+            <!-- To Token -->
+            <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-top: 8px;">
+                <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px;">To (estimated)</div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="text" id="l2-swap-amount-out" class="input-field" placeholder="0.000" readonly style="flex: 1; background: var(--color-bg-tertiary); border: none; color: var(--color-text-secondary);" />
+                    <select id="l2-swap-token-out" style="background: rgba(16, 185, 129, 0.2); padding: 8px 16px; border-radius: 8px; color: #10b981; font-weight: 600; font-size: 13px; border: none; cursor: pointer;">
+                        <option value="BTC">BTC</option>
+                        <option value="USDT">USDT</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Info -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">Price</span>
+                <span id="l2-swap-price" style="font-size: 12px; color: #ffffff;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">Price Impact</span>
+                <span id="l2-swap-impact" style="font-size: 12px; color: #fbbf24;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">Gas Fee</span>
+                <span style="font-size: 12px; color: #10b981;">0.005 KRAY</span>
+            </div>
+        </div>
+
+        <!-- Swap Button -->
+        <button id="l2-swap-execute-btn" class="btn btn-primary btn-large" disabled>
+            🔄 Swap Instantly
+        </button>
+
+        <!-- Pool Info -->
+        <div style="margin-top: 16px; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 11px; color: var(--color-text-secondary); text-align: center;">
+                Pool: KRAY/BTC • TVL: - • 24h Volume: -
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KRAY L2: WITHDRAWAL SCREEN
+         ======================================== -->
+    <div id="l2-withdraw-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-withdraw-btn" class="btn-back">←</button>
+            <h2>Withdraw to L1</h2>
+            <div></div>
+        </div>
+
+        <!-- Balance Display -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px;">L2 Balance</div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div id="l2-withdraw-balance" style="font-size: 24px; font-weight: 700; color: #ffffff;">0.000</div>
+                <div style="font-size: 14px; color: var(--color-text-secondary);">KRAY</div>
+            </div>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+            <label>Amount (KRAY)</label>
+            <input type="number" id="l2-withdraw-amount" class="input-field" placeholder="0.000" step="0.001" min="1" />
+            <span class="helper-text">Minimum: 1 KRAY (whole numbers only)</span>
+        </div>
+
+        <!-- L1 Address -->
+        <div class="form-group">
+            <label>L1 Destination Address</label>
+            <input type="text" id="l2-withdraw-address" class="input-field" placeholder="bc1p..." />
+            <span class="helper-text">Your Bitcoin Taproot address</span>
+        </div>
+
+        <!-- Challenge Period Warning -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+            <div style="font-size: 12px; color: #f59e0b; font-weight: 600; margin-bottom: 6px;">⏰ 24 Hour Challenge Period</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.4;">
+                After requesting withdrawal, there's a 24 hour security period. If no fraud is detected, KRAY will be sent to your L1 address.
+            </div>
+        </div>
+
+        <!-- Fee Info -->
+        <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">Withdrawal Fee</span>
+                <span style="font-size: 12px; color: #ffffff;">0.100 KRAY</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 11px; color: var(--color-text-secondary);">L1 Transaction Fee</span>
+                <span style="font-size: 12px; color: #fbbf24;">~10-50 sats</span>
+            </div>
+        </div>
+
+        <!-- Withdraw Button -->
+        <button id="l2-withdraw-execute-btn" class="btn btn-primary btn-large" disabled>
+            📤 Request Withdrawal
+        </button>
+    </div>
+
+    <script src="TEST_VERSION.js"></script>
+    <script src="krayL2.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

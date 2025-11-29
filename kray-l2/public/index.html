@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRAY SPACE L2 - Bitcoin Layer 2 Explorer</title>
+    <meta name="description" content="KRAY SPACE Layer 2 - Instant Bitcoin transactions with KRAY•SPACE token">
+    <link rel="icon" type="image/png" href="/images/kray-station-logo.png">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/header-component.js"></script>
+</head>
+<body>
+    <!-- Header injetado automaticamente por header-component.js -->
+
+    <!-- HERO L2 -->
+    <section class="hero-minimal">
+        <div class="container">
+            <div class="hero-content-minimal">
+                <h1 class="hero-title-minimal">
+                    ⚡ KRAY SPACE L2
+                </h1>
+                
+                <p class="hero-subtitle-minimal">
+                    Bitcoin Layer 2 powered by KRAY•SPACE token. Instant transactions, zero wait.
+                </p>
+                
+                <div class="hero-buttons">
+                    <a href="#bridge" class="btn-primary">
+                        Bridge to L2
+                    </a>
+                    <a href="/krayscan.html" class="btn-secondary">
+                        L1 Explorer
+                    </a>
+                </div>
+                
+                <!-- FEATURES LINE - KRAY L2 ACTIVE! -->
+                <div class="features-line-simple">
+                    <span class="feature-badge live">
+                        <span class="status-indicator"></span>
+                        KrayScan
+                    </span>
+                    <span class="separator">•</span>
+                    
+                    <span class="feature-badge live">
+                        <span class="status-indicator"></span>
+                        Ordinals
+                    </span>
+                    <span class="separator">•</span>
+                    
+                    <span class="feature-badge live">
+                        <span class="status-indicator"></span>
+                        Runes
+                    </span>
+                    <span class="separator">•</span>
+                    
+                    <span class="feature-badge live">
+                        <span class="status-indicator"></span>
+                        KRAY L2
+                    </span>
+                    <span class="separator">•</span>
+                    
+                    <span class="feature-badge offline">
+                        <span class="status-indicator"></span>
+                        Swap
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- L2 STATS -->
+    <section style="padding: 60px 0; background: #0a0a0a;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 60px;">
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px; text-align: center;">
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 12px;">Network Status</div>
+                    <div style="font-size: 42px; font-weight: 700; margin-bottom: 8px;" id="network-status">●Online</div>
+                    <div style="font-size: 14px; color: #666;">kray-mainnet-1</div>
+                </div>
+                
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px; text-align: center;">
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 12px;">Total Accounts</div>
+                    <div style="font-size: 42px; font-weight: 700; margin-bottom: 8px; color: #8b5cf6;" id="total-accounts">0</div>
+                    <div style="font-size: 14px; color: #666;">L2 Users</div>
+                </div>
+                
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px; text-align: center;">
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 12px;">Transactions</div>
+                    <div style="font-size: 42px; font-weight: 700; margin-bottom: 8px; color: #10b981;" id="total-txs">0</div>
+                    <div style="font-size: 14px; color: #666;">< 1s finality</div>
+                </div>
+                
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px; text-align: center;">
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 12px;">Total Value Locked</div>
+                    <div style="font-size: 42px; font-weight: 700; margin-bottom: 8px; color: #fbbf24;" id="tvl">0</div>
+                    <div style="font-size: 14px; color: #666;" id="tvl-credits">0 credits</div>
+                </div>
+            </div>
+
+            <!-- BRIDGE SECTION -->
+            <div id="bridge" style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; margin-bottom: 40px;">
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px;">🌉 Bridge (L1 ↔ L2)</h2>
+                
+                <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                    <div style="font-size: 13px; color: #8b5cf6; font-weight: 600; margin-bottom: 12px;">MULTISIG ADDRESS (2-of-3 Tapscript)</div>
+                    <div style="font-family: monospace; font-size: 16px; color: #fff; word-break: break-all;" id="bridge-address">
+                        Loading...
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div style="padding: 16px; background: #0a0a0a; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Conversion Rate</div>
+                        <div style="font-size: 18px; font-weight: 600;">1 KRAY = 1,000 credits</div>
+                    </div>
+                    
+                    <div style="padding: 16px; background: #0a0a0a; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Confirmations</div>
+                        <div style="font-size: 18px; font-weight: 600;">6 blocks</div>
+                    </div>
+                    
+                    <div style="padding: 16px; background: #0a0a0a; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Challenge Period</div>
+                        <div style="font-size: 18px; font-weight: 600;">24 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VALIDATORS -->
+            <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px;">
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px;">🛡️ Validators Network</h2>
+                <div id="validators-list">
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        Loading validators...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER COMPACT -->
+    <footer class="footer-compact">
+        <div class="container">
+            <div class="footer-single-line">
+                <nav class="footer-nav">
+                    <a href="/">Home</a>
+                    <a href="/l2-explorer.html">L2 Explorer</a>
+                    <a href="/krayscan.html">KrayScan</a>
+                    <a href="/ordinals.html">Marketplace</a>
+                    <a href="https://github.com/tomkray" target="_blank">GitHub</a>
+                </nav>
+                
+                <div class="footer-meta">
+                    <span>© 2025 KRAY SPACE</span>
+                    <span class="dot">•</span>
+                    <span>Layer 2 Bitcoin</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:5002';
+
+        async function loadData() {
+            try {
+                // Health & Stats
+                const health = await fetch(`${API_URL}/health`).then(r => r.json());
+                document.getElementById('total-accounts').textContent = health.stats.accounts.toLocaleString();
+                document.getElementById('total-txs').textContent = health.stats.transactions.toLocaleString();
+                document.getElementById('tvl').textContent = (health.stats.totalBalance / 1000).toFixed(3) + ' KRAY';
+                document.getElementById('tvl-credits').textContent = health.stats.totalBalance.toLocaleString() + ' credits';
+
+                // Bridge Info
+                const bridge = await fetch(`${API_URL}/api/bridge/info`).then(r => r.json());
+                document.getElementById('bridge-address').textContent = bridge.multisig_address;
+
+                // Validators
+                const validators = await fetch(`${API_URL}/api/validator/list`).then(r => r.json());
+                const validatorsList = document.getElementById('validators-list');
+                
+                if (validators.total === 0) {
+                    validatorsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            No validators registered yet
+                        </div>
+                    `;
+                } else {
+                    validatorsList.innerHTML = `
+                        <div style="display: grid; gap: 16px;">
+                            ${validators.validators.map(v => `
+                                <div style="background: #0a0a0a; border: 1px solid #222; border-radius: 10px; padding: 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Validator</div>
+                                            <div style="font-family: monospace; font-size: 13px; color: #8b5cf6;">${v.pubkey}</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Stake</div>
+                                            <div style="font-size: 16px; font-weight: 600;">${v.staked_amount} KRAY</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', loadData);
+        
+        // Auto-refresh every 10s
+        setInterval(loadData, 10000);
+    </script>
+</body>
+</html>

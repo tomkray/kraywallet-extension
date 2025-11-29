@@ -1,0 +1,32 @@
+# KRAY SPACE L2 - Render Configuration
+# Deploy: Connect this repo to Render and it will auto-deploy
+
+services:
+  - type: web
+    name: kray-l2
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: kray-l2
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BITCOIN_NETWORK
+        value: mainnet
+      - key: DB_PATH
+        value: ./data/kray-l2.db
+      # QuickNode - set in Render dashboard (secret)
+      - key: QUICKNODE_ENDPOINT
+        sync: false
+      # Validator mnemonics - set in Render dashboard (secrets)
+      - key: VALIDATOR_1_MNEMONIC
+        sync: false
+      - key: VALIDATOR_2_MNEMONIC
+        sync: false
+      - key: VALIDATOR_3_MNEMONIC
+        sync: false
+

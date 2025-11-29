@@ -1,0 +1,156 @@
+/**
+ * KRAY SPACE L2 - Extension Styles
+ * 
+ * Matches KrayWallet's dark minimalist design
+ */
+
+/* L2 Tab Specific Styles */
+#l2-tab {
+    padding: 0;
+}
+
+/* L2 Feature Cards - Hover Effects */
+#l2-deposit-btn:hover,
+#l2-withdraw-btn:hover {
+    background: var(--color-bg-tertiary) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+#l2-transfer-btn:hover,
+#l2-swap-btn:hover,
+#l2-marketplace-btn:hover,
+#l2-rewards-btn:hover {
+    background: var(--color-bg-tertiary) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    transform: translateY(-1px);
+}
+
+/* L2 Transaction Item */
+.l2-transaction-item {
+    padding: 12px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.l2-transaction-item:hover {
+    background: var(--color-bg-tertiary);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.l2-transaction-icon {
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 50%;
+}
+
+.l2-transaction-info {
+    flex: 1;
+}
+
+.l2-transaction-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 3px;
+}
+
+.l2-transaction-time {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+}
+
+.l2-transaction-amount {
+    text-align: right;
+}
+
+.l2-transaction-amount-value {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.l2-transaction-amount-value.positive {
+    color: #34c759;
+}
+
+.l2-transaction-amount-value.negative {
+    color: #ff6b6b;
+}
+
+.l2-transaction-gas {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+}
+
+/* L2 Balance Gradient Background */
+.l2-balance-card {
+    background: linear-gradient(135deg, 
+        rgba(139, 92, 246, 0.05) 0%, 
+        rgba(99, 102, 241, 0.05) 100%
+    );
+}
+
+/* L2 Status Indicator Animation */
+@keyframes pulse-glow {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+    }
+}
+
+#l2-status-dot {
+    animation: pulse-glow 2s infinite;
+}
+
+/* L2 Empty State */
+.l2-empty-state {
+    padding: 40px 16px;
+    text-align: center;
+    background: var(--color-bg-secondary);
+    border-radius: 12px;
+    border: 1px dashed var(--color-border);
+}
+
+.l2-empty-icon {
+    font-size: 48px;
+    opacity: 0.2;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.l2-empty-text {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.l2-empty-subtext {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+}
+
+/* Ensure all text is visible */
+#l2-tab * {
+    color: inherit;
+}
+
+/* Override any black text */
+#l2-tab div:not([style*="color"]) {
+    color: #ffffff;
+}
+

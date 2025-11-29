@@ -1,0 +1,541 @@
+/* 
+ * ========================================
+ * KrayWallet - Apple Style Ultra Clean
+ * Design: SF Pro, Glass Morphism, Minimal
+ * ========================================
+ */
+
+/* ==========================================
+   CSS VARIABLES - APPLE STYLE
+   ========================================== */
+:root {
+    /* Colors - Apple Dark Mode */
+    --color-bg-primary: #000000;
+    --color-bg-secondary: rgba(18, 18, 18, 0.95);
+    --color-bg-tertiary: rgba(30, 30, 30, 0.8);
+    --color-bg-glass: rgba(255, 255, 255, 0.03);
+    --color-bg-glass-hover: rgba(255, 255, 255, 0.05);
+    
+    --color-text-primary: rgba(255, 255, 255, 0.95);
+    --color-text-secondary: rgba(255, 255, 255, 0.6);
+    --color-text-tertiary: rgba(255, 255, 255, 0.4);
+    
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.1);
+    --color-border-active: rgba(255, 255, 255, 0.15);
+    
+    --color-accent: #ffffff;
+    --color-accent-bg: rgba(255, 255, 255, 0.12);
+    --color-danger: #ff453a;
+    --color-success: #32d74b;
+    --color-warning: #ff9f0a;
+    
+    /* Spacing - Apple Rhythm */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 20px;
+    --spacing-2xl: 24px;
+    
+    /* Border Radius - Apple Style */
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+    
+    /* Typography - SF Pro */
+    --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    --font-mono: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    
+    /* Shadows - Apple Elevation */
+    --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    
+    /* Transitions - Apple Timing */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================
+   RESET & BASE
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 375px;
+    min-height: 600px;
+    font-family: var(--font-family);
+    background: linear-gradient(145deg, rgba(10, 10, 10, 0.98) 0%, rgba(18, 18, 18, 0.95) 100%);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea {
+    font-family: inherit;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================
+   SCREEN LAYOUT
+   ========================================== */
+.screen {
+    min-height: 600px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+/* ==========================================
+   HEADER - APPLE STYLE
+   ========================================== */
+.screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.screen-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+}
+
+.btn-back {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-size: 18px;
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(10px);
+}
+
+.btn-back:hover {
+    background: var(--color-bg-glass-hover);
+    border-color: var(--color-border-hover);
+    transform: translateX(-1px);
+}
+
+/* ==========================================
+   BALANCE CARD - APPLE STYLE
+   ========================================== */
+.balance-card {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.4) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.balance-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.balance-btc {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.balance-usd {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+/* ==========================================
+   BUTTONS - APPLE STYLE
+   ========================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--color-border);
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-active);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: var(--color-bg-glass);
+    color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--color-bg-glass-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: rgba(255, 69, 58, 0.15);
+    color: var(--color-danger);
+    border-color: rgba(255, 69, 58, 0.3);
+}
+
+.btn-danger:hover {
+    background: rgba(255, 69, 58, 0.2);
+    border-color: rgba(255, 69, 58, 0.4);
+}
+
+.btn-success {
+    background: rgba(50, 215, 75, 0.15);
+    color: var(--color-success);
+    border-color: rgba(50, 215, 75, 0.3);
+}
+
+.btn-large {
+    padding: 12px 20px;
+    font-size: 15px;
+}
+
+/* ==========================================
+   TABS - APPLE STYLE
+   ========================================== */
+.tabs {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    background: var(--color-bg-glass);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    border: 1px solid var(--color-border);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    letter-spacing: -0.01em;
+}
+
+.tab-btn.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--color-text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================
+   INPUT FIELDS - APPLE STYLE
+   ========================================== */
+.input-field {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(10px);
+}
+
+.input-field:focus {
+    background: var(--color-bg-glass-hover);
+    border-color: var(--color-border-active);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.input-field::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* ==========================================
+   CARDS - APPLE STYLE
+   ========================================== */
+.card {
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-fast);
+}
+
+.card:hover {
+    background: var(--color-bg-glass-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+}
+
+/* ==========================================
+   ORDINAL ITEMS - APPLE STYLE
+   ========================================== */
+.ordinal-item {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.4) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(20px);
+}
+
+.ordinal-item:hover {
+    border-color: var(--color-border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ordinal-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ordinal-preview img,
+.ordinal-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.ordinal-info {
+    padding: 10px;
+}
+
+.ordinal-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+}
+
+.ordinal-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-success);
+    margin-bottom: 4px;
+}
+
+.ordinal-id {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--color-text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   GRID LAYOUTS - APPLE STYLE
+   ========================================== */
+.ordinals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+/* ==========================================
+   LOADING - APPLE STYLE
+   ========================================== */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 16px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================
+   SETTINGS - APPLE STYLE
+   ========================================== */
+.settings-group {
+    margin-bottom: 20px;
+}
+
+.settings-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.settings-item {
+    background: var(--color-bg-glass);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.settings-item:hover {
+    background: var(--color-bg-glass-hover);
+    border-color: var(--color-border-hover);
+}
+
+.settings-item-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.settings-item-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+/* ==========================================
+   UTILITIES
+   ========================================== */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ==========================================
+   SCROLLBAR - APPLE STYLE
+   ========================================== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
