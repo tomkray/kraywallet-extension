@@ -864,12 +864,14 @@ async function executeTransfer() {
 }
 
 /**
- * Execute L2 Withdrawal
+ * Execute L2 Withdrawal (L2 → L1)
+ * 
+ * 🔥 SIMPLIFIED: 1:1 mapping - amount in KRAY L2 = amount in KRAY L1
  */
 async function executeWithdrawal() {
     console.log('📤 Executing withdrawal...');
     
-    const amount = parseFloat(document.getElementById('l2-withdraw-amount').value);
+    const amount = parseInt(document.getElementById('l2-withdraw-amount').value);
     const l1Address = document.getElementById('l2-withdraw-address').value.trim();
     
     if (!amount || !l1Address) {
@@ -882,37 +884,73 @@ async function executeWithdrawal() {
         return;
     }
     
+    // Validate bc1p address
+    if (!l1Address.startsWith('bc1p') || l1Address.length !== 62) {
+        window.showNotification('Invalid Bitcoin address (must be bc1p...)', 'error');
+        return;
+    }
+    
     try {
-        // 1:1 mapping - amount in KRAY = amount in credits
-        const credits = Math.floor(amount);
+        console.log(`   Amount: ${amount} KRAY`);
+        console.log(`   L1 Address: ${l1Address}`);
+        console.log(`   L2 Account: ${l2Account}`);
         
-        // TODO: Sign withdrawal request
-        const signature = '0'.repeat(128);
+        // 1:1 mapping - amount in KRAY = amount in credits
+        const credits = amount;
+        
+        // Get account_id from backend (l2Account is L1 address, we need the L2 account ID)
+        const accountResponse = await fetch(`${L2_API_URL}/account/${l2Account}/balance`);
+        let accountId = l2Account;  // Fallback to L1 address
+        
+        if (accountResponse.ok) {
+            // The backend accepts L1 address directly in the request
+            // It will look up the account internally
+        }
+        
+        // Sign withdrawal request
+        const { signature, pubkey } = await signL2Transaction({
+            from: l2Account,
+            to: '',  // Withdrawal, no recipient
+            amount: credits,
+            nonce: 0,  // Withdrawal doesn't need nonce
+            type: 'withdrawal'
+        });
+        
+        console.log(`   Signature: ${signature?.substring(0, 20)}...`);
         
         const response = await fetch(`${L2_API_URL}/bridge/withdrawal/request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                account_id: l2Account,
+                account_id: l2Account,  // Backend accepts L1 address
                 credits_amount: credits.toString(),
                 l1_address: l1Address,
-                signature
+                signature,
+                pubkey
             })
         });
         
-        if (!response.ok) {
-            throw new Error('Withdrawal request failed');
-        }
-        
         const result = await response.json();
         
+        if (!response.ok) {
+            throw new Error(result.error || 'Withdrawal request failed');
+        }
+        
         console.log('✅ Withdrawal requested!', result);
-        window.showNotification(`✅ Withdrawal requested! Wait 24h challenge period.`, 'success');
+        
+        // Show success with challenge period info
+        const challengeEnd = new Date(result.challenge_end);
+        const hoursRemaining = Math.ceil((challengeEnd - Date.now()) / (1000 * 60 * 60));
+        
+        window.showNotification(
+            `✅ Withdrawal requested!\n${amount} KRAY will be sent to L1 after ${hoursRemaining}h challenge period.`, 
+            'success'
+        );
         
         // Refresh balance
-        await refreshL2Data();
+        await loadL2Data();
         
-        // Go back
+        // Go back to L2 dashboard
         window.switchNetwork('kray-l2');
         
     } catch (error) {
