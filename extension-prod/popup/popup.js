@@ -2074,10 +2074,9 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                 }
                 
                 // 2. ALWAYS fetch from explorer to get correct amount and rune info
-                // This works even if we have cache (to verify/update)
                 try {
-                    const currentAddress = myAddress; // Use myAddress parameter passed to function
-                    console.log(`   🔍 Fetching tx from explorer for accurate data...`);
+                    const currentAddress = myAddress;
+                    console.log(`   🔍 Fetching tx from explorer... (type: ${type})`);
                     
                     const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
                         method: 'GET',
@@ -2088,44 +2087,50 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                         const txData = await txResponse.json();
                         
                         if (txData.success && txData.tx && txData.tx.vout) {
-                            // Find the rune output with correct amount
+                            let bestMatch = null;
+                            let firstRune = null;
+                            
+                            // Find all rune outputs
                             for (const vout of txData.tx.vout) {
                                 const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
                                 const enrichment = vout.enrichment;
                                 
                                 if (enrichment?.type === 'rune' && enrichment.data) {
-                                    const amt = enrichment.data.amount?.toString() || '';
-                                    const isOurAddress = voutAddress === currentAddress;
+                                    const runeData = {
+                                        amount: enrichment.data.amount?.toString() || '',
+                                        name: enrichment.data.name || 'Unknown Rune',
+                                        symbol: enrichment.data.symbol || '⧈',
+                                        thumbnail: enrichment.data.thumbnail,
+                                        isOurAddress: voutAddress === currentAddress
+                                    };
                                     
-                                    console.log(`   📍 vout ${vout.n}: ${amt} ${enrichment.data.name} to ${voutAddress?.slice(0,12)}... (type: ${type}, ours: ${isOurAddress})`);
+                                    console.log(`   📍 vout ${vout.n}: ${runeData.amount} ${runeData.name} ${runeData.symbol} → ${voutAddress?.slice(0,15)}... (ours: ${runeData.isOurAddress})`);
                                     
-                                    // For SENT: use output NOT to our address (recipient)
-                                    // For RECEIVED: use output TO our address
-                                    if ((type === 'received' && isOurAddress) || 
-                                        (type === 'sent' && !isOurAddress)) {
-                                        runeAmount = amt;
-                                        runeName = enrichment.data.name || runeName;
-                                        runeSymbol = enrichment.data.symbol || runeSymbol;
-                                        if (enrichment.data.thumbnail) {
-                                            runeThumbnail = enrichment.data.thumbnail;
-                                        }
-                                        console.log(`   ✅ MATCH! ${runeName} • ${runeAmount} ${runeSymbol}`);
-                                        break;
-                                    }
+                                    // Save first rune as fallback
+                                    if (!firstRune) firstRune = runeData;
                                     
-                                    // Fallback: use first rune found if no exact match
-                                    if (!runeAmount) {
-                                        runeAmount = amt;
-                                        runeName = enrichment.data.name || runeName;
-                                        runeSymbol = enrichment.data.symbol || runeSymbol;
-                                        if (enrichment.data.thumbnail) {
-                                            runeThumbnail = enrichment.data.thumbnail;
-                                        }
-                                        console.log(`   📌 Fallback: ${runeName} • ${runeAmount} ${runeSymbol}`);
+                                    // For SENT: we want the output NOT to our address (recipient got runes)
+                                    // For RECEIVED: we want the output TO our address (we got runes)
+                                    if ((type === 'received' && runeData.isOurAddress) || 
+                                        (type === 'sent' && !runeData.isOurAddress)) {
+                                        bestMatch = runeData;
+                                        console.log(`   ✅ BEST MATCH for ${type}!`);
                                     }
                                 }
                             }
+                            
+                            // Use best match or fallback to first rune found
+                            const finalRune = bestMatch || firstRune;
+                            if (finalRune) {
+                                runeAmount = finalRune.amount;
+                                runeName = finalRune.name;
+                                runeSymbol = finalRune.symbol;
+                                if (finalRune.thumbnail) runeThumbnail = finalRune.thumbnail;
+                                console.log(`   💰 Final: ${runeName} • ${runeAmount} ${runeSymbol}`);
+                            }
                         }
+                    } else {
+                        console.warn(`   ⚠️ Explorer returned ${txResponse.status}`);
                     }
                 } catch (fetchError) {
                     console.warn(`   ⚠️ Could not fetch from explorer:`, fetchError.message);
