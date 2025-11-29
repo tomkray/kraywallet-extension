@@ -2076,7 +2076,7 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                 // 2. ALWAYS fetch from explorer to get correct amount and rune info
                 // This works even if we have cache (to verify/update)
                 try {
-                    const currentAddress = walletData?.address || walletData?.taprootAddress;
+                    const currentAddress = myAddress; // Use myAddress parameter passed to function
                     console.log(`   🔍 Fetching tx from explorer for accurate data...`);
                     
                     const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
@@ -2097,19 +2097,19 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                                     const amt = enrichment.data.amount?.toString() || '';
                                     const isOurAddress = voutAddress === currentAddress;
                                     
-                                    console.log(`   📍 vout ${vout.n}: ${amt} ${enrichment.data.name} to ${voutAddress?.slice(0,12)}...`);
+                                    console.log(`   📍 vout ${vout.n}: ${amt} ${enrichment.data.name} to ${voutAddress?.slice(0,12)}... (type: ${type}, ours: ${isOurAddress})`);
                                     
-                                    // For SENT: use output NOT to our address
+                                    // For SENT: use output NOT to our address (recipient)
                                     // For RECEIVED: use output TO our address
-                                    if ((txStatus === 'received' && isOurAddress) || 
-                                        (txStatus === 'sent' && !isOurAddress)) {
+                                    if ((type === 'received' && isOurAddress) || 
+                                        (type === 'sent' && !isOurAddress)) {
                                         runeAmount = amt;
                                         runeName = enrichment.data.name || runeName;
                                         runeSymbol = enrichment.data.symbol || runeSymbol;
                                         if (enrichment.data.thumbnail) {
                                             runeThumbnail = enrichment.data.thumbnail;
                                         }
-                                        console.log(`   ✅ Found: ${runeName} • ${runeAmount} ${runeSymbol}`);
+                                        console.log(`   ✅ MATCH! ${runeName} • ${runeAmount} ${runeSymbol}`);
                                         break;
                                     }
                                     
@@ -2121,6 +2121,7 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                                         if (enrichment.data.thumbnail) {
                                             runeThumbnail = enrichment.data.thumbnail;
                                         }
+                                        console.log(`   📌 Fallback: ${runeName} • ${runeAmount} ${runeSymbol}`);
                                     }
                                 }
                             }
