@@ -585,9 +585,11 @@ async function showL2TransferScreen() {
     const sendBtn = document.getElementById('l2-transfer-send-btn');
     
     const validateInputs = () => {
-        const amount = parseFloat(amountInput.value);
+        const amount = parseInt(amountInput.value);
         const recipient = recipientInput.value.trim();
-        sendBtn.disabled = !amount || amount < 0.001 || !recipient.startsWith('kray_');
+        // Accept bc1p (Taproot) addresses for L2 accounts
+        const isValidRecipient = recipient.startsWith('bc1p') && recipient.length === 62;
+        sendBtn.disabled = !amount || amount < 1 || !isValidRecipient;
     };
     
     amountInput.oninput = validateInputs;
@@ -684,29 +686,36 @@ async function signL2Transaction(messageData) {
 }
 
 /**
- * Execute L2 Transfer
+ * Execute L2 Transfer (1:1 mapping, integer amounts)
  */
 async function executeTransfer() {
     console.log('⚡ Executing L2 transfer...');
     
     const recipient = document.getElementById('l2-transfer-recipient').value.trim();
-    const amount = parseFloat(document.getElementById('l2-transfer-amount').value);
+    const amount = parseInt(document.getElementById('l2-transfer-amount').value);
     
     if (!recipient || !amount) {
         window.showNotification('Please fill all fields', 'error');
         return;
     }
     
+    if (amount < 1) {
+        window.showNotification('Minimum transfer: 1 KRAY', 'error');
+        return;
+    }
+    
     try {
-        // Convert KRAY to credits
-        const credits = Math.floor(amount * 1000);
+        // 1:1 mapping - amount in KRAY = amount in credits
+        const credits = amount;
         
         // Get current nonce
         const balanceResponse = await fetch(`${L2_API_URL}/account/${l2Account}/balance`);
         const accountData = await balanceResponse.json();
         const nonce = accountData.nonce || 0;
         
-        console.log(`   Account: ${l2Account}`);
+        console.log(`   From: ${l2Account}`);
+        console.log(`   To: ${recipient}`);
+        console.log(`   Amount: ${amount} KRAY`);
         console.log(`   Nonce: ${nonce}`);
         
         // Sign transaction with REAL signature
@@ -718,6 +727,9 @@ async function executeTransfer() {
             type: 'transfer'
         });
         
+        console.log(`   Signature: ${signature?.substring(0, 20)}...`);
+        console.log(`   Pubkey: ${pubkey?.substring(0, 20)}...`);
+        
         const response = await fetch(`${L2_API_URL}/transaction/send`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -726,16 +738,17 @@ async function executeTransfer() {
                 to_account: recipient,
                 amount: credits.toString(),
                 signature,
+                pubkey,  // Include pubkey for signature verification
                 nonce,
                 tx_type: 'transfer'
             })
         });
         
-        if (!response.ok) {
-            throw new Error('Transfer failed');
-        }
-        
         const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Transfer failed');
+        }
         
         console.log('✅ Transfer successful!', result);
         window.showNotification(`✅ Sent ${amount} KRAY instantly!`, 'success');
@@ -772,8 +785,8 @@ async function executeWithdrawal() {
     }
     
     try {
-        // Convert to credits
-        const credits = Math.floor(amount * 1000);
+        // 1:1 mapping - amount in KRAY = amount in credits
+        const credits = Math.floor(amount);
         
         // TODO: Sign withdrawal request
         const signature = '0'.repeat(128);

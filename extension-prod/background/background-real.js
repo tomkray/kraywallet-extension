@@ -358,6 +358,7 @@ async function handleMessage(request, sender) {
                 const { message } = data;
                 
                 console.log('🔐 Signing L2 message for transaction...');
+                console.log('   Message:', message);
                 
                 // Check wallet is unlocked
                 if (!unlockedWallet || !unlockedWallet.childNode) {
@@ -365,26 +366,34 @@ async function handleMessage(request, sender) {
                     return { success: false, error: 'Wallet is locked. Please unlock first.' };
                 }
                 
-                // Hash the message (SHA256)
-                const crypto = require('crypto');
-                const messageHash = crypto.createHash('sha256').update(message).digest();
+                // Hash the message using Web Crypto API (browser-compatible)
+                const encoder = new TextEncoder();
+                const messageBytes = encoder.encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', messageBytes);
+                const messageHash = new Uint8Array(hashBuffer);
                 
-                console.log('   Message hash:', messageHash.toString('hex').substring(0, 16) + '...');
+                console.log('   Message hash:', Array.from(messageHash.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join('') + '...');
                 
                 // Sign with Schnorr (Taproot signing)
                 const signature = unlockedWallet.childNode.signSchnorr(messageHash);
                 
-                // Get public key
-                const pubkey = unlockedWallet.childNode.publicKey.toString('hex');
+                // Get public key (x-only for Taproot, 32 bytes)
+                let pubkey = unlockedWallet.childNode.publicKey;
+                // If 33 bytes (compressed), take x-only (skip first byte)
+                if (pubkey.length === 33) {
+                    pubkey = pubkey.slice(1);
+                }
+                const pubkeyHex = Array.from(pubkey).map(b => b.toString(16).padStart(2, '0')).join('');
+                const signatureHex = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
                 
                 console.log('✅ L2 message signed successfully');
-                console.log('   Signature:', signature.toString('hex').substring(0, 16) + '...');
-                console.log('   Pubkey:', pubkey.substring(0, 16) + '...');
+                console.log('   Signature:', signatureHex.substring(0, 16) + '...');
+                console.log('   Pubkey:', pubkeyHex.substring(0, 16) + '...');
                 
                 return {
                     success: true,
-                    signature: signature.toString('hex'),
-                    pubkey: pubkey
+                    signature: signatureHex,
+                    pubkey: pubkeyHex
                 };
                 
             } catch (error) {
