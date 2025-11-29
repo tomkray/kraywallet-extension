@@ -1657,6 +1657,58 @@
     </div>
 
     <!-- ========================================
+         KRAY L2: TRANSFER CONFIRM SCREEN
+         ======================================== -->
+    <div id="l2-transfer-confirm-screen" class="screen hidden">
+        <div class="screen-header">
+            <button id="back-from-l2-confirm-btn" class="btn-back">←</button>
+            <h2>⚡ Confirm Transfer</h2>
+            <div></div>
+        </div>
+
+        <div class="form-container">
+            <!-- Transaction Summary -->
+            <div style="background: var(--color-bg-secondary); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #10b981;" id="l2-confirm-amount">0 KRAY</div>
+                    <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Instant L2 Transfer</div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">To:</span>
+                        <span style="font-size: 11px; color: #ffffff; font-family: monospace;" id="l2-confirm-recipient">bc1p...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">Fee:</span>
+                        <span style="font-size: 12px; color: #10b981; font-weight: 600;">FREE ⚡</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+                    <span>🔐</span>
+                    <span>Enter your password to sign this transaction with Schnorr signature</span>
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="l2-confirm-password" class="input-field" placeholder="Enter your password" autocomplete="off" autofocus />
+            </div>
+        </div>
+
+        <div class="form-footer" style="display: flex; gap: 12px; padding: 16px;">
+            <button id="l2-confirm-cancel-btn" class="btn btn-secondary btn-large" style="flex: 1;">Cancel</button>
+            <button id="l2-confirm-sign-btn" class="btn btn-primary btn-large" style="flex: 1;">⚡ Sign & Send</button>
+        </div>
+    </div>
+
+    <!-- ========================================
          KRAY L2: SWAP SCREEN
          ======================================== -->
     <div id="l2-swap-screen" class="screen hidden">

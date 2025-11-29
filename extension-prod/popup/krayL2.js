@@ -558,6 +558,9 @@ function setupL2Listeners() {
         }
     });
 
+    // Setup L2 transfer confirmation listeners
+    setupL2ConfirmListeners();
+
     console.log('✅ L2 listeners configured');
 }
 
@@ -718,9 +721,44 @@ async function showL2TransferScreen() {
     amountInput.oninput = validateInputs;
     recipientInput.oninput = validateInputs;
     
-    sendBtn.onclick = async () => {
-        await executeTransfer();
+    // Send button shows confirmation screen
+    sendBtn.onclick = () => {
+        showL2TransferConfirm();
     };
+}
+
+/**
+ * Setup L2 Transfer Confirmation listeners
+ */
+function setupL2ConfirmListeners() {
+    // Back button
+    document.getElementById('back-from-l2-confirm-btn')?.addEventListener('click', () => {
+        if (showScreenFn) {
+            showScreenFn('l2-transfer');
+        }
+    });
+    
+    // Cancel button
+    document.getElementById('l2-confirm-cancel-btn')?.addEventListener('click', () => {
+        pendingL2Transfer = null;
+        if (showScreenFn) {
+            showScreenFn('l2-transfer');
+        }
+    });
+    
+    // Sign & Send button
+    document.getElementById('l2-confirm-sign-btn')?.addEventListener('click', async () => {
+        await executeTransferWithPassword();
+    });
+    
+    // Enter key on password field
+    document.getElementById('l2-confirm-password')?.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            await executeTransferWithPassword();
+        }
+    });
+    
+    console.log('✅ L2 confirmation listeners configured');
 }
 
 /**
@@ -875,11 +913,15 @@ async function signL2Transaction(messageData) {
     }
 }
 
+// Pending L2 transfer data
+let pendingL2Transfer = null;
+
 /**
- * Execute L2 Transfer (1:1 mapping, integer amounts)
+ * Show L2 Transfer Confirmation Screen
+ * Called when user clicks "Send Instantly"
  */
-async function executeTransfer() {
-    console.log('⚡ Executing L2 transfer...');
+function showL2TransferConfirm() {
+    console.log('⚡ Showing L2 transfer confirmation...');
     
     const recipient = document.getElementById('l2-transfer-recipient').value.trim();
     const amount = parseInt(document.getElementById('l2-transfer-amount').value);
@@ -894,7 +936,63 @@ async function executeTransfer() {
         return;
     }
     
+    // Store pending transfer data
+    pendingL2Transfer = {
+        recipient,
+        amount,
+        token: selectedTransferToken
+    };
+    
+    // Update confirmation screen
+    document.getElementById('l2-confirm-amount').textContent = `${amount} KRAY`;
+    document.getElementById('l2-confirm-recipient').textContent = 
+        recipient.substring(0, 12) + '...' + recipient.substring(recipient.length - 8);
+    
+    // Clear password field
+    const passwordInput = document.getElementById('l2-confirm-password');
+    if (passwordInput) passwordInput.value = '';
+    
+    // Show confirmation screen
+    if (showScreenFn) {
+        showScreenFn('l2-transfer-confirm');
+    } else if (typeof showScreen !== 'undefined') {
+        showScreen('l2-transfer-confirm');
+    }
+    
+    // Focus password input
+    setTimeout(() => {
+        document.getElementById('l2-confirm-password')?.focus();
+    }, 100);
+}
+
+/**
+ * Execute L2 Transfer with password (called from confirmation screen)
+ */
+async function executeTransferWithPassword() {
+    console.log('⚡ Executing L2 transfer with password...');
+    
+    const password = document.getElementById('l2-confirm-password').value;
+    
+    if (!password) {
+        window.showNotification('Please enter your password', 'error');
+        return;
+    }
+    
+    if (!pendingL2Transfer) {
+        window.showNotification('No pending transfer', 'error');
+        return;
+    }
+    
+    const { recipient, amount } = pendingL2Transfer;
+    
     try {
+        // Show loading
+        const signBtn = document.getElementById('l2-confirm-sign-btn');
+        if (signBtn) {
+            signBtn.disabled = true;
+            signBtn.textContent = '⏳ Signing...';
+        }
+        
         // 1:1 mapping - amount in KRAY = amount in credits
         const credits = amount;
         
@@ -908,17 +1006,20 @@ async function executeTransfer() {
         console.log(`   Amount: ${amount} KRAY`);
         console.log(`   Nonce: ${nonce}`);
         
-        // Sign transaction with REAL signature
-        const { signature, pubkey } = await signL2Transaction({
+        // Sign transaction with password
+        const { signature, pubkey } = await signL2TransactionWithPassword({
             from: l2Account,
             to: recipient,
             amount: credits,
             nonce: nonce,
             type: 'transfer'
-        });
+        }, password);
         
         console.log(`   Signature: ${signature?.substring(0, 20)}...`);
         console.log(`   Pubkey: ${pubkey?.substring(0, 20)}...`);
+        
+        // Update button
+        if (signBtn) signBtn.textContent = '⏳ Sending...';
         
         const response = await fetch(`${L2_API_URL}/transaction/send`, {
             method: 'POST',
@@ -928,7 +1029,7 @@ async function executeTransfer() {
                 to_account: recipient,
                 amount: credits.toString(),
                 signature,
-                pubkey,  // Include pubkey for signature verification
+                pubkey,
                 nonce,
                 tx_type: 'transfer'
             })
@@ -943,15 +1044,66 @@ async function executeTransfer() {
         console.log('✅ Transfer successful!', result);
         window.showNotification(`✅ Sent ${amount} KRAY instantly!`, 'success');
         
+        // Clear pending transfer
+        pendingL2Transfer = null;
+        
         // Refresh balance
         await refreshL2Data();
         
-        // Go back to L2 content
+        // Go back to L2 home
         window.switchNetwork('kray-l2');
         
     } catch (error) {
         console.error('❌ Transfer error:', error);
         window.showNotification('Transfer failed: ' + error.message, 'error');
+        
+        // Reset button
+        const signBtn = document.getElementById('l2-confirm-sign-btn');
+        if (signBtn) {
+            signBtn.disabled = false;
+            signBtn.textContent = '⚡ Sign & Send';
+        }
+    }
+}
+
+/**
+ * Sign L2 transaction with password (uses backend Schnorr signing)
+ */
+async function signL2TransactionWithPassword(messageData, password) {
+    try {
+        console.log('🔐 Signing L2 transaction with password...');
+        
+        // Create deterministic message
+        const message = [
+            messageData.from,
+            messageData.to || '',
+            messageData.amount.toString(),
+            messageData.nonce.toString(),
+            messageData.type
+        ].join(':');
+        
+        console.log('   Message:', message.substring(0, 50) + '...');
+        
+        // Request signature from background script with password
+        const result = await chrome.runtime.sendMessage({
+            action: 'signL2MessageWithPassword',
+            data: { message, password }
+        });
+        
+        if (!result || !result.success) {
+            throw new Error(result?.error || 'Failed to sign transaction');
+        }
+        
+        console.log('✅ Transaction signed successfully');
+        
+        return {
+            signature: result.signature,
+            pubkey: result.pubkey
+        };
+        
+    } catch (error) {
+        console.error('❌ Signing error:', error);
+        throw error;
     }
 }
 
