@@ -133,6 +133,9 @@ async function loadL2Data(updateUI = true) {
         // Get recent transactions
         await updateL2Transactions();
 
+        // Get membership status
+        await updateMembershipStatus();
+
         // Update UI only if requested
         if (updateUI) {
             displayL2Balance();
@@ -271,6 +274,101 @@ async function updateL2Transactions() {
     } catch (error) {
         console.error('❌ Error fetching L2 transactions:', error);
         l2Transactions = [];
+    }
+}
+
+/**
+ * Update and display membership status
+ */
+async function updateMembershipStatus() {
+    if (!l2Account) return;
+
+    try {
+        console.log('🎴 Fetching membership status...');
+        const response = await fetch(`${L2_API_URL}/account/${l2Account}/membership`);
+
+        if (!response.ok) {
+            console.warn('⚠️ Membership fetch failed, using defaults');
+            displayMembershipStatus({ tier: 'none', limits: { freeTxPerDay: 0 }, usage: { dailyUsed: 0 } });
+            return;
+        }
+
+        const data = await response.json();
+        console.log('🎴 Membership data:', data);
+        displayMembershipStatus(data);
+
+    } catch (error) {
+        console.error('❌ Error fetching membership:', error);
+        displayMembershipStatus({ tier: 'none', limits: { freeTxPerDay: 0 }, usage: { dailyUsed: 0 } });
+    }
+}
+
+/**
+ * Display membership status in UI
+ */
+function displayMembershipStatus(data) {
+    const tier = data.membership?.tier || data.tier || 'none';
+    const limits = data.limits || { freeTxPerDay: 0, maxTxPerHour: 10, minBalanceToSend: 10 };
+    const usage = data.usage || { dailyUsed: 0, dailyRemaining: 0 };
+
+    console.log(`🎴 Displaying membership: ${tier}`);
+
+    // Update badge
+    const badge = document.getElementById('l2-membership-badge');
+    if (badge) {
+        const tierInfo = {
+            'black':    { emoji: '🖤', name: 'Black Card', color: '#ffffff', bg: '#1a1a1a' },
+            'diamond':  { emoji: '💎', name: 'Diamond', color: '#b9f2ff', bg: '#1a3a4a' },
+            'gold':     { emoji: '🥇', name: 'Gold', color: '#ffd700', bg: '#3a3010' },
+            'amethyst': { emoji: '💜', name: 'Amethyst', color: '#9966cc', bg: '#2a1a3c' },
+            'common':   { emoji: '🪨', name: 'Common', color: '#808080', bg: '#2a2a2a' },
+            'none':     { emoji: '👤', name: 'No Card', color: '#888888', bg: '#333333' }
+        };
+        
+        const info = tierInfo[tier] || tierInfo.none;
+        badge.textContent = `${info.emoji} ${info.name}`;
+        badge.style.background = info.bg;
+        badge.style.color = info.color;
+        badge.style.border = `1px solid ${info.color}40`;
+    }
+
+    // Highlight active card
+    const tiers = ['common', 'amethyst', 'gold', 'diamond', 'black'];
+    tiers.forEach(t => {
+        const card = document.getElementById(`membership-${t}`);
+        if (card) {
+            if (t === tier) {
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1.05)';
+                card.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.5)';
+            } else {
+                card.style.opacity = '0.4';
+                card.style.transform = 'scale(1)';
+                card.style.boxShadow = 'none';
+            }
+        }
+    });
+
+    // Update free TX counter
+    const usedEl = document.getElementById('l2-free-tx-used');
+    const limitEl = document.getElementById('l2-free-tx-limit');
+    const statusEl = document.getElementById('l2-free-tx-status');
+
+    if (usedEl) usedEl.textContent = usage.dailyUsed || 0;
+    if (limitEl) limitEl.textContent = limits.freeTxPerDay || 0;
+    
+    if (statusEl) {
+        const remaining = (limits.freeTxPerDay || 0) - (usage.dailyUsed || 0);
+        if (tier === 'none') {
+            statusEl.textContent = 'Get a membership card!';
+            statusEl.style.color = '#888';
+        } else if (remaining > 0) {
+            statusEl.textContent = `${remaining} free TX remaining`;
+            statusEl.style.color = '#10b981';
+        } else {
+            statusEl.textContent = 'Limit reached - paying 1 KRAY/tx';
+            statusEl.style.color = '#f59e0b';
+        }
     }
 }
 

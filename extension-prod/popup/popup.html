@@ -421,6 +421,64 @@
                 </div>
             </div>
 
+            <!-- Membership Status -->
+            <div style="padding: 0 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="font-size: 13px; font-weight: 600; color: #ffffff;">🎴 Membership</div>
+                    <div id="l2-membership-badge" style="font-size: 11px; padding: 4px 10px; background: #333; border-radius: 20px; color: #888;">
+                        👤 No Card
+                    </div>
+                </div>
+                
+                <!-- Membership Cards Grid -->
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+                    <!-- Common -->
+                    <div id="membership-common" class="membership-card" style="padding: 8px 4px; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); border: 1px solid #444; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.3s;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">🪨</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #808080;">COMMON</div>
+                        <div style="font-size: 7px; color: #666; margin-top: 2px;">5 free/day</div>
+                    </div>
+                    <!-- Amethyst -->
+                    <div id="membership-amethyst" class="membership-card" style="padding: 8px 4px; background: linear-gradient(135deg, #4a3a5c 0%, #2a1a3c 100%); border: 1px solid #6a4a8c; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.3s;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">💜</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #9966cc;">AMETHYST</div>
+                        <div style="font-size: 7px; color: #666; margin-top: 2px;">15 free/day</div>
+                    </div>
+                    <!-- Gold -->
+                    <div id="membership-gold" class="membership-card" style="padding: 8px 4px; background: linear-gradient(135deg, #4a4020 0%, #2a2510 100%); border: 1px solid #8a7030; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.3s;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">🥇</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #ffd700;">GOLD</div>
+                        <div style="font-size: 7px; color: #666; margin-top: 2px;">30 free/day</div>
+                    </div>
+                    <!-- Diamond -->
+                    <div id="membership-diamond" class="membership-card" style="padding: 8px 4px; background: linear-gradient(135deg, #2a4a5a 0%, #1a2a3a 100%); border: 1px solid #4a8aaa; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.3s;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">💎</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #b9f2ff;">DIAMOND</div>
+                        <div style="font-size: 7px; color: #666; margin-top: 2px;">50 free/day</div>
+                    </div>
+                    <!-- Black -->
+                    <div id="membership-black" class="membership-card" style="padding: 8px 4px; background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); border: 1px solid #333; border-radius: 8px; text-align: center; opacity: 0.5; transition: all 0.3s;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">🖤</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #ffffff;">BLACK</div>
+                        <div style="font-size: 7px; color: #666; margin-top: 2px;">100 free/day</div>
+                    </div>
+                </div>
+                
+                <!-- Free TX Counter -->
+                <div id="l2-free-tx-counter" style="margin-top: 10px; padding: 10px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 11px; color: #888;">Free Transactions Today</div>
+                        <div style="font-size: 10px; color: #666; margin-top: 2px;">Resets at midnight UTC</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 18px; font-weight: 700; color: #10b981;">
+                            <span id="l2-free-tx-used">0</span>/<span id="l2-free-tx-limit">0</span>
+                        </div>
+                        <div id="l2-free-tx-status" style="font-size: 9px; color: #666;">No membership</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div style="padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                 <button id="l2-deposit-btn" style="padding: 14px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
