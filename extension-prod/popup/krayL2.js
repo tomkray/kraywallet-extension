@@ -53,26 +53,35 @@ async function initL2() {
         // Check L2 API connection
         const health = await checkL2Health();
 
+        const statusDot = document.getElementById('l2-status-dot');
+        const statusText = document.getElementById('l2-status-text');
+        
         if (health) {
             console.log('✅ L2 API connected');
-            document.getElementById('l2-status-dot').style.background = '#10b981';
-            document.getElementById('l2-status-text').textContent = 'Connected';
+            if (statusDot) statusDot.style.background = '#10b981';
+            if (statusText) statusText.textContent = 'Connected';
         } else {
             console.warn('⚠️  L2 API not available');
-            document.getElementById('l2-status-dot').style.background = '#f59e0b';
-            document.getElementById('l2-status-text').textContent = 'Offline';
+            if (statusDot) statusDot.style.background = '#f59e0b';
+            if (statusText) statusText.textContent = 'Offline';
         }
 
-        // Load L2 data if wallet exists
-        await loadL2Data();
+        // 🔥 Check if we're in L2 mode before loading data with UI update
+        const activeNetworkResult = await chrome.storage.local.get(['activeNetwork']);
+        const isKrayL2 = activeNetworkResult.activeNetwork === 'kray-l2';
+        
+        // Load L2 data (only update UI if in L2 mode!)
+        await loadL2Data(isKrayL2);
 
         // Setup L2 listeners
         setupL2Listeners();
 
     } catch (error) {
         console.error('❌ L2 initialization failed:', error);
-        document.getElementById('l2-status-dot').style.background = '#ef4444';
-        document.getElementById('l2-status-text').textContent = 'Error';
+        const statusDot = document.getElementById('l2-status-dot');
+        const statusText = document.getElementById('l2-status-text');
+        if (statusDot) statusDot.style.background = '#ef4444';
+        if (statusText) statusText.textContent = 'Error';
     }
 }
 
@@ -100,8 +109,9 @@ async function checkL2Health() {
 
 /**
  * Load L2 data for current wallet
+ * @param {boolean} updateUI - Whether to update the UI (default true)
  */
-async function loadL2Data() {
+async function loadL2Data(updateUI = true) {
     try {
         // Get current wallet address
         const result = await chrome.runtime.sendMessage({ action: 'getWalletInfo' });
@@ -114,18 +124,20 @@ async function loadL2Data() {
         const l1Address = result.data.address;
         console.log(`📊 Loading L2 data for ${l1Address}...`);
 
-        // Get or create L2 account
-        l2Account = await getOrCreateL2Account(l1Address);
+        // Store address as account identifier
+        l2Account = l1Address;
 
-        // Get L2 balance
+        // Get L2 balance from API
         await updateL2Balance();
 
         // Get recent transactions
         await updateL2Transactions();
 
-        // Update UI
-        displayL2Balance();
-        displayL2Transactions();
+        // Update UI only if requested
+        if (updateUI) {
+            displayL2Balance();
+            displayL2Transactions();
+        }
 
         console.log('✅ L2 data loaded');
 
@@ -139,16 +151,18 @@ async function loadL2Data() {
  */
 async function getOrCreateL2Account(l1Address) {
     try {
-        // Try to get existing account
-        const response = await fetch(`${L2_API_URL}/api/account/${l1Address}/balance`);
+        // Try to get existing account balance
+        const response = await fetch(`${L2_API_URL}/account/${l1Address}/balance`);
 
         if (response.ok) {
             const data = await response.json();
-            console.log(`✅ L2 account exists: ${data.account_id}`);
-            return data.account_id;
+            console.log(`✅ L2 account found with balance: ${data.balance_kray} KRAY`);
+            // Store the balance for later use
+            l2Balance = data;
+            return l1Address; // Use L1 address as account identifier
         }
 
-        // Account doesn't exist, create it
+        // Account doesn't exist or no balance, try to create it
         console.log('📝 Creating L2 account...');
         
         // Get pubkey from wallet for signature verification
@@ -162,7 +176,7 @@ async function getOrCreateL2Account(l1Address) {
             console.warn('Could not get pubkey, will set on first transaction');
         }
 
-        const createResponse = await fetch(`${L2_API_URL}/api/account/create`, {
+        const createResponse = await fetch(`${L2_API_URL}/account/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -171,18 +185,19 @@ async function getOrCreateL2Account(l1Address) {
             })
         });
 
-        if (!createResponse.ok) {
-            throw new Error('Failed to create L2 account');
+        if (createResponse.ok) {
+            const createData = await createResponse.json();
+            console.log(`✅ L2 account created: ${createData.account_id}`);
+            return l1Address;
         }
-
-        const createData = await createResponse.json();
-        console.log(`✅ L2 account created: ${createData.account_id}`);
-
-        return createData.account_id;
+        
+        // Even if create fails, return the address (account may exist from deposit)
+        console.log('ℹ️ Using L1 address as L2 account identifier');
+        return l1Address;
 
     } catch (error) {
         console.error('❌ Error with L2 account:', error);
-        return null;
+        return l1Address; // Return address anyway for balance lookup
     }
 }
 
@@ -190,21 +205,46 @@ async function getOrCreateL2Account(l1Address) {
  * Update L2 balance from API
  */
 async function updateL2Balance() {
-    if (!l2Account) return;
+    console.log(`📡 updateL2Balance called, l2Account: ${l2Account}`);
+    
+    if (!l2Account) {
+        console.warn('⚠️ No l2Account, cannot fetch balance');
+        return;
+    }
 
     try {
-        const response = await fetch(`${L2_API_URL}/api/account/${l2Account}/balance`);
+        const url = `${L2_API_URL}/account/${l2Account}/balance`;
+        console.log(`📡 Fetching balance from: ${url}`);
+        
+        const response = await fetch(url);
+        console.log(`📡 Response status: ${response.status}`);
 
         if (!response.ok) {
-            throw new Error('Failed to fetch balance');
+            const errorText = await response.text();
+            console.warn(`⚠️ Balance fetch failed: ${response.status} - ${errorText}`);
+            if (!l2Balance) {
+                l2Balance = {
+                    balance_credits: '0',
+                    balance_kray: '0.000',
+                    available_credits: '0'
+                };
+            }
+            return;
         }
 
         l2Balance = await response.json();
-
+        console.log(`💰 L2 Balance received:`, l2Balance);
         console.log(`💰 L2 Balance: ${l2Balance.balance_kray} KRAY (${l2Balance.balance_credits} credits)`);
 
     } catch (error) {
         console.error('❌ Error fetching L2 balance:', error);
+        if (!l2Balance) {
+            l2Balance = {
+                balance_credits: '0',
+                balance_kray: '0.000',
+                available_credits: '0'
+            };
+        }
     }
 }
 
@@ -215,10 +255,12 @@ async function updateL2Transactions() {
     if (!l2Account) return;
 
     try {
-        const response = await fetch(`${L2_API_URL}/api/account/${l2Account}/transactions?limit=10`);
+        const response = await fetch(`${L2_API_URL}/account/${l2Account}/transactions?limit=10`);
 
         if (!response.ok) {
-            throw new Error('Failed to fetch transactions');
+            console.warn('⚠️ Transactions fetch failed');
+            l2Transactions = [];
+            return;
         }
 
         const data = await response.json();
@@ -228,18 +270,22 @@ async function updateL2Transactions() {
 
     } catch (error) {
         console.error('❌ Error fetching L2 transactions:', error);
+        l2Transactions = [];
     }
 }
 
 /**
- * Display L2 balance in UI (smart - only shows tokens with balance > 0)
+ * Display L2 balance in UI
+ * 
+ * 🔥 SIMPLIFIED: 1:1 mapping with L1 (no credits conversion)
+ * Balance = actual KRAY amount (integer, divisibility: 0)
  */
 function displayL2Balance() {
     console.log('🎨 Displaying L2 balance...', l2Balance);
     
-    // Always show KRAY (gas token)
-    const krayBalance = l2Balance?.balance_kray || '0.000';
-    const krayCredits = l2Balance?.balance_credits || '0';
+    // Get KRAY balance (1:1 with L1 - integer, no decimals)
+    const krayBalance = l2Balance?.balance_kray || l2Balance?.balance || '0';
+    const availableBalance = l2Balance?.available_kray || l2Balance?.available || krayBalance;
     
     // Update L2 balance element if exists
     const l2BalanceKray = document.getElementById('l2-balance-kray');
@@ -247,18 +293,20 @@ function displayL2Balance() {
         l2BalanceKray.textContent = krayBalance;
     }
     
-    // Update main header balance (critical!)
+    // Update main header balance
     const walletBalance = document.getElementById('wallet-balance');
     const walletBalanceBtc = document.getElementById('wallet-balance-btc');
     
     if (walletBalance) {
+        // Show integer KRAY (no decimals - respecting divisibility: 0)
         walletBalance.textContent = `${krayBalance} KRAY`;
         console.log(`✅ Updated wallet-balance: ${krayBalance} KRAY`);
     }
     
     if (walletBalanceBtc) {
-        walletBalanceBtc.textContent = `${krayCredits} credits`;
-        console.log(`✅ Updated wallet-balance-btc: ${krayCredits} credits`);
+        // Show available balance (for spending)
+        walletBalanceBtc.textContent = `${availableBalance} available`;
+        console.log(`✅ Updated wallet-balance-btc: ${availableBalance} available`);
     }
     
     // Multi-token balances (show if balance > 0, including decimals!)
@@ -433,7 +481,7 @@ async function showL2DepositScreen() {
     
     try {
         // Fetch bridge info from API
-        const response = await fetch(`${L2_API_URL}/api/bridge/info`);
+        const response = await fetch(`${L2_API_URL}/bridge/info`);
         
         if (!response.ok) {
             throw new Error('Failed to fetch bridge info');
@@ -654,7 +702,7 @@ async function executeTransfer() {
         const credits = Math.floor(amount * 1000);
         
         // Get current nonce
-        const balanceResponse = await fetch(`${L2_API_URL}/api/account/${l2Account}/balance`);
+        const balanceResponse = await fetch(`${L2_API_URL}/account/${l2Account}/balance`);
         const accountData = await balanceResponse.json();
         const nonce = accountData.nonce || 0;
         
@@ -670,7 +718,7 @@ async function executeTransfer() {
             type: 'transfer'
         });
         
-        const response = await fetch(`${L2_API_URL}/api/transaction/send`, {
+        const response = await fetch(`${L2_API_URL}/transaction/send`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -730,7 +778,7 @@ async function executeWithdrawal() {
         // TODO: Sign withdrawal request
         const signature = '0'.repeat(128);
         
-        const response = await fetch(`${L2_API_URL}/api/bridge/withdrawal/request`, {
+        const response = await fetch(`${L2_API_URL}/bridge/withdrawal/request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -771,7 +819,7 @@ async function getSwapQuote(amountIn) {
         const poolId = 'pool_kray_btc';
         const credits = Math.floor(amountIn * 1000);
         
-        const response = await fetch(`${L2_API_URL}/api/defi/quote`, {
+        const response = await fetch(`${L2_API_URL}/defi/quote`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -812,7 +860,7 @@ async function executeSwap() {
         const credits = Math.floor(amountIn * 1000);
         const poolId = `pool_kray_${tokenOut.toLowerCase()}`;
         
-        const response = await fetch(`${L2_API_URL}/api/defi/swap`, {
+        const response = await fetch(`${L2_API_URL}/defi/swap`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -869,10 +917,32 @@ function showL2RewardsScreen() {
  * Refresh L2 data
  */
 async function refreshL2Data() {
+    console.log('🔄 Refreshing L2 data...');
+    
+    // Ensure we have the account address
+    if (!l2Account) {
+        try {
+            const result = await chrome.runtime.sendMessage({ action: 'getWalletInfo' });
+            if (result && result.success && result.data.address) {
+                l2Account = result.data.address;
+                console.log(`📍 L2 account set to: ${l2Account}`);
+            }
+        } catch (e) {
+            console.error('❌ Failed to get wallet address:', e);
+        }
+    }
+    
+    if (!l2Account) {
+        console.warn('⚠️ No L2 account available');
+        return;
+    }
+    
     await updateL2Balance();
     await updateL2Transactions();
     displayL2Balance();
     displayL2Transactions();
+    
+    console.log('✅ L2 data refreshed');
 }
 
 // Make showScreen available in module scope

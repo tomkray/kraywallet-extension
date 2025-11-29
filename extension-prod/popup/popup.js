@@ -2202,9 +2202,33 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                                 }
                             }
                             
-                            // Se tiver amount decodificado, formatar
-                            if (values.length >= 4 && values[3] > 0) {
-                                runeAmount = values[3].toString();
+                            // 🔥 FETCH REAL AMOUNT from QuickNode (not from OP_RETURN decode)
+                            // The OP_RETURN decode can be inaccurate, QuickNode has the real value
+                            try {
+                                // Find the rune output (usually vout 0 for transfers)
+                                const outputResponse = await fetch(`https://kraywallet-backend.onrender.com/api/output/${tx.txid}:0`, {
+                                    method: 'GET',
+                                    signal: AbortSignal.timeout(5000)
+                                });
+                                
+                                if (outputResponse.ok) {
+                                    const outputData = await outputResponse.json();
+                                    if (outputData.success && outputData.runes) {
+                                        // Get amount from the first rune in the output
+                                        const runeNames = Object.keys(outputData.runes);
+                                        if (runeNames.length > 0) {
+                                            const runeInfo = outputData.runes[runeNames[0]];
+                                            runeAmount = runeInfo.amount.toString();
+                                            console.log(`   ✅ Got REAL amount from QuickNode: ${runeAmount}`);
+                                        }
+                                    }
+                                }
+                            } catch (amountError) {
+                                console.warn(`   ⚠️ Could not fetch real amount:`, amountError.message);
+                                // Fallback to decoded value
+                                if (values.length >= 4 && values[3] > 0) {
+                                    runeAmount = values[3].toString();
+                                }
                             }
                         }
                     } catch (decodeError) {
@@ -2748,15 +2772,15 @@ async function loadWalletData() {
                 await loadRunes(address);
                 await loadActivity(address);
                 
-                // ⚡ Pre-load L2 data in background
+                // ⚡ Pre-load L2 data in background (without updating UI!)
                 if (window.krayL2) {
                     // Register showScreen first
                     if (typeof window.krayL2.setShowScreen === 'function') {
                         window.krayL2.setShowScreen(showScreen);
                     }
-                    // Load L2 data in background
+                    // Load L2 data in background (updateUI = false to prevent overwriting mainnet balance!)
                     if (typeof window.krayL2.loadL2Data === 'function') {
-                        window.krayL2.loadL2Data().catch(e => console.warn('L2 preload error:', e));
+                        window.krayL2.loadL2Data(false).catch(e => console.warn('L2 preload error:', e));
                     }
                 }
             }
@@ -7418,12 +7442,10 @@ async function switchNetwork(network) {
             
             // Load L2 balance immediately
             if (window.krayL2 && typeof window.krayL2.refreshL2Data === 'function') {
+                console.log('📡 Calling refreshL2Data...');
                 await window.krayL2.refreshL2Data();
-            }
-            
-            // Update L2 balance
-            if (window.krayL2 && typeof window.krayL2.refreshL2Data === 'function') {
-                await window.krayL2.refreshL2Data();
+            } else {
+                console.warn('⚠️ krayL2.refreshL2Data not available');
             }
             
             console.log('✅ Switched to KRAY L2 (Layer 2)');
@@ -8457,6 +8479,17 @@ async function handleUnlockWallet() {
             // Show wallet screen and load data
             showScreen('wallet');
             await loadWalletData();
+            
+            // ⚡ Initialize KRAY L2 after unlock
+            if (window.krayL2) {
+                if (typeof window.krayL2.setShowScreen === 'function') {
+                    window.krayL2.setShowScreen(showScreen);
+                }
+                if (typeof window.krayL2.initL2 === 'function') {
+                    console.log('⚡ Initializing L2 after unlock...');
+                    setTimeout(() => window.krayL2.initL2(), 500);
+                }
+            }
         } else {
             console.error('❌ Failed to unlock:', response.error);
             showNotification('❌ ' + response.error, 'error');
