@@ -898,25 +898,28 @@ async function executeWithdrawal() {
         // 1:1 mapping - amount in KRAY = amount in credits
         const credits = amount;
         
-        // Get account_id from backend (l2Account is L1 address, we need the L2 account ID)
+        // Get current nonce from account
         const accountResponse = await fetch(`${L2_API_URL}/account/${l2Account}/balance`);
-        let accountId = l2Account;  // Fallback to L1 address
+        let nonce = 0;
         
         if (accountResponse.ok) {
-            // The backend accepts L1 address directly in the request
-            // It will look up the account internally
+            const accountData = await accountResponse.json();
+            nonce = accountData.nonce || 0;
         }
         
-        // Sign withdrawal request
+        console.log(`   Nonce: ${nonce}`);
+        
+        // Sign withdrawal request with nonce for replay protection
         const { signature, pubkey } = await signL2Transaction({
             from: l2Account,
             to: '',  // Withdrawal, no recipient
             amount: credits,
-            nonce: 0,  // Withdrawal doesn't need nonce
+            nonce: nonce,  // Include nonce for replay protection!
             type: 'withdrawal'
         });
         
         console.log(`   Signature: ${signature?.substring(0, 20)}...`);
+        console.log(`   Pubkey: ${pubkey?.substring(0, 20)}...`);
         
         const response = await fetch(`${L2_API_URL}/bridge/withdrawal/request`, {
             method: 'POST',
@@ -926,7 +929,8 @@ async function executeWithdrawal() {
                 credits_amount: credits.toString(),
                 l1_address: l1Address,
                 signature,
-                pubkey
+                pubkey,
+                nonce  // Send nonce for verification
             })
         });
         
