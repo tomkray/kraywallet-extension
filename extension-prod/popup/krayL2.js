@@ -871,47 +871,8 @@ async function showL2SwapScreen() {
     };
 }
 
-/**
- * Sign L2 transaction with user's wallet
- */
-async function signL2Transaction(messageData) {
-    try {
-        console.log('🔐 Signing L2 transaction...');
-        
-        // Create deterministic message
-        const message = [
-            messageData.from,
-            messageData.to || '',
-            messageData.amount.toString(),
-            messageData.nonce.toString(),
-            messageData.type
-        ].join(':');
-        
-        console.log('   Message:', message.substring(0, 50) + '...');
-        
-        // Request signature from background script
-        // Note: background expects { action, data } format
-        const result = await chrome.runtime.sendMessage({
-            action: 'signL2Message',
-            data: { message: message }
-        });
-        
-        if (!result || !result.success) {
-            throw new Error(result?.error || 'Failed to sign transaction');
-        }
-        
-        console.log('✅ Transaction signed successfully');
-        
-        return {
-            signature: result.signature,
-            pubkey: result.pubkey
-        };
-        
-    } catch (error) {
-        console.error('❌ Signing error:', error);
-        throw error;
-    }
-}
+// NOTE: signL2Transaction removed - use signL2TransactionWithPassword instead
+// All L2 operations now require password confirmation for security
 
 // Pending L2 transfer data
 let pendingL2Transfer = null;
@@ -1153,14 +1114,21 @@ async function executeWithdrawal() {
         
         console.log(`   Nonce: ${nonce}`);
         
+        // TODO: Withdrawal needs password confirmation screen like transfer
+        // For now, show message that withdrawal is not yet available
+        window.showNotification('⚠️ Withdrawal coming soon! Use Transfer for now.', 'warning');
+        return;
+        
+        /* DISABLED - needs password confirmation screen
         // Sign withdrawal request with nonce for replay protection
-        const { signature, pubkey } = await signL2Transaction({
+        const { signature, pubkey } = await signL2TransactionWithPassword({
             from: l2Account,
             to: '',  // Withdrawal, no recipient
             amount: credits,
             nonce: nonce,  // Include nonce for replay protection!
             type: 'withdrawal'
-        });
+        }, password);  // TODO: Get password from confirmation screen
+        */
         
         console.log(`   Signature: ${signature?.substring(0, 20)}...`);
         console.log(`   Pubkey: ${pubkey?.substring(0, 20)}...`);
