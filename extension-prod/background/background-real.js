@@ -354,52 +354,12 @@ async function handleMessage(request, sender) {
         
         case 'signL2Message':
             // Sign L2 transaction message with Schnorr
-            try {
-                const { message } = data;
-                
-                console.log('🔐 Signing L2 message for transaction...');
-                console.log('   Message:', message);
-                
-                // Check wallet is unlocked
-                if (!unlockedWallet || !unlockedWallet.childNode) {
-                    console.error('❌ Wallet is locked');
-                    return { success: false, error: 'Wallet is locked. Please unlock first.' };
-                }
-                
-                // Hash the message using Web Crypto API (browser-compatible)
-                const encoder = new TextEncoder();
-                const messageBytes = encoder.encode(message);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', messageBytes);
-                const messageHash = new Uint8Array(hashBuffer);
-                
-                console.log('   Message hash:', Array.from(messageHash.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join('') + '...');
-                
-                // Sign with Schnorr (Taproot signing)
-                const signature = unlockedWallet.childNode.signSchnorr(messageHash);
-                
-                // Get public key (x-only for Taproot, 32 bytes)
-                let pubkey = unlockedWallet.childNode.publicKey;
-                // If 33 bytes (compressed), take x-only (skip first byte)
-                if (pubkey.length === 33) {
-                    pubkey = pubkey.slice(1);
-                }
-                const pubkeyHex = Array.from(pubkey).map(b => b.toString(16).padStart(2, '0')).join('');
-                const signatureHex = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
-                
-                console.log('✅ L2 message signed successfully');
-                console.log('   Signature:', signatureHex.substring(0, 16) + '...');
-                console.log('   Pubkey:', pubkeyHex.substring(0, 16) + '...');
-                
-                return {
-                    success: true,
-                    signature: signatureHex,
-                    pubkey: pubkeyHex
-                };
-                
-            } catch (error) {
-                console.error('❌ Error signing L2 message:', error);
-                return { success: false, error: error.message };
-            }
+            // Uses same approach as signMessageWithPassword - decrypt wallet temporarily
+            return await signL2MessageAction(data);
+        
+        case 'signL2MessageWithPassword':
+            // Sign L2 message with explicit password (for popup flow)
+            return await signL2MessageWithPasswordAction(data)
         
         default:
             throw new Error(`Unknown action: ${action}`);
@@ -1332,6 +1292,132 @@ async function signMessageWithPassword({ message, password }) {
             success: false,
             error: error.message || 'Failed to sign message'
         };
+    }
+}
+
+// ==========================================
+// 🔐 L2 SCHNORR SIGNING
+// ==========================================
+
+/**
+ * Sign L2 message - tries to use cached session, otherwise opens popup
+ */
+async function signL2MessageAction(data) {
+    try {
+        const { message } = data;
+        
+        console.log('\n🔐 ===== SIGN L2 MESSAGE =====');
+        console.log('   Message:', message?.substring(0, 50) + '...');
+        
+        // Check if wallet is unlocked (has valid session)
+        if (!walletState.unlocked) {
+            console.error('❌ Wallet is locked');
+            return { success: false, error: 'Wallet is locked. Please unlock first.' };
+        }
+        
+        // Try to get password from session storage (if recently unlocked)
+        const sessionData = await chrome.storage.session.get(['tempPassword']);
+        
+        if (sessionData.tempPassword) {
+            console.log('✅ Using session password for L2 signing...');
+            return await signL2MessageWithPasswordAction({ message, password: sessionData.tempPassword });
+        }
+        
+        // No session password - need to ask user
+        // For now, return error - user needs to re-unlock
+        console.error('❌ Session expired, need password');
+        return { 
+            success: false, 
+            error: 'Session expired. Please lock and unlock your wallet again.',
+            needsPassword: true
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in signL2MessageAction:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Sign L2 message with explicit password
+ */
+async function signL2MessageWithPasswordAction(data) {
+    try {
+        const { message, password } = data;
+        
+        console.log('\n🔐 ===== SIGN L2 MESSAGE WITH PASSWORD =====');
+        console.log('   Message:', message?.substring(0, 50) + '...');
+        console.log('   Password provided:', password ? 'YES ✅' : 'NO ❌');
+        
+        if (!message) {
+            return { success: false, error: 'Message is required' };
+        }
+        
+        if (!password) {
+            return { success: false, error: 'Password is required' };
+        }
+        
+        // Get encrypted wallet
+        const storage = await chrome.storage.local.get(['walletEncrypted']);
+        
+        if (!storage.walletEncrypted) {
+            return { success: false, error: 'No wallet found' };
+        }
+        
+        // Decrypt wallet
+        console.log('🔓 Decrypting wallet for L2 signing...');
+        const decryptedData = await decryptData(storage.walletEncrypted, password);
+        
+        if (!decryptedData || !decryptedData.mnemonic) {
+            return { success: false, error: 'Invalid password' };
+        }
+        
+        console.log('✅ Wallet decrypted, deriving keys...');
+        
+        // Derive Taproot key from mnemonic using backend
+        const deriveResponse = await fetch('https://kraywallet-backend.onrender.com/api/kraywallet/derive-taproot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mnemonic: decryptedData.mnemonic })
+        });
+        
+        const deriveData = await deriveResponse.json();
+        
+        if (!deriveData.success) {
+            throw new Error(deriveData.error || 'Failed to derive keys');
+        }
+        
+        console.log('✅ Keys derived, signing with Schnorr...');
+        
+        // Sign with backend (has secp256k1 library)
+        const signResponse = await fetch('https://kraywallet-backend.onrender.com/api/kraywallet/sign-schnorr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                mnemonic: decryptedData.mnemonic,
+                message: message 
+            })
+        });
+        
+        const signData = await signResponse.json();
+        
+        if (!signData.success) {
+            throw new Error(signData.error || 'Failed to sign message');
+        }
+        
+        console.log('✅ L2 message signed successfully');
+        console.log('   Signature:', signData.signature?.substring(0, 16) + '...');
+        console.log('   Pubkey:', signData.pubkey?.substring(0, 16) + '...');
+        
+        return {
+            success: true,
+            signature: signData.signature,
+            pubkey: signData.pubkey
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in signL2MessageWithPasswordAction:', error);
+        return { success: false, error: error.message };
     }
 }
 
@@ -2735,10 +2821,12 @@ async function unlockWalletAction(data) {
         };
         
         // ✅ CRÍTICO: Salvar estado no session storage (persiste se Service Worker reiniciar)
+        // ⚡ Também salvar senha temporária para L2 signing (expira com sessão)
         await chrome.storage.session.set({
             walletUnlocked: true,
             walletAddress: decrypted.address,
-            walletPublicKey: decrypted.publicKey
+            walletPublicKey: decrypted.publicKey,
+            tempPassword: password  // ⚡ Para L2 signing sem pedir senha novamente
         });
         
         // 🗑️ Descartar mnemonic imediatamente (não manter na memória!)
