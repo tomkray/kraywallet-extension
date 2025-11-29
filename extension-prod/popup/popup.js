@@ -2070,12 +2070,69 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                     runeAmount = window.lastSentRune.amount;
                     runeSymbol = window.lastSentRune.symbol || '⧈';
                     runeThumbnail = window.lastSentRune.thumbnail;
-                    
                     console.log(`   📌 Using cached lastSentRune: ${runeName} • ${runeAmount}`);
-                } else {
-                    // 2. Para transações confirmadas, decodificar Runestone e buscar rune pelo ID
-                    console.log(`   🔍 Trying to decode Runestone from OP_RETURN...`);
+                }
+                
+                // 2. ALWAYS fetch from explorer to get correct amount and rune info
+                // This works even if we have cache (to verify/update)
+                try {
+                    const currentAddress = walletData?.address || walletData?.taprootAddress;
+                    console.log(`   🔍 Fetching tx from explorer for accurate data...`);
                     
+                    const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(8000)
+                    });
+                    
+                    if (txResponse.ok) {
+                        const txData = await txResponse.json();
+                        
+                        if (txData.success && txData.tx && txData.tx.vout) {
+                            // Find the rune output with correct amount
+                            for (const vout of txData.tx.vout) {
+                                const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
+                                const enrichment = vout.enrichment;
+                                
+                                if (enrichment?.type === 'rune' && enrichment.data) {
+                                    const amt = enrichment.data.amount?.toString() || '';
+                                    const isOurAddress = voutAddress === currentAddress;
+                                    
+                                    console.log(`   📍 vout ${vout.n}: ${amt} ${enrichment.data.name} to ${voutAddress?.slice(0,12)}...`);
+                                    
+                                    // For SENT: use output NOT to our address
+                                    // For RECEIVED: use output TO our address
+                                    if ((txStatus === 'received' && isOurAddress) || 
+                                        (txStatus === 'sent' && !isOurAddress)) {
+                                        runeAmount = amt;
+                                        runeName = enrichment.data.name || runeName;
+                                        runeSymbol = enrichment.data.symbol || runeSymbol;
+                                        if (enrichment.data.thumbnail) {
+                                            runeThumbnail = enrichment.data.thumbnail;
+                                        }
+                                        console.log(`   ✅ Found: ${runeName} • ${runeAmount} ${runeSymbol}`);
+                                        break;
+                                    }
+                                    
+                                    // Fallback: use first rune found if no exact match
+                                    if (!runeAmount) {
+                                        runeAmount = amt;
+                                        runeName = enrichment.data.name || runeName;
+                                        runeSymbol = enrichment.data.symbol || runeSymbol;
+                                        if (enrichment.data.thumbnail) {
+                                            runeThumbnail = enrichment.data.thumbnail;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (fetchError) {
+                    console.warn(`   ⚠️ Could not fetch from explorer:`, fetchError.message);
+                }
+                
+                // 3. Fallback: Try to decode OP_RETURN for rune ID if we still don't have info
+                if (!runeAmount || runeName === 'Rune Transfer') {
+                    console.log(`   🔍 Trying to decode Runestone from OP_RETURN as fallback...`);
                     try {
                         // Decodificar o Runestone do OP_RETURN
                         const opReturnHex = script;
@@ -2178,54 +2235,7 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                                 }
                             }
                         }
-                        
-                        // 🔥 ALWAYS FETCH REAL AMOUNT from QuickNode/Explorer
-                        // This works for BOTH normal transfers AND cenotaph (burn)
-                        // The OP_RETURN decode is NEVER reliable for amount!
-                        try {
-                            const currentAddress = walletData?.address || walletData?.taprootAddress;
-                            console.log(`   🔍 Fetching tx data for amount...`);
-                            
-                            const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
-                                method: 'GET',
-                                signal: AbortSignal.timeout(8000)
-                            });
-                            
-                            if (txResponse.ok) {
-                                const txData = await txResponse.json();
-                                
-                                if (txData.success && txData.tx && txData.tx.vout) {
-                                    let foundAmount = null;
-                                    let fallbackAmount = null;
-                                    
-                                    for (const vout of txData.tx.vout) {
-                                        const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
-                                        const enrichment = vout.enrichment;
-                                        
-                                        if (enrichment?.type === 'rune' && enrichment.data?.amount) {
-                                            const amt = enrichment.data.amount.toString();
-                                            const isOurAddress = voutAddress === currentAddress;
-                                            
-                                            console.log(`   📍 vout ${vout.n}: ${amt} to ${voutAddress?.slice(0,12)}... (ours: ${isOurAddress})`);
-                                            
-                                            if (!fallbackAmount) fallbackAmount = amt;
-                                            
-                                            if ((txStatus === 'received' && isOurAddress) || 
-                                                (txStatus === 'sent' && !isOurAddress)) {
-                                                foundAmount = amt;
-                                                console.log(`   ✅ MATCH! Amount: ${foundAmount}`);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    
-                                    runeAmount = foundAmount || fallbackAmount || '';
-                                    console.log(`   💰 Final runeAmount: ${runeAmount}`);
-                                }
-                            }
-                        } catch (amountError) {
-                            console.warn(`   ⚠️ Could not fetch amount:`, amountError.message);
-                        }
+                        // Amount already fetched from explorer above
                     } catch (decodeError) {
                         console.error(`   ❌ Error decoding Runestone:`, decodeError);
                         
