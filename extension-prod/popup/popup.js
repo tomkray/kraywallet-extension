@@ -2205,23 +2205,43 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                             // 🔥 FETCH REAL AMOUNT from QuickNode (not from OP_RETURN decode)
                             // The OP_RETURN decode can be inaccurate, QuickNode has the real value
                             try {
-                                // Find the rune output (usually vout 0 for transfers)
-                                const outputResponse = await fetch(`https://kraywallet-backend.onrender.com/api/output/${tx.txid}:0`, {
+                                // The edict tells us which output has the runes (values[4] for tag 0)
+                                // But for RECEIVED transactions, we need to find OUR output
+                                const currentAddress = walletData?.address || walletData?.taprootAddress;
+                                
+                                // Fetch full transaction to find the output for our address
+                                const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
                                     method: 'GET',
                                     signal: AbortSignal.timeout(5000)
                                 });
                                 
-                                if (outputResponse.ok) {
-                                    const outputData = await outputResponse.json();
-                                    if (outputData.success && outputData.runes) {
-                                        // Get amount from the first rune in the output
-                                        const runeNames = Object.keys(outputData.runes);
-                                        if (runeNames.length > 0) {
-                                            const runeInfo = outputData.runes[runeNames[0]];
-                                            runeAmount = runeInfo.amount.toString();
-                                            console.log(`   ✅ Got REAL amount from QuickNode: ${runeAmount}`);
+                                if (txResponse.ok) {
+                                    const txData = await txResponse.json();
+                                    if (txData.success && txData.tx && txData.tx.vout) {
+                                        // Find the output with runes that belongs to our address
+                                        for (const vout of txData.tx.vout) {
+                                            const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
+                                            const enrichment = vout.enrichment;
+                                            
+                                            if (enrichment?.type === 'rune' && enrichment.data?.amount) {
+                                                // For RECEIVED: find output to our address
+                                                // For SENT: find output NOT to our address (recipient)
+                                                const isOurAddress = voutAddress === currentAddress;
+                                                
+                                                if ((txStatus === 'received' && isOurAddress) || 
+                                                    (txStatus === 'sent' && !isOurAddress)) {
+                                                    runeAmount = enrichment.data.amount.toString();
+                                                    console.log(`   ✅ Got REAL amount from explorer: ${runeAmount} (${txStatus} to ${voutAddress?.slice(0,10)}...)`);
+                                                    break;
+                                                }
+                                            }
                                         }
                                     }
+                                }
+                                
+                                // Fallback if we couldn't find it
+                                if (!runeAmount && values.length >= 4 && values[3] > 0) {
+                                    runeAmount = values[3].toString();
                                 }
                             } catch (amountError) {
                                 console.warn(`   ⚠️ Could not fetch real amount:`, amountError.message);
