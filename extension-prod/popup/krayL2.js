@@ -852,9 +852,10 @@ async function signL2Transaction(messageData) {
         console.log('   Message:', message.substring(0, 50) + '...');
         
         // Request signature from background script
+        // Note: background expects { action, data } format
         const result = await chrome.runtime.sendMessage({
             action: 'signL2Message',
-            message: message
+            data: { message: message }
         });
         
         if (!result || !result.success) {
