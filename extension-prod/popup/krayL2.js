@@ -657,6 +657,12 @@ async function showL2WithdrawScreen() {
 }
 
 /**
+ * Current selected token for transfer
+ */
+let selectedTransferToken = 'KRAY';
+let currentTokenBalance = 0;
+
+/**
  * Show L2 Transfer Screen
  */
 async function showL2TransferScreen() {
@@ -672,9 +678,20 @@ async function showL2TransferScreen() {
         return;
     }
     
-    // Update balance display
-    if (l2Balance) {
-        document.getElementById('l2-transfer-balance').textContent = l2Balance.balance_kray;
+    // Update KRAY balance dynamically
+    await updateTransferTokenBalances();
+    
+    // Setup token selection
+    setupTokenSelection();
+    
+    // Setup MAX button
+    const maxBtn = document.getElementById('l2-transfer-max-btn');
+    if (maxBtn) {
+        maxBtn.onclick = () => {
+            const amountInput = document.getElementById('l2-transfer-amount');
+            amountInput.value = currentTokenBalance;
+            amountInput.dispatchEvent(new Event('input'));
+        };
     }
     
     // Setup transfer button
@@ -687,7 +704,15 @@ async function showL2TransferScreen() {
         const recipient = recipientInput.value.trim();
         // Accept bc1p (Taproot) addresses for L2 accounts
         const isValidRecipient = recipient.startsWith('bc1p') && recipient.length === 62;
-        sendBtn.disabled = !amount || amount < 1 || !isValidRecipient;
+        const hasBalance = amount <= currentTokenBalance;
+        sendBtn.disabled = !amount || amount < 1 || !isValidRecipient || !hasBalance;
+        
+        // Show warning if exceeds balance
+        if (amount > currentTokenBalance && currentTokenBalance > 0) {
+            sendBtn.textContent = '⚠️ Insufficient Balance';
+        } else {
+            sendBtn.textContent = '⚡ Send Instantly';
+        }
     };
     
     amountInput.oninput = validateInputs;
@@ -696,6 +721,72 @@ async function showL2TransferScreen() {
     sendBtn.onclick = async () => {
         await executeTransfer();
     };
+}
+
+/**
+ * Update token balances in transfer screen
+ */
+async function updateTransferTokenBalances() {
+    console.log('💰 Updating transfer token balances...');
+    
+    // Update KRAY balance
+    const krayBalanceEl = document.getElementById('l2-token-balance-KRAY');
+    if (krayBalanceEl) {
+        if (l2Balance && l2Balance.balance) {
+            const balance = parseInt(l2Balance.balance) || 0;
+            krayBalanceEl.textContent = balance.toLocaleString();
+            currentTokenBalance = balance;
+        } else if (l2Balance && l2Balance.balance_credits) {
+            const balance = parseInt(l2Balance.balance_credits) || 0;
+            krayBalanceEl.textContent = balance.toLocaleString();
+            currentTokenBalance = balance;
+        } else {
+            krayBalanceEl.textContent = '0';
+            currentTokenBalance = 0;
+        }
+    }
+    
+    // TODO: In the future, fetch other L2 token balances from API
+    // For now, only KRAY is supported on L2
+}
+
+/**
+ * Setup token selection in transfer screen
+ */
+function setupTokenSelection() {
+    const tokenItems = document.querySelectorAll('.l2-token-item');
+    
+    tokenItems.forEach(item => {
+        item.onclick = () => {
+            // Remove selected from all
+            tokenItems.forEach(t => {
+                t.classList.remove('selected');
+                t.style.borderColor = 'var(--color-border)';
+            });
+            
+            // Select this one
+            item.classList.add('selected');
+            item.style.borderColor = '#10b981';
+            
+            // Update hidden input
+            const token = item.dataset.token;
+            selectedTransferToken = token;
+            document.getElementById('l2-transfer-token').value = token;
+            document.getElementById('l2-transfer-token-symbol').textContent = token;
+            
+            // Update current balance
+            const balanceEl = document.getElementById(`l2-token-balance-${token}`);
+            if (balanceEl) {
+                currentTokenBalance = parseInt(balanceEl.textContent.replace(/,/g, '')) || 0;
+            }
+            
+            // Re-validate
+            const amountInput = document.getElementById('l2-transfer-amount');
+            amountInput.dispatchEvent(new Event('input'));
+            
+            console.log(`🎯 Selected token: ${token}, Balance: ${currentTokenBalance}`);
+        };
+    });
 }
 
 /**

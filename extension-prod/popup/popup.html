@@ -1588,16 +1588,26 @@
             <div></div>
         </div>
 
-        <!-- Token Selector -->
+        <!-- Token Selector - Dynamic with thumbnails and balances -->
         <div class="form-group">
             <label>Select Token</label>
-            <select id="l2-transfer-token" class="input-field" style="background: var(--color-bg-secondary); color: #ffffff;">
-                <option value="KRAY">⚡ KRAY (Gas Token)</option>
-                <option value="DOG">🐕 DOG•GO•TO•THE•MOON</option>
-                <option value="DOGSOCIAL">🎭 DOG•SOCIAL•CLUB</option>
-                <option value="RADIOLA">🎵 RADIOLA•MUSIC</option>
-            </select>
-            <span class="helper-text" id="l2-token-balance">Balance: Loading...</span>
+            <div id="l2-transfer-token-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+                <!-- Tokens will be populated dynamically -->
+                <div class="l2-token-item selected" data-token="KRAY" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--color-bg-secondary); border: 2px solid #10b981; border-radius: 10px; cursor: pointer;">
+                    <img src="../assets/kray-space.webp" alt="KRAY" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: none; align-items: center; justify-content: center; font-size: 14px;">⚡</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600; color: #ffffff;">KRAY</div>
+                        <div style="font-size: 11px; color: var(--color-text-secondary);">Gas Token</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div id="l2-token-balance-KRAY" style="font-size: 14px; font-weight: 600; color: #ffffff;">--</div>
+                        <div style="font-size: 10px; color: var(--color-text-secondary);">Available</div>
+                    </div>
+                </div>
+                <!-- More tokens loaded dynamically from L2 balances -->
+            </div>
+            <input type="hidden" id="l2-transfer-token" value="KRAY">
         </div>
 
         <!-- Recipient -->
@@ -1607,10 +1617,18 @@
             <span class="helper-text">Recipient's Bitcoin Taproot address (bc1p...)</span>
         </div>
 
-        <!-- Amount -->
+        <!-- Amount with MAX button -->
         <div class="form-group">
-            <label>Amount (KRAY)</label>
-            <input type="number" id="l2-transfer-amount" class="input-field" placeholder="100" step="1" min="1" />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="margin-bottom: 0;">Amount</label>
+                <button id="l2-transfer-max-btn" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #10b981; cursor: pointer; transition: all 0.2s;">
+                    MAX
+                </button>
+            </div>
+            <div style="position: relative;">
+                <input type="number" id="l2-transfer-amount" class="input-field" placeholder="0" step="1" min="1" style="padding-right: 60px;" />
+                <div id="l2-transfer-token-symbol" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 600; color: var(--color-text-secondary);">KRAY</div>
+            </div>
             <span class="helper-text">Minimum: 1 KRAY (integer only)</span>
         </div>
 
@@ -1633,7 +1651,7 @@
         <!-- Features -->
         <div style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
             <div style="font-size: 11px; color: #10b981; text-align: center;">
-                ⚡ Instant confirmation • 🔥 50% gas burned • 💰 Low fees
+                ⚡ Instant confirmation • 🔒 Secure • 💰 Zero fees
             </div>
         </div>
     </div>
