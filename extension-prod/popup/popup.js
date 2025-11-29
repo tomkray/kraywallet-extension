@@ -2205,51 +2205,59 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                             // 🔥 FETCH REAL AMOUNT from QuickNode (not from OP_RETURN decode)
                             // The OP_RETURN decode can be inaccurate, QuickNode has the real value
                             try {
-                                // The edict tells us which output has the runes (values[4] for tag 0)
-                                // But for RECEIVED transactions, we need to find OUR output
                                 const currentAddress = walletData?.address || walletData?.taprootAddress;
+                                console.log(`   🔍 Fetching tx data for amount... currentAddress: ${currentAddress?.slice(0,15)}...`);
                                 
-                                // Fetch full transaction to find the output for our address
                                 const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
                                     method: 'GET',
-                                    signal: AbortSignal.timeout(5000)
+                                    signal: AbortSignal.timeout(8000)
                                 });
                                 
                                 if (txResponse.ok) {
                                     const txData = await txResponse.json();
+                                    console.log(`   📦 Got tx data, vouts: ${txData.tx?.vout?.length}`);
+                                    
                                     if (txData.success && txData.tx && txData.tx.vout) {
-                                        // Find the output with runes that belongs to our address
+                                        // Find ANY rune output and use its amount
+                                        // For SENT: prioritize output NOT to our address
+                                        // For RECEIVED: prioritize output TO our address
+                                        let foundAmount = null;
+                                        let fallbackAmount = null;
+                                        
                                         for (const vout of txData.tx.vout) {
                                             const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
                                             const enrichment = vout.enrichment;
                                             
                                             if (enrichment?.type === 'rune' && enrichment.data?.amount) {
-                                                // For RECEIVED: find output to our address
-                                                // For SENT: find output NOT to our address (recipient)
+                                                const amt = enrichment.data.amount.toString();
                                                 const isOurAddress = voutAddress === currentAddress;
+                                                
+                                                console.log(`   📍 vout ${vout.n}: ${amt} KRAY to ${voutAddress?.slice(0,15)}... (ours: ${isOurAddress})`);
+                                                
+                                                // Save as fallback in case we don't find exact match
+                                                if (!fallbackAmount) fallbackAmount = amt;
                                                 
                                                 if ((txStatus === 'received' && isOurAddress) || 
                                                     (txStatus === 'sent' && !isOurAddress)) {
-                                                    runeAmount = enrichment.data.amount.toString();
-                                                    console.log(`   ✅ Got REAL amount from explorer: ${runeAmount} (${txStatus} to ${voutAddress?.slice(0,10)}...)`);
+                                                    foundAmount = amt;
+                                                    console.log(`   ✅ MATCH! Using amount: ${foundAmount}`);
                                                     break;
                                                 }
                                             }
                                         }
+                                        
+                                        // Use found amount or fallback to any rune amount
+                                        runeAmount = foundAmount || fallbackAmount || runeAmount;
+                                        console.log(`   💰 Final runeAmount: ${runeAmount}`);
                                     }
-                                }
-                                
-                                // Fallback if we couldn't find it
-                                if (!runeAmount && values.length >= 4 && values[3] > 0) {
-                                    runeAmount = values[3].toString();
+                                } else {
+                                    console.warn(`   ⚠️ Explorer fetch failed: ${txResponse.status}`);
                                 }
                             } catch (amountError) {
                                 console.warn(`   ⚠️ Could not fetch real amount:`, amountError.message);
-                                // Fallback to decoded value
-                                if (values.length >= 4 && values[3] > 0) {
-                                    runeAmount = values[3].toString();
-                                }
                             }
+                            
+                            // NO FALLBACK to values[3] - that's the wrong decoded value!
                         }
                     } catch (decodeError) {
                         console.error(`   ❌ Error decoding Runestone:`, decodeError);
