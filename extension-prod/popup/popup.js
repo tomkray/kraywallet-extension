@@ -2118,46 +2118,35 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                         const tag = values[0];
                         console.log(`   🏷️  Tag: ${tag} (${tag === 0 ? 'Edicts ✅' : tag === 10 ? 'INVALID (Cenotaph) ⚠️' : 'Unknown'})`);
                         
-                        // Se Tag não é 0, é um Cenotaph (queima as runes)
+                        // Determine rune ID based on tag type
+                        let runeId = null;
+                        
                         if (tag !== 0) {
+                            // Cenotaph (burn) - values are shifted
                             console.log(`   ⚠️  CENOTAPH DETECTED! Invalid Tag ${tag} - Runes were BURNED!`);
-                            
-                            // Cenotaph (burn) - get info from explorer, not from OP_RETURN decode
-                            let burnedRuneName = 'Unknown Rune';
-                            let burnedRuneSymbol = '🔥';
-                            
-                            // For cenotaph, we still need the rune ID to identify it
-                            if (values.length >= 5) {
-                                const runeId = `${values[2]}:${values[3]}`;
-                                // DON'T use values[4] for amount - it's unreliable!
-                                // Amount will be fetched from explorer below
-                                
-                                if (runesIdToNameMap.has(runeId)) {
-                                    burnedRuneName = runesIdToNameMap.get(runeId);
-                                    burnedRuneSymbol = runesSymbolsMap.get(burnedRuneName) || '🔥';
-                                    console.log(`   🔥 Cenotaph Rune ID: ${runeId} = ${burnedRuneName}`);
-                                } else {
-                                    console.log(`   🔍 Cenotaph Rune ID: ${runeId} (name not in map)`);
-                                }
+                            if (values.length >= 4) {
+                                runeId = `${values[2]}:${values[3]}`;
                             }
-                            
-                            runeName = `🔥 ${burnedRuneName}`;
-                            runeSymbol = burnedRuneSymbol;
-                            // runeAmount will be fetched from explorer below
+                            runeName = '🔥 Burned Rune';
+                            runeSymbol = '🔥';
                         } else if (values.length >= 3) {
-                            const runeId = `${values[1]}:${values[2]}`;
+                            // Normal transfer - tag 0
+                            runeId = `${values[1]}:${values[2]}`;
+                        }
+                        
+                        if (runeId) {
                             console.log(`   🆔 Decoded Rune ID: ${runeId}`);
                             
-                            // 1. PRIMEIRO: Buscar no runesIdToNameMap (runes que o usuário possui)
+                            // Try to get rune name from cache first
                             if (runesIdToNameMap.has(runeId)) {
-                                runeName = runesIdToNameMap.get(runeId);
-                                runeThumbnail = runesThumbnailsMap.get(runeName);
-                                runeSymbol = runesSymbolsMap.get(runeName) || '⧈';
-                                console.log(`   ✅ Found in map: ${runeName} ${runeSymbol}`);
+                                const cachedName = runesIdToNameMap.get(runeId);
+                                runeName = tag !== 0 ? `🔥 ${cachedName}` : cachedName;
+                                runeThumbnail = runesThumbnailsMap.get(cachedName);
+                                runeSymbol = tag !== 0 ? '🔥' : (runesSymbolsMap.get(cachedName) || '⧈');
+                                console.log(`   ✅ Found in cache: ${runeName} ${runeSymbol}`);
                             } else {
-                                // 2. SE NÃO ENCONTRAR: Buscar dinamicamente via backend/QuickNode
-                                console.log(`   🔍 Rune ID ${runeId} not in map, fetching via backend...`);
-                                
+                                // Fetch rune details from backend
+                                console.log(`   🔍 Rune ID ${runeId} not in cache, fetching...`);
                                 try {
                                     const runeResponse = await fetch(`https://kraywallet-backend.onrender.com/api/rune/${runeId}`, {
                                         method: 'GET',
@@ -2167,96 +2156,75 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                                     
                                     if (runeResponse.ok) {
                                         const runeData = await runeResponse.json();
-                                        
                                         if (runeData.success) {
-                                            runeName = runeData.name;
-                                            runeSymbol = runeData.symbol || '⧈';
+                                            const fetchedName = runeData.name;
+                                            runeName = tag !== 0 ? `🔥 ${fetchedName}` : fetchedName;
+                                            runeSymbol = tag !== 0 ? '🔥' : (runeData.symbol || '⧈');
                                             runeThumbnail = runeData.thumbnail;
                                             
-                                            console.log(`   ✅ Fetched via backend: ${runeName} ${runeSymbol}`);
-                                            
-                                            // Salvar divisibility
+                                            // Cache it
+                                            runesIdToNameMap.set(runeId, fetchedName);
+                                            runesSymbolsMap.set(fetchedName, runeData.symbol || '⧈');
+                                            if (runeThumbnail) runesThumbnailsMap.set(fetchedName, runeThumbnail);
                                             if (runeData.divisibility !== undefined) {
                                                 window.runesDivisibilityMap = window.runesDivisibilityMap || new Map();
-                                                window.runesDivisibilityMap.set(runeName, runeData.divisibility);
+                                                window.runesDivisibilityMap.set(fetchedName, runeData.divisibility);
                                             }
-                                            
-                                            // Adicionar aos maps para cache
-                                            runesIdToNameMap.set(runeId, runeName);
-                                            runesSymbolsMap.set(runeName, runeSymbol);
-                                            if (runeThumbnail) {
-                                                runesThumbnailsMap.set(runeName, runeThumbnail);
-                                            }
-                                        } else {
-                                            runeName = `Rune ${runeId}`;
-                                            console.log(`   ⚠️  Backend returned no rune data`);
+                                            console.log(`   ✅ Fetched: ${runeName} ${runeSymbol}`);
                                         }
-                                    } else {
-                                        runeName = `Rune ${runeId}`;
-                                        console.log(`   ⚠️  Backend returned ${runeResponse.status}`);
                                     }
                                 } catch (fetchError) {
-                                    runeName = `Rune ${runeId}`;
-                                    console.error(`   ❌ Error fetching rune via backend:`, fetchError.message);
+                                    console.error(`   ❌ Error fetching rune:`, fetchError.message);
                                 }
                             }
+                        }
+                        
+                        // 🔥 ALWAYS FETCH REAL AMOUNT from QuickNode/Explorer
+                        // This works for BOTH normal transfers AND cenotaph (burn)
+                        // The OP_RETURN decode is NEVER reliable for amount!
+                        try {
+                            const currentAddress = walletData?.address || walletData?.taprootAddress;
+                            console.log(`   🔍 Fetching tx data for amount...`);
                             
-                            // 🔥 FETCH REAL AMOUNT from QuickNode (not from OP_RETURN decode)
-                            // The OP_RETURN decode can be inaccurate, QuickNode has the real value
-                            try {
-                                const currentAddress = walletData?.address || walletData?.taprootAddress;
-                                console.log(`   🔍 Fetching tx data for amount... currentAddress: ${currentAddress?.slice(0,15)}...`);
+                            const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
+                                method: 'GET',
+                                signal: AbortSignal.timeout(8000)
+                            });
+                            
+                            if (txResponse.ok) {
+                                const txData = await txResponse.json();
                                 
-                                const txResponse = await fetch(`https://kraywallet-backend.onrender.com/api/explorer/tx/${tx.txid}`, {
-                                    method: 'GET',
-                                    signal: AbortSignal.timeout(8000)
-                                });
-                                
-                                if (txResponse.ok) {
-                                    const txData = await txResponse.json();
-                                    console.log(`   📦 Got tx data, vouts: ${txData.tx?.vout?.length}`);
+                                if (txData.success && txData.tx && txData.tx.vout) {
+                                    let foundAmount = null;
+                                    let fallbackAmount = null;
                                     
-                                    if (txData.success && txData.tx && txData.tx.vout) {
-                                        // Find ANY rune output and use its amount
-                                        // For SENT: prioritize output NOT to our address
-                                        // For RECEIVED: prioritize output TO our address
-                                        let foundAmount = null;
-                                        let fallbackAmount = null;
+                                    for (const vout of txData.tx.vout) {
+                                        const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
+                                        const enrichment = vout.enrichment;
                                         
-                                        for (const vout of txData.tx.vout) {
-                                            const voutAddress = vout.scriptpubkey_address || vout.scriptPubKey?.address;
-                                            const enrichment = vout.enrichment;
+                                        if (enrichment?.type === 'rune' && enrichment.data?.amount) {
+                                            const amt = enrichment.data.amount.toString();
+                                            const isOurAddress = voutAddress === currentAddress;
                                             
-                                            if (enrichment?.type === 'rune' && enrichment.data?.amount) {
-                                                const amt = enrichment.data.amount.toString();
-                                                const isOurAddress = voutAddress === currentAddress;
-                                                
-                                                console.log(`   📍 vout ${vout.n}: ${amt} KRAY to ${voutAddress?.slice(0,15)}... (ours: ${isOurAddress})`);
-                                                
-                                                // Save as fallback in case we don't find exact match
-                                                if (!fallbackAmount) fallbackAmount = amt;
-                                                
-                                                if ((txStatus === 'received' && isOurAddress) || 
-                                                    (txStatus === 'sent' && !isOurAddress)) {
-                                                    foundAmount = amt;
-                                                    console.log(`   ✅ MATCH! Using amount: ${foundAmount}`);
-                                                    break;
-                                                }
+                                            console.log(`   📍 vout ${vout.n}: ${amt} to ${voutAddress?.slice(0,12)}... (ours: ${isOurAddress})`);
+                                            
+                                            if (!fallbackAmount) fallbackAmount = amt;
+                                            
+                                            if ((txStatus === 'received' && isOurAddress) || 
+                                                (txStatus === 'sent' && !isOurAddress)) {
+                                                foundAmount = amt;
+                                                console.log(`   ✅ MATCH! Amount: ${foundAmount}`);
+                                                break;
                                             }
                                         }
-                                        
-                                        // Use found amount or fallback to any rune amount
-                                        runeAmount = foundAmount || fallbackAmount || runeAmount;
-                                        console.log(`   💰 Final runeAmount: ${runeAmount}`);
                                     }
-                                } else {
-                                    console.warn(`   ⚠️ Explorer fetch failed: ${txResponse.status}`);
+                                    
+                                    runeAmount = foundAmount || fallbackAmount || '';
+                                    console.log(`   💰 Final runeAmount: ${runeAmount}`);
                                 }
-                            } catch (amountError) {
-                                console.warn(`   ⚠️ Could not fetch real amount:`, amountError.message);
                             }
-                            
-                            // NO FALLBACK to values[3] - that's the wrong decoded value!
+                        } catch (amountError) {
+                            console.warn(`   ⚠️ Could not fetch amount:`, amountError.message);
                         }
                     } catch (decodeError) {
                         console.error(`   ❌ Error decoding Runestone:`, decodeError);
