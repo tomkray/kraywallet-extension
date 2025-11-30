@@ -354,6 +354,11 @@ function displayPendingWithdrawals() {
             statusText = 'Awaiting Signature';
             statusColor = '#f59e0b';
             timeText = 'Sign to continue';
+        } else if (w.status === 'completed' && w.l1_txid) {
+            statusIcon = '📡';
+            statusText = 'Broadcast';
+            statusColor = '#10b981';
+            timeText = 'Awaiting confirmation';
         } else if (timeRemaining > 0) {
             statusIcon = '⏳';
             statusText = 'Challenge Period';
@@ -375,8 +380,12 @@ function displayPendingWithdrawals() {
         const elapsed = totalChallenge - timeRemaining;
         const progress = Math.min(100, Math.max(0, (elapsed / totalChallenge) * 100));
         
+        // Links section
+        const krayScanL2Link = `https://kraywallet-backend.onrender.com/krayscan.html?l2tx=${w.id}`;
+        const mempoolLink = w.l1_txid ? `https://mempool.space/tx/${w.l1_txid}` : null;
+        
         return `
-            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 14px;">
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 14px; cursor: pointer;" onclick="window.open('${krayScanL2Link}', '_blank')">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 16px;">${statusIcon}</span>
@@ -401,6 +410,19 @@ function displayPendingWithdrawals() {
                     <span>Requested</span>
                     <span>Challenge</span>
                     <span>Complete</span>
+                </div>
+                
+                <!-- Links -->
+                <div style="display: flex; gap: 8px; margin-top: 10px; justify-content: center;" onclick="event.stopPropagation()">
+                    <a href="${krayScanL2Link}" target="_blank" style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 6px; font-size: 10px; color: #a78bfa; text-decoration: none;">
+                        <img src="../images/mobile-app-icon.png" style="width: 12px; height: 12px; border-radius: 2px;">
+                        KrayScan L2 ↗
+                    </a>
+                    ${mempoolLink ? `
+                    <a href="${mempoolLink}" target="_blank" style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); border-radius: 6px; font-size: 10px; color: #ff6b35; text-decoration: none;">
+                        <img src="../images/bitcoin.png" style="width: 12px; height: 12px;">
+                        Mempool ↗
+                    </a>` : ''}
                 </div>
             </div>
         `;
@@ -640,13 +662,53 @@ function displayL2Transactions() {
         const amount = parseInt(tx.amount) || 0;
         const gasFee = parseInt(tx.gas_fee) || 0;
         const isSent = tx.from === l2Account;
+        const txId = tx.id || tx.tx_hash;
+        
+        // Determine links
+        const krayScanL2Link = `https://kraywallet-backend.onrender.com/krayscan.html?l2tx=${txId}`;
+        const mempoolLink = tx.l1_txid ? `https://mempool.space/tx/${tx.l1_txid}` : null;
+        
+        // Layer badge
+        let layerBadge = '';
+        if (tx.type === 'deposit') {
+            layerBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);border-radius:4px;color:#ff6b35;">L1→L2</span>';
+        } else if (tx.type === 'withdrawal') {
+            layerBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">L2→L1</span>';
+        } else if (tx.type === 'refund') {
+            layerBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:4px;color:#a78bfa;">REFUND</span>';
+        } else {
+            layerBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:4px;color:#a78bfa;">L2 ⚡</span>';
+        }
+        
+        // Status badge for withdrawals
+        let statusBadge = '';
+        if (tx.type === 'withdrawal' && tx.status) {
+            if (tx.status === 'completed' && tx.l1_txid) {
+                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">📡 Broadcast</span>';
+            } else if (tx.status === 'failed') {
+                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:4px;color:#ef4444;">❌ Failed</span>';
+            } else if (tx.status === 'challenge_period') {
+                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:4px;color:#fbbf24;">⏳ Pending</span>';
+            }
+        }
         
         return `
-        <div class="l2-transaction-item">
+        <div class="l2-transaction-item" style="cursor:pointer;" onclick="window.open('${krayScanL2Link}', '_blank')">
             <div class="l2-transaction-icon">${getTransactionIcon(tx.type)}</div>
             <div class="l2-transaction-info">
-                <div class="l2-transaction-label">${getTransactionLabel(tx.type)}</div>
+                <div class="l2-transaction-label" style="display:flex;align-items:center;gap:6px;">
+                    ${getTransactionLabel(tx.type)}
+                    ${layerBadge}
+                    ${statusBadge}
+                </div>
                 <div class="l2-transaction-time">${new Date(tx.created_at).toLocaleString()}</div>
+                ${mempoolLink ? `
+                <div style="margin-top:4px;" onclick="event.stopPropagation()">
+                    <a href="${mempoolLink}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);border-radius:4px;font-size:9px;color:#ff6b35;text-decoration:none;">
+                        <img src="../images/bitcoin.png" style="width:10px;height:10px;">
+                        Mempool ↗
+                    </a>
+                </div>` : ''}
             </div>
             <div class="l2-transaction-amount">
                 <div class="l2-transaction-amount-value ${isSent ? 'negative' : 'positive'}">
@@ -1393,7 +1455,11 @@ let selectedFeeRate = 'medium';
 let userBtcBalance = 0;
 
 // Estimated tx size for withdrawal (PSBT with Runestone)
-const WITHDRAWAL_TX_VBYTES = 250;
+const WITHDRAWAL_TX_VBYTES = 280;
+
+// Minimum sats needed for withdrawal (fee + dust outputs)
+// Must match backend MIN_FEE_SATS in userFundedWithdrawal.js
+const MIN_WITHDRAWAL_SATS = 3000;
 
 /**
  * Fetch current fee rates from mempool.space
@@ -1418,9 +1484,17 @@ async function fetchMempoolFees() {
 
 /**
  * Calculate fee in sats for given rate
+ * IMPORTANT: Must be at least MIN_WITHDRAWAL_SATS to cover:
+ * - Network fee
+ * - Dust output for user KRAY (546 sats)
+ * - Dust output for bridge change (546 sats)
  */
 function calculateFeeSats(feeRate) {
-    return Math.ceil(WITHDRAWAL_TX_VBYTES * feeRate);
+    const networkFee = Math.ceil(WITHDRAWAL_TX_VBYTES * feeRate);
+    // Add buffer for dust outputs: 546 (user) + 546 (bridge) = 1092
+    const totalNeeded = networkFee + 1092;
+    // Always return at least MIN_WITHDRAWAL_SATS
+    return Math.max(totalNeeded, MIN_WITHDRAWAL_SATS);
 }
 
 /**
