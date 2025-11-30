@@ -1648,18 +1648,50 @@ async function loadUserUtxos(address, neededSats) {
             console.log(`✅ Auto-selected UTXO for fee: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout} (${selectedFeeUtxo.value} sats)`);
         }
         
+        // Store clean UTXOs globally for selection
+        window.cleanUtxosForFee = cleanUtxos;
+        
         // Update UTXO list in UI
         const utxoListEl = document.getElementById('l2-withdraw-utxo-list');
         if (utxoListEl) {
             if (cleanUtxos.length === 0) {
-                utxoListEl.innerHTML = '<div style="color:#ef4444;">No clean UTXOs available for fee. You need a UTXO without inscriptions/runes.</div>';
+                utxoListEl.innerHTML = `
+                    <div style="color:#ef4444;padding:12px;background:rgba(239,68,68,0.1);border-radius:8px;text-align:center;">
+                        <div style="font-size:20px;margin-bottom:8px;">⚠️</div>
+                        <div style="font-weight:600;">No clean UTXOs available</div>
+                        <div style="font-size:11px;color:#888;margin-top:4px;">You need a UTXO with ${neededSats.toLocaleString()}+ sats without inscriptions/runes</div>
+                    </div>`;
             } else {
-                utxoListEl.innerHTML = cleanUtxos.map((utxo, i) => `
-                    <div onclick="selectUtxoForFee(${i})" style="padding:6px;margin:4px 0;background:${selectedFeeUtxo === utxo ? 'rgba(16,185,129,0.2)' : 'var(--color-bg-tertiary)'};border:1px solid ${selectedFeeUtxo === utxo ? '#10b981' : 'var(--color-border)'};border-radius:6px;cursor:pointer;">
-                        <div style="font-family:monospace;color:#888;">${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}</div>
-                        <div style="color:#10b981;font-weight:600;">${utxo.value.toLocaleString()} sats ${selectedFeeUtxo === utxo ? '✓' : ''}</div>
+                utxoListEl.innerHTML = `
+                    <div style="font-size:11px;color:#888;margin-bottom:8px;">
+                        🔒 Only showing clean UTXOs (no inscriptions/runes) • Click to select
                     </div>
-                `).join('');
+                    ${cleanUtxos.map((utxo, i) => {
+                        const isSelected = selectedFeeUtxo && selectedFeeUtxo.txid === utxo.txid && selectedFeeUtxo.vout === utxo.vout;
+                        return `
+                            <div onclick="selectUtxoForFee(${i})" 
+                                 style="padding:10px;margin:6px 0;
+                                        background:${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)'};
+                                        border:2px solid ${isSelected ? '#10b981' : 'rgba(255,255,255,0.1)'};
+                                        border-radius:8px;cursor:pointer;transition:all 0.2s;"
+                                 onmouseover="this.style.background='${isSelected ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}'"
+                                 onmouseout="this.style.background='${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)}'">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div style="font-family:monospace;font-size:11px;color:#888;">
+                                        ${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}
+                                    </div>
+                                    ${isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : ''}
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                                    <div style="color:#10b981;font-weight:700;font-size:14px;">
+                                        ${utxo.value.toLocaleString()} sats
+                                    </div>
+                                    ${isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>'}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
             }
         }
         
@@ -1672,19 +1704,54 @@ async function loadUserUtxos(address, neededSats) {
  * Select specific UTXO for fee (called from UI)
  */
 window.selectUtxoForFee = function(index) {
-    const cleanUtxos = userUtxos.filter(utxo => {
-        const hasInscriptions = utxo.inscriptions && utxo.inscriptions.length > 0;
-        const hasRunes = utxo.runes && Object.keys(utxo.runes).length > 0;
-        return !hasInscriptions && !hasRunes;
-    });
+    const cleanUtxos = window.cleanUtxosForFee || [];
     
     if (cleanUtxos[index]) {
         selectedFeeUtxo = cleanUtxos[index];
-        console.log(`Selected UTXO: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout}`);
+        console.log(`✅ Selected UTXO: ${selectedFeeUtxo.txid}:${selectedFeeUtxo.vout} (${selectedFeeUtxo.value} sats)`);
         
-        // Refresh the list to show selection
+        // Show notification
+        if (window.showNotification) {
+            window.showNotification(`Selected UTXO: ${selectedFeeUtxo.value.toLocaleString()} sats`, 'success');
+        }
+        
+        // Refresh the list to show selection (use stored address)
         const neededSats = calculateFeeSats(withdrawalFeeRates[selectedFeeRate]);
-        loadUserUtxos(l2Account, neededSats);
+        
+        // Re-render the UTXO list without fetching again
+        const utxoListEl = document.getElementById('l2-withdraw-utxo-list');
+        if (utxoListEl && cleanUtxos.length > 0) {
+            utxoListEl.innerHTML = `
+                <div style="font-size:11px;color:#888;margin-bottom:8px;">
+                    🔒 Only showing clean UTXOs (no inscriptions/runes) • Click to select
+                </div>
+                ${cleanUtxos.map((utxo, i) => {
+                    const isSelected = selectedFeeUtxo && selectedFeeUtxo.txid === utxo.txid && selectedFeeUtxo.vout === utxo.vout;
+                    return `
+                        <div onclick="selectUtxoForFee(${i})" 
+                             style="padding:10px;margin:6px 0;
+                                    background:${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)'};
+                                    border:2px solid ${isSelected ? '#10b981' : 'rgba(255,255,255,0.1)'};
+                                    border-radius:8px;cursor:pointer;transition:all 0.2s;"
+                             onmouseover="this.style.background='${isSelected ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}'"
+                             onmouseout="this.style.background='${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)}'">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div style="font-family:monospace;font-size:11px;color:#888;">
+                                    ${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}
+                                </div>
+                                ${isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : ''}
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                                <div style="color:#10b981;font-weight:700;font-size:14px;">
+                                    ${utxo.value.toLocaleString()} sats
+                                </div>
+                                ${isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>'}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
     }
 };
 
