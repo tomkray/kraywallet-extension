@@ -1668,28 +1668,18 @@ async function loadUserUtxos(address, neededSats) {
                     </div>
                     ${cleanUtxos.map((utxo, i) => {
                         const isSelected = selectedFeeUtxo && selectedFeeUtxo.txid === utxo.txid && selectedFeeUtxo.vout === utxo.vout;
-                        return `
-                            <div onclick="selectUtxoForFee(${i})" 
-                                 style="padding:10px;margin:6px 0;
-                                        background:${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)'};
-                                        border:2px solid ${isSelected ? '#10b981' : 'rgba(255,255,255,0.1)'};
-                                        border-radius:8px;cursor:pointer;transition:all 0.2s;"
-                                 onmouseover="this.style.background='${isSelected ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}'"
-                                 onmouseout="this.style.background='${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)}'">
-                                <div style="display:flex;justify-content:space-between;align-items:center;">
-                                    <div style="font-family:monospace;font-size:11px;color:#888;">
-                                        ${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}
-                                    </div>
-                                    ${isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : ''}
-                                </div>
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
-                                    <div style="color:#10b981;font-weight:700;font-size:14px;">
-                                        ${utxo.value.toLocaleString()} sats
-                                    </div>
-                                    ${isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>'}
-                                </div>
-                            </div>
-                        `;
+                        const bgColor = isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)';
+                        const borderColor = isSelected ? '#10b981' : 'rgba(255,255,255,0.1)';
+                        return '<div onclick="selectUtxoForFee(' + i + ')" class="utxo-item' + (isSelected ? ' selected' : '') + '" style="padding:10px;margin:6px 0;background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:8px;cursor:pointer;">' +
+                            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                                '<div style="font-family:monospace;font-size:11px;color:#888;">' + utxo.txid.substring(0,8) + '...' + utxo.txid.substring(56) + ':' + utxo.vout + '</div>' +
+                                (isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : '') +
+                            '</div>' +
+                            '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">' +
+                                '<div style="color:#10b981;font-weight:700;font-size:14px;">' + utxo.value.toLocaleString() + ' sats</div>' +
+                                (isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>') +
+                            '</div>' +
+                        '</div>';
                     }).join('')}
                 `;
             }
@@ -1727,28 +1717,18 @@ window.selectUtxoForFee = function(index) {
                 </div>
                 ${cleanUtxos.map((utxo, i) => {
                     const isSelected = selectedFeeUtxo && selectedFeeUtxo.txid === utxo.txid && selectedFeeUtxo.vout === utxo.vout;
-                    return `
-                        <div onclick="selectUtxoForFee(${i})" 
-                             style="padding:10px;margin:6px 0;
-                                    background:${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)'};
-                                    border:2px solid ${isSelected ? '#10b981' : 'rgba(255,255,255,0.1)'};
-                                    border-radius:8px;cursor:pointer;transition:all 0.2s;"
-                             onmouseover="this.style.background='${isSelected ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.06)'}'"
-                             onmouseout="this.style.background='${isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)}'">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <div style="font-family:monospace;font-size:11px;color:#888;">
-                                    ${utxo.txid.substring(0,8)}...${utxo.txid.substring(56)}:${utxo.vout}
-                                </div>
-                                ${isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : ''}
-                            </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
-                                <div style="color:#10b981;font-weight:700;font-size:14px;">
-                                    ${utxo.value.toLocaleString()} sats
-                                </div>
-                                ${isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>'}
-                            </div>
-                        </div>
-                    `;
+                    const bgColor = isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)';
+                    const borderColor = isSelected ? '#10b981' : 'rgba(255,255,255,0.1)';
+                    return '<div onclick="selectUtxoForFee(' + i + ')" class="utxo-item' + (isSelected ? ' selected' : '') + '" style="padding:10px;margin:6px 0;background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:8px;cursor:pointer;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                            '<div style="font-family:monospace;font-size:11px;color:#888;">' + utxo.txid.substring(0,8) + '...' + utxo.txid.substring(56) + ':' + utxo.vout + '</div>' +
+                            (isSelected ? '<span style="color:#10b981;font-size:16px;">✓</span>' : '') +
+                        '</div>' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">' +
+                            '<div style="color:#10b981;font-weight:700;font-size:14px;">' + utxo.value.toLocaleString() + ' sats</div>' +
+                            (isSelected ? '<span style="font-size:10px;color:#10b981;background:rgba(16,185,129,0.2);padding:2px 6px;border-radius:4px;">SELECTED</span>' : '<span style="font-size:10px;color:#666;">click to select</span>') +
+                        '</div>' +
+                    '</div>';
                 }).join('')}
             `;
         }
