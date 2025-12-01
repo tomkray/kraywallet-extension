@@ -1525,18 +1525,23 @@ async function createOffer({ inscriptionId, price, description }) {
         const data = await inscriptionResponse.json();
         const inscription = data.inscription;
         
-        if (!inscription.txid || inscription.vout === undefined || !inscription.value) {
+        // ⚠️ IMPORTANT: Use outputValue (from ordinals.com) which is the REAL UTXO value
+        // inscription.value may come from QuickNode and can be incorrect (546 dust limit default)
+        const realValue = inscription.outputValue || inscription.value;
+        
+        if (!inscription.txid || inscription.vout === undefined || !realValue) {
             throw new Error('Inscription data incomplete. Missing txid, vout, or value.');
         }
         
         const seller_txid = inscription.txid;
         const seller_vout = inscription.vout;
-        const seller_value = inscription.value;
+        const seller_value = realValue; // Use the REAL value from ordinals.com
         
         console.log('✅ Inscription UTXO details:', {
             txid: seller_txid,
             vout: seller_vout,
             value: seller_value,
+            outputValue_source: inscription.outputValue ? 'ordinals.com' : 'quicknode',
             inscription_number: inscription.inscription_number || '?'
         });
         
