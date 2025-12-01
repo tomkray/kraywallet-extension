@@ -82,7 +82,19 @@ const SatRarity = (function() {
     function detect(satNumber) {
         if (!satNumber && satNumber !== 0) return null;
         
-        const sat = BigInt(satNumber);
+        // Clean the sat number (remove commas, spaces, etc.)
+        let cleanSat = satNumber;
+        if (typeof satNumber === 'string') {
+            cleanSat = satNumber.replace(/[,\s]/g, '');
+        }
+        
+        let sat;
+        try {
+            sat = BigInt(cleanSat);
+        } catch (e) {
+            console.error('Invalid sat number:', satNumber);
+            return null;
+        }
         const block = getBlockFromSat(sat);
         const isFirstInBlock = isFirstSatInBlock(sat);
         
