@@ -2303,7 +2303,9 @@ async function getInscriptions(params = {}) {
             output: i.output || `${i.txid}:${i.vout}`,
             outputValue: i.outputValue || i.value || parseInt(i.output_value) || 600,  // ✅ Try all possible fields!
             value: i.outputValue || i.value || parseInt(i.output_value) || 600,
-            pending: false
+            pending: false,
+            sat: i.sat || null,  // 🌟 Sat number for rarity detection
+            satName: i.satName || null
         }));
         
         // ✅ ADICIONAR INSCRIPTIONS PENDENTES DO CACHE

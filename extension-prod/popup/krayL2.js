@@ -634,7 +634,7 @@ function displayL2Balance() {
     // Update L2 balance element if exists
     const l2BalanceKray = document.getElementById('l2-balance-kray');
     if (l2BalanceKray) {
-        l2BalanceKray.textContent = krayBalance;
+        l2BalanceKray.innerHTML = `${krayBalance} <span style="color: #f59e0b;">▽</span>`;
     }
     
     // Update main header balance
@@ -643,13 +643,13 @@ function displayL2Balance() {
     
     if (walletBalance) {
         // Show integer KRAY (no decimals - respecting divisibility: 0)
-        walletBalance.textContent = `${krayBalance} KRAY`;
+        walletBalance.innerHTML = `${krayBalance} <span style="color: #f59e0b;">▽</span>`;
         console.log(`✅ Updated wallet-balance: ${krayBalance} KRAY`);
     }
     
     if (walletBalanceBtc) {
         // Show available balance (for spending)
-        walletBalanceBtc.textContent = `${availableBalance} available`;
+        walletBalanceBtc.innerHTML = `${availableBalance} <span style="color: #f59e0b;">▽</span> available`;
         console.log(`✅ Updated wallet-balance-btc: ${availableBalance} available`);
     }
     

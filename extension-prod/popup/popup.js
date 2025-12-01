@@ -861,6 +861,18 @@ async function switchTab(tabName) {
         if (tabName === 'activity') {
             console.log('  🔄 Activity tab selected, loading transactions...');
             
+            // 🔄 MOSTRAR LOADING IMEDIATAMENTE
+            const activityList = document.getElementById('activity-list');
+            if (activityList) {
+                activityList.innerHTML = `
+                    <div class="loading-container">
+                        <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Loading transactions...</p>
+                    </div>
+                `;
+            }
+            
             // Buscar endereço da wallet
             try {
                 const response = await chrome.runtime.sendMessage({
@@ -873,7 +885,6 @@ async function switchTab(tabName) {
                     await loadActivity(address);
                 } else {
                     console.error('  ❌ Failed to get wallet address');
-                    const activityList = document.getElementById('activity-list');
                     if (activityList) {
                         activityList.innerHTML = `
                             <div class="empty-state">
@@ -885,12 +896,32 @@ async function switchTab(tabName) {
                 }
             } catch (error) {
                 console.error('  ❌ Error getting wallet info:', error);
+                if (activityList) {
+                    activityList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">⚠️</span>
+                            <p>Error loading transactions</p>
+                        </div>
+                    `;
+                }
             }
         }
         
         // Se for a tab de Ordinals, carregar inscriptions
         if (tabName === 'ordinals') {
             console.log('  🖼️  Ordinals tab selected, loading inscriptions...');
+            
+            // 🔄 MOSTRAR LOADING IMEDIATAMENTE
+            const ordinalsList = document.getElementById('ordinals-list');
+            if (ordinalsList) {
+                ordinalsList.innerHTML = `
+                    <div class="loading-container">
+                        <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Loading inscriptions...</p>
+                    </div>
+                `;
+            }
             
             // Buscar endereço da wallet
             try {
@@ -904,7 +935,6 @@ async function switchTab(tabName) {
                     await loadOrdinals(address);
                 } else {
                     console.error('  ❌ Failed to get wallet address');
-                    const ordinalsList = document.getElementById('ordinals-list');
                     if (ordinalsList) {
                         ordinalsList.innerHTML = `
                             <div class="empty-state">
@@ -916,12 +946,32 @@ async function switchTab(tabName) {
                 }
             } catch (error) {
                 console.error('  ❌ Error getting wallet info:', error);
+                if (ordinalsList) {
+                    ordinalsList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">⚠️</span>
+                            <p>Error loading inscriptions</p>
+                        </div>
+                    `;
+                }
             }
         }
         
         // Se for a tab de Runes, carregar runes
         if (tabName === 'runes') {
             console.log('  🪙 Runes tab selected, loading runes...');
+            
+            // 🔄 MOSTRAR LOADING IMEDIATAMENTE
+            const runesList = document.getElementById('runes-list');
+            if (runesList) {
+                runesList.innerHTML = `
+                    <div class="loading-container">
+                        <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Loading runes...</p>
+                    </div>
+                `;
+            }
             
             // Buscar endereço da wallet
             try {
@@ -935,7 +985,6 @@ async function switchTab(tabName) {
                     await loadRunes(address);
                 } else {
                     console.error('  ❌ Failed to get wallet address');
-                    const runesList = document.getElementById('runes-list');
                     if (runesList) {
                         runesList.innerHTML = `
                             <div class="empty-state">
@@ -947,6 +996,14 @@ async function switchTab(tabName) {
                 }
             } catch (error) {
                 console.error('  ❌ Error getting wallet info:', error);
+                if (runesList) {
+                    runesList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">⚠️</span>
+                            <p>Error loading runes</p>
+                        </div>
+                    `;
+                }
             }
         }
     } else {
@@ -1315,15 +1372,16 @@ async function loadActivity(address) {
         const activityList = document.getElementById('activity-list');
         if (!activityList) {
             console.warn('⚠️  Activity list element not found');
+            isLoadingActivity = false;
             return;
         }
         
-        // 💾 VERIFICAR CACHE PRIMEIRO (mas ainda valida se há novas transações)
+        // 💾 VERIFICAR CACHE PRIMEIRO
         if (isCacheValid('activity')) {
-            console.log('⚡ Using cached activity data (checking for updates...)');
+            console.log('⚡ Using cached activity data');
             const cachedHTML = dataCache.activity.data;
             
-            // Mostrar cache imediatamente
+            // Mostrar cache imediatamente (substitui loading)
             if (cachedHTML) {
                 activityList.innerHTML = cachedHTML;
                 // ✅ REATTACH EVENT LISTENERS para abrir KrayScan
@@ -1332,28 +1390,11 @@ async function loadActivity(address) {
                 activityList.innerHTML = '<div class="empty-state">No transactions yet</div>';
             }
             
-            // 🔄 Verificar em background se há novas transações (não bloqueia UI)
-            checkForNewTransactions(address).then(hasNew => {
-                if (hasNew) {
-                    console.log('🔔 New transactions detected! Refreshing...');
-                    clearActivityCache();
-                    loadActivity(address);
-                }
-            }).catch(err => {
-                console.warn('⚠️ Failed to check for new transactions:', err);
-            });
-            
+            isLoadingActivity = false;
             return;
         }
         
-        // Loading state (logo + spinner)
-        activityList.innerHTML = `
-            <div class="loading-container">
-                <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
-                <div class="loading-spinner"></div>
-                <p class="loading-text">Loading transactions...</p>
-            </div>
-        `;
+        // 🔄 SEM CACHE - loading já está visível (colocado no tab switch)
         
         // 🎯 BUSCAR UTXOS ENRIQUECIDOS (mesmo sistema do Split)
         console.log('   📦 Fetching enriched UTXOs from backend...');
@@ -1544,6 +1585,7 @@ async function loadActivity(address) {
                     <p>No transactions yet</p>
                 </div>
             `;
+            isLoadingActivity = false;
             return;
         }
         
@@ -1564,9 +1606,6 @@ async function loadActivity(address) {
         
         console.log('   ✅ Activity loaded successfully!');
         console.log('=========================================');
-        
-        // 🛡️ LIBERAR FLAG
-        isLoadingActivity = false;
         
         // 💾 SALVAR HTML E ÚLTIMO TXID NO CACHE
         dataCache.activity.data = activityList.innerHTML;
@@ -1598,9 +1637,6 @@ async function loadActivity(address) {
         console.error('   Stack:', error.stack);
         console.error('=============================================');
         
-        // 🛡️ LIBERAR FLAG em caso de erro
-        isLoadingActivity = false;
-        
         const activityList = document.getElementById('activity-list');
         if (activityList) {
             activityList.innerHTML = `
@@ -1615,6 +1651,9 @@ async function loadActivity(address) {
                 </div>
             `;
         }
+    } finally {
+        // 🛡️ SEMPRE liberar flag no final
+        isLoadingActivity = false;
     }
 }
 
@@ -2866,6 +2905,15 @@ async function loadOrdinals(address) {
         return;
     }
     
+    // 🔄 SEMPRE mostrar loading primeiro
+    container.innerHTML = `
+        <div class="loading-container">
+            <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading inscriptions...</p>
+        </div>
+    `;
+    
     // 💾 VERIFICAR CACHE PRIMEIRO
     if (isCacheValid('ordinals')) {
         console.log('⚡ Using cached ordinals data (saved API call & energy)');
@@ -2888,15 +2936,6 @@ async function loadOrdinals(address) {
         console.log('🔧 POPUP.JS VERSION: 2024-FIXED-MULTIPLE-CALLS ✅');
         console.log('═══════════════════════════════════════════════════');
         console.log('🖼️  Loading ordinals for address:', address);
-        
-        // Mostrar loading (logo + spinner)
-        container.innerHTML = `
-            <div class="loading-container">
-                <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
-                <div class="loading-spinner"></div>
-                <p class="loading-text">Loading inscriptions...</p>
-            </div>
-        `;
         
         // Buscar inscriptions via API
         const response = await chrome.runtime.sendMessage({
@@ -3290,6 +3329,30 @@ function createOrdinalItem(inscription) {
         number.appendChild(pendingBadge);
     }
     
+    // 🌟 SAT RARITY BADGE - Detect and show rare sat indicator
+    if (inscription.sat && typeof SatRarity !== 'undefined') {
+        const rarity = SatRarity.detect(inscription.sat);
+        if (rarity && rarity.isRare) {
+            const rarityBadge = document.createElement('span');
+            rarityBadge.style.cssText = `
+                display: inline-block;
+                margin-left: 6px;
+                padding: 2px 6px;
+                background: ${rarity.primaryColor}20;
+                color: ${rarity.primaryColor};
+                border: 1px solid ${rarity.primaryColor}40;
+                border-radius: 8px;
+                font-size: 9px;
+                font-weight: 600;
+                vertical-align: middle;
+                cursor: help;
+            `;
+            rarityBadge.textContent = rarity.rarities.slice(0, 2).map(r => r.emoji).join('');
+            rarityBadge.title = rarity.description;
+            number.appendChild(rarityBadge);
+        }
+    }
+    
     // ✨ LINHA 2: Value (sats) - ao invés de content_type
     const valueDiv = document.createElement('div');
     valueDiv.className = 'ordinal-value';
@@ -3460,6 +3523,15 @@ async function loadRunes(address) {
     
     console.log('   Container found:', container);
     
+    // 🔄 SEMPRE mostrar loading primeiro
+    container.innerHTML = `
+        <div class="loading-container">
+            <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading runes...</p>
+        </div>
+    `;
+    
     // 💾 VERIFICAR CACHE PRIMEIRO
     if (isCacheValid('runes')) {
         console.log('⚡ Using cached runes data (saved API call & energy)');
@@ -3482,15 +3554,6 @@ async function loadRunes(address) {
         }
         return;
     }
-    
-    // Mostrar loading
-    container.innerHTML = `
-        <div class="loading-container">
-            <img src="../assets/logo.png" alt="MyWallet" class="logo-medium" />
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Loading runes...</p>
-        </div>
-    `;
     
     try {
         console.log('   📡 Sending message to background script...');
