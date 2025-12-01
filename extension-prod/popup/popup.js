@@ -2440,6 +2440,10 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
         
         if (isRunesTx && runesData && runesData.length > 0) {
             // Para RUNES: Mostrar thumbnail do parent (igual às inscriptions)
+            
+            // Verificar se é Cenotaph (runes queimadas)
+            const isCenotaph = runeInfo && runeInfo.name && runeInfo.name.startsWith('🔥');
+            
             icon.style.cssText = `
                 width: 50px;
                 height: 50px;
@@ -2448,21 +2452,26 @@ async function createTransactionItem(tx, myAddress, enrichedUtxosMap = new Map()
                 overflow: hidden;
                 flex-shrink: 0;
                 margin-right: 12px;
-                border: 1.5px solid #f59e0b;
+                border: 1.5px solid ${isCenotaph ? '#ff4444' : '#f59e0b'};
             `;
             
-            // Buscar thumbnail da primeira rune
-            const firstRune = runesData[0];
-            const runeName = firstRune.name;
-            const runeSymbol = firstRune.symbol || '⧈';
-            const thumbnailUrl = runesThumbnailsMap.get(runeName);
-            
-            if (thumbnailUrl) {
-                // ✅ Mostrar SOMENTE thumbnail real do parent (sem fallback emoji)
-                icon.innerHTML = `<img src="${thumbnailUrl}" style="width: 100%; height: 100%; object-fit: cover; background: #1a1a1a;" onerror="this.style.background='linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1))';">`;
+            // 🔥 Se for BURNED (Cenotaph), mostrar caixão
+            if (isCenotaph) {
+                icon.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: linear-gradient(135deg, rgba(255, 68, 68, 0.3), rgba(139, 0, 0, 0.2));">⚰️</div>`;
             } else {
-                // Fallback: Se não tem thumbnail, mostrar placeholder neutro (não emoji)
-                icon.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));">🪙</div>`;
+                // Buscar thumbnail da primeira rune
+                const firstRune = runesData[0];
+                const runeName = firstRune.name;
+                const runeSymbol = firstRune.symbol || '⧈';
+                const thumbnailUrl = runesThumbnailsMap.get(runeName);
+                
+                if (thumbnailUrl) {
+                    // ✅ Mostrar SOMENTE thumbnail real do parent (sem fallback emoji)
+                    icon.innerHTML = `<img src="${thumbnailUrl}" style="width: 100%; height: 100%; object-fit: cover; background: #1a1a1a;" onerror="this.style.background='linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1))';">`;
+                } else {
+                    // Fallback: Se não tem thumbnail, mostrar placeholder neutro (não emoji)
+                    icon.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));">🪙</div>`;
+                }
             }
             
         } else {
@@ -4757,13 +4766,31 @@ function updateRuneFeeEstimate() {
     }
 }
 
-// Load mempool.space fees for Bitcoin Send screen
+// Load fees for Bitcoin Send screen (via backend API - uses QuickNode first!)
 async function loadBitcoinSendFees() {
     try {
-        console.log('📊 Loading mempool.space fees for Bitcoin Send...');
+        console.log('📊 Loading fees via backend API...');
         
-        const response = await fetch('https://mempool.space/api/v1/fees/recommended');
-        const fees = await response.json();
+        // Use backend API which uses QuickNode first, then Mempool.space as fallback
+        let fees;
+        try {
+            const backendResponse = await fetch('https://kraywallet-backend.onrender.com/api/wallet/fees');
+            const backendData = await backendResponse.json();
+            if (backendData.success) {
+                fees = {
+                    minimumFee: backendData.fees.minimum,
+                    hourFee: backendData.fees.low,
+                    halfHourFee: backendData.fees.medium,
+                    fastestFee: backendData.fees.high
+                };
+                console.log(`✅ Fees from backend (${backendData.source}):`, fees);
+            }
+        } catch (backendError) {
+            console.log('⚠️ Backend failed, trying mempool.space directly...');
+            const response = await fetch('https://mempool.space/api/v1/fees/recommended');
+            fees = await response.json();
+            console.log('✅ Fees from mempool.space fallback:', fees);
+        }
         
         console.log('✅ Fees loaded:', fees);
         
@@ -4839,15 +4866,31 @@ async function loadBitcoinSendFees() {
     }
 }
 
-// Load mempool.space recommended fees (for Runes)
+// Load recommended fees for Runes (via backend API - uses QuickNode first!)
 async function loadMempoolFees() {
     try {
-        console.log('📊 Loading mempool.space fees...');
+        console.log('📊 Loading fees via backend API...');
         
-        const response = await fetch('https://mempool.space/api/v1/fees/recommended');
-        const fees = await response.json();
-        
-        console.log('✅ Fees loaded:', fees);
+        // Use backend API which uses QuickNode first, then Mempool.space as fallback
+        let fees;
+        try {
+            const backendResponse = await fetch('https://kraywallet-backend.onrender.com/api/wallet/fees');
+            const backendData = await backendResponse.json();
+            if (backendData.success) {
+                fees = {
+                    minimumFee: backendData.fees.minimum,
+                    hourFee: backendData.fees.low,
+                    halfHourFee: backendData.fees.medium,
+                    fastestFee: backendData.fees.high
+                };
+                console.log(`✅ Fees from backend (${backendData.source}):`, fees);
+            }
+        } catch (backendError) {
+            console.log('⚠️ Backend failed, trying mempool.space directly...');
+            const response = await fetch('https://mempool.space/api/v1/fees/recommended');
+            fees = await response.json();
+            console.log('✅ Fees from mempool.space fallback:', fees);
+        }
         
         const feeSelect = document.getElementById('send-rune-fee');
         
