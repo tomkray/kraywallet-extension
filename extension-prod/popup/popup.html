@@ -1260,6 +1260,59 @@
     </div>
 
     <!-- ========================================
+         TELA: LISTING SUCCESS
+         ======================================== -->
+    <div id="listing-success-screen" class="screen hidden">
+        <div class="screen-header">
+            <div></div>
+            <h2>✓ Listed!</h2>
+            <div></div>
+        </div>
+        
+        <div style="padding: 24px; text-align: center;">
+            <!-- Success Icon -->
+            <div style="
+                width: 80px;
+                height: 80px;
+                background: var(--color-success);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+                font-size: 40px;
+                color: white;
+            ">✓</div>
+            
+            <!-- Title -->
+            <h3 style="color: var(--color-text-primary); font-size: 20px; font-weight: 600; margin: 0 0 8px;">Listed Successfully!</h3>
+            <p style="color: var(--color-text-secondary); font-size: 14px; margin: 0 0 24px;">Your inscription is now on the marketplace</p>
+            
+            <!-- Price Box -->
+            <div style="
+                background: var(--color-bg-secondary);
+                border-radius: 12px;
+                padding: 16px;
+                margin: 0 0 24px;
+                border: 1px solid var(--color-border);
+            ">
+                <div style="color: var(--color-text-secondary); font-size: 12px; margin-bottom: 4px;">Price</div>
+                <div id="listing-success-price" style="color: var(--color-success); font-size: 28px; font-weight: 700;">0 sats</div>
+            </div>
+            
+            <!-- Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button id="listing-success-view-btn" class="btn btn-primary btn-large" style="width: 100%;">
+                    🔍 View on KrayScan
+                </button>
+                <button id="listing-success-done-btn" class="btn btn-secondary" style="width: 100%;">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
          TELA: MY PUBLIC PROFILE
          ======================================== -->
     <div id="my-profile-screen" class="screen hidden">
