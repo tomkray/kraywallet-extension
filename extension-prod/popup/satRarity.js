@@ -26,10 +26,11 @@ const SatRarity = (function() {
     const BLOCK_9_END = 500000000n;
     
     // Pizza Sats - May 22, 2010 (10,000 BTC for 2 pizzas)
-    // The sats came from blocks Laszlo mined (~56776 to ~57078)
-    // Range covers the 10,000 BTC (1 trillion sats) spent in the pizza tx
-    const PIZZA_START = 283880000000000n;
-    const PIZZA_END = 285390000000000n;
+    // EXPANDED RANGE: Laszlo mined blocks between ~55000-58000
+    // The 10,000 BTC came from various UTXOs across this range
+    // Using broader community-accepted range (blocks 55000-58000)
+    const PIZZA_START = 275000000000000n;  // Block 55000
+    const PIZZA_END = 290000000000000n;    // Block 58000
 
     function getBlockFromSat(satNumber) {
         const sat = BigInt(satNumber);
