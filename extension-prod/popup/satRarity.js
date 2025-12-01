@@ -24,6 +24,11 @@ const SatRarity = (function() {
     const NAKAMOTO_END = 1000000000000n;
     const BLOCK_9_START = 450000000n;
     const BLOCK_9_END = 500000000n;
+    
+    // Pizza Sats - Block 57043 (May 22, 2010 - 10,000 BTC for 2 pizzas)
+    // First sat of block 57043: 57043 * 5,000,000,000 = 285,215,000,000,000
+    const PIZZA_START = 285215000000000n;
+    const PIZZA_END = 285220000000000n;  // 50 BTC block reward
 
     function getBlockFromSat(satNumber) {
         const sat = BigInt(satNumber);
@@ -151,6 +156,16 @@ const SatRarity = (function() {
         // Nakamoto
         if (sat < NAKAMOTO_END) {
             rarities.push({ name: 'Nakamoto', emoji: '👤', color: '#f97316', tier: 2 });
+        }
+        
+        // Pizza Sats - Block 57043 (Bitcoin Pizza Day - May 22, 2010)
+        if (sat >= PIZZA_START && sat < PIZZA_END) {
+            rarities.push({ name: 'Pizza', emoji: '🍕', color: '#f59e0b', tier: 3 });
+            if (primaryRarity === 'common') {
+                primaryRarity = 'pizza';
+                emoji = '🍕';
+                color = '#f59e0b';
+            }
         }
         
         rarities.sort((a, b) => b.tier - a.tier);
