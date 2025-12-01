@@ -126,10 +126,10 @@ const SatRarity = (function() {
         
         // Uncommon
         if (isFirstInBlock && primaryRarity === 'common') {
-            rarities.push({ name: 'Uncommon', emoji: '💎', color: '#22c55e', tier: 2 });
+            rarities.push({ name: 'Uncommon', emoji: '💎', color: '#ec4899', tier: 2 });
             primaryRarity = 'uncommon';
             emoji = '💎';
-            color = '#22c55e';
+            color = '#ec4899';
         }
         
         // Palindrome
