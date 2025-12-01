@@ -9491,6 +9491,81 @@ window.hideListMarketModal = hideListMarketModal;
 window.updateListingSummary = updateListingSummary;
 window.createMarketListing = createMarketListing;
 
+// ========================================
+// BUY MARKET LISTING - UNIFIED FUNCTION
+// ========================================
+
+/**
+ * 🛒 Buy a market listing (unified function for all buy buttons)
+ * Can be called from: extension popup, KrayScan, inscription profile, etc.
+ * 
+ * @param {string} orderId - The order ID of the listing
+ * @param {number} priceSats - Price in satoshis (optional, will fetch if not provided)
+ */
+async function buyMarketListing(orderId, priceSats = null) {
+    try {
+        console.log('\n🛒 ===== BUY MARKET LISTING (UNIFIED) =====');
+        console.log('   Order ID:', orderId);
+        console.log('   Price:', priceSats, 'sats');
+        
+        showLoading('Preparing purchase...');
+        
+        // Get wallet info
+        const walletInfo = await sendMessage({ action: 'getWalletInfo' });
+        
+        if (!walletInfo.unlocked) {
+            hideLoading();
+            showNotification('🔒 Please unlock your wallet first', 'error');
+            showScreen('unlock');
+            return;
+        }
+        
+        const buyerAddress = walletInfo.address;
+        console.log('   Buyer address:', buyerAddress);
+        
+        // If price not provided, fetch from API
+        if (!priceSats) {
+            const listingResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${orderId}`);
+            const listingData = await listingResponse.json();
+            if (!listingData.success) {
+                throw new Error('Listing not found');
+            }
+            priceSats = listingData.listing.price_sats;
+            console.log('   Fetched price:', priceSats, 'sats');
+        }
+        
+        // Call background to prepare buy PSBT
+        const result = await sendMessage({
+            action: 'buyAtomicSwap',
+            data: {
+                orderId,
+                priceSats,
+                buyerAddress,
+                buyerChangeAddress: buyerAddress // Same address for change
+            }
+        });
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to prepare purchase');
+        }
+        
+        console.log('✅ Buy PSBT prepared, waiting for signature...');
+        hideLoading();
+        
+        // The background will save pendingPsbtRequest
+        // Show the PSBT signing screen
+        showScreen('confirm-psbt');
+        await loadPsbtConfirmation();
+        
+    } catch (error) {
+        console.error('❌ Error buying listing:', error);
+        hideLoading();
+        showNotification('❌ ' + error.message, 'error');
+    }
+}
+
+// Expose buy function globally
+window.buyMarketListing = buyMarketListing;
 
 // ========================================
 // MY OFFERS - MARKETPLACE LISTINGS
