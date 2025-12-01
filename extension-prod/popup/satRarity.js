@@ -106,10 +106,10 @@ const SatRarity = (function() {
         
         // Epic
         if (EPIC_SATS.includes(sat) && sat !== MYTHIC_SAT) {
-            rarities.push({ name: 'Epic', emoji: '💎', color: '#9333ea', tier: 4 });
+            rarities.push({ name: 'Epic', emoji: '🔮', color: '#9333ea', tier: 4 });
             if (primaryRarity === 'common') {
                 primaryRarity = 'epic';
-                emoji = '💎';
+                emoji = '🔮';
                 color = '#9333ea';
             }
         }
@@ -135,7 +135,7 @@ const SatRarity = (function() {
         // Palindrome
         const satStr = sat.toString();
         if (satStr === satStr.split('').reverse().join('')) {
-            rarities.push({ name: 'Palindrome', emoji: '🎱', color: '#ec4899', tier: 1 });
+            rarities.push({ name: 'Palindrome', emoji: '🦋', color: '#ec4899', tier: 1 });
         }
         
         // Vintage
