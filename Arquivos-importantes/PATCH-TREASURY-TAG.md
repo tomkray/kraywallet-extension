@@ -94,3 +94,4 @@ SET l1_address = 'bc1p5u00mjuxy0c040t9jdvcjxmzjsy2yluzukdzkta0fnu0hc5m29aqhk3nhv
 WHERE id = 'treasury' OR l1_address = 'treasury_system';
 ```
 
+

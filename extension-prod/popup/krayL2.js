@@ -715,7 +715,15 @@ function displayL2Transactions() {
         // 1:1 mapping - no division, KRAY is integer (divisibility: 0)
         const amount = parseInt(tx.amount) || 0;
         const gasFee = parseInt(tx.gas_fee) || 0;
-        const isSent = tx.from === l2Account;
+        // Determine if sent or received based on tx type
+        let isSent = false;
+        if (tx.type === 'deposit') {
+            isSent = false;  // Deposits are always received
+        } else if (tx.type === 'withdrawal') {
+            isSent = true;   // Withdrawals are always sent
+        } else {
+            isSent = tx.from === l2Account || tx.from_account === l2Account;
+        }
         const txId = tx.id || tx.tx_hash;
         
         // Determine links
