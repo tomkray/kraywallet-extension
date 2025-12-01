@@ -25,10 +25,11 @@ const SatRarity = (function() {
     const BLOCK_9_START = 450000000n;
     const BLOCK_9_END = 500000000n;
     
-    // Pizza Sats - Block 57043 (May 22, 2010 - 10,000 BTC for 2 pizzas)
-    // First sat of block 57043: 57043 * 5,000,000,000 = 285,215,000,000,000
-    const PIZZA_START = 285215000000000n;
-    const PIZZA_END = 285220000000000n;  // 50 BTC block reward
+    // Pizza Sats - May 22, 2010 (10,000 BTC for 2 pizzas)
+    // The sats came from blocks Laszlo mined (~56776 to ~57078)
+    // Range covers the 10,000 BTC (1 trillion sats) spent in the pizza tx
+    const PIZZA_START = 283880000000000n;
+    const PIZZA_END = 285390000000000n;
 
     function getBlockFromSat(satNumber) {
         const sat = BigInt(satNumber);
