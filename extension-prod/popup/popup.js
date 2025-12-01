@@ -6396,35 +6396,47 @@ async function handlePsbtSign() {
             
         } else if (pendingPsbt?.type === 'buyAtomicSwap') {
             console.log('🛒 ===== BUY ATOMIC SWAP FLOW =====');
-            console.log('   Sending signed PSBT to /api/atomic-swap/buy/finalize...');
+            console.log('   Sending signed PSBT to /api/atomic-swap/:id/broadcast...');
             console.log('   Order ID:', pendingPsbt.orderId);
-            console.log('   Attempt ID:', pendingPsbt.attemptId);
+            console.log('   Buyer Address:', pendingPsbt.buyerAddress);
             
-            showLoading('Finalizing purchase...');
+            showLoading('Broadcasting purchase (with consensus validation)...');
             
-            // Enviar para /api/atomic-swap/:orderId/buy/finalize
-            const finalizeResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.orderId}/buy/finalize`, {
+            // Enviar para /api/atomic-swap/:orderId/broadcast (com validação de consenso!)
+            const broadcastResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.orderId}/broadcast`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    attempt_id: pendingPsbt.attemptId,
-                    psbt_signed_by_buyer_base64: response.signedPsbt
+                    signed_psbt_base64: response.signedPsbt,
+                    buyer_address: pendingPsbt.buyerAddress // Para validação de consenso
                 })
             });
             
-            if (!finalizeResponse.ok) {
-                const errorData = await finalizeResponse.json();
-                throw new Error(`Failed to finalize purchase: ${errorData.error || 'Unknown error'}`);
+            const broadcastResult = await broadcastResponse.json();
+            
+            if (!broadcastResponse.ok || !broadcastResult.success) {
+                // Check if it was a consensus rejection
+                if (broadcastResult.consensus && !broadcastResult.consensus.approved) {
+                    console.error('❌ Consensus rejected:', broadcastResult.consensus.errors);
+                    throw new Error(`Consensus validation failed: ${broadcastResult.consensus.errors.join(', ')}`);
+                }
+                throw new Error(broadcastResult.error || 'Failed to broadcast purchase');
             }
             
-            const finalizeResult = await finalizeResponse.json();
-            console.log('✅ Purchase finalized!', finalizeResult);
+            console.log('✅ Purchase broadcast!', broadcastResult);
+            console.log('   TXID:', broadcastResult.txid);
+            console.log('   Consensus:', broadcastResult.consensus);
             
             // Limpar pending PSBT
             await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
             
-            // Mostrar sucesso
-            showNotification(`✅ Purchase successful!\n\nTXID: ${finalizeResult.txid}\n\nThe inscription is now yours!`, 'success');
+            hideLoading();
+            
+            // Mostrar sucesso com detalhes do consenso
+            const consensusInfo = broadcastResult.consensus ? 
+                `\n🗳️ Validated by ${broadcastResult.consensus.votes.approvals}/${broadcastResult.consensus.votes.totalVotes} validators` : '';
+            
+            showNotification(`✅ Purchase successful!${consensusInfo}\n\n📋 TXID: ${broadcastResult.txid.slice(0, 16)}...\n\n🎨 The inscription is now yours!`, 'success');
             
             // Aguardar 3s e voltar para a wallet
             await new Promise(resolve => setTimeout(resolve, 3000));
