@@ -6386,12 +6386,13 @@ async function handlePsbtSign() {
             
             hideLoading();
             
+            // 🔄 IMEDIATAMENTE voltar para wallet (antes da notificação)
+            showScreen('wallet');
+            
             // Mostrar sucesso com modal bonito
             showNotification(`✅ Listing is now LIVE!\n\n🎨 Inscription listed for sale\n💰 Price: ${pendingPsbt.price.toLocaleString()} sats\n🔐 Atomic Swap: SIGHASH_SINGLE|ANYONECANPAY`, 'success');
             
-            // Aguardar 2s e voltar para tela principal
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            showScreen('wallet');
+            // Recarregar dados da wallet
             await loadWalletData();
             
         } else if (pendingPsbt?.type === 'buyAtomicSwap') {
@@ -6432,15 +6433,16 @@ async function handlePsbtSign() {
             
             hideLoading();
             
+            // 🔄 IMEDIATAMENTE voltar para wallet (antes da notificação)
+            showScreen('wallet');
+            
             // Mostrar sucesso com detalhes do consenso
             const consensusInfo = broadcastResult.consensus ? 
                 `\n🗳️ Validated by ${broadcastResult.consensus.votes.approvals}/${broadcastResult.consensus.votes.totalVotes} validators` : '';
             
             showNotification(`✅ Purchase successful!${consensusInfo}\n\n📋 TXID: ${broadcastResult.txid.slice(0, 16)}...\n\n🎨 The inscription is now yours!`, 'success');
             
-            // Aguardar 3s e voltar para a wallet
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            showScreen('wallet');
+            // Recarregar dados da wallet
             await loadWalletData();
             
         } else {
