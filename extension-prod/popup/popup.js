@@ -6348,10 +6348,10 @@ async function handlePsbtSign() {
         
         console.log('📋 Pending PSBT type:', pendingPsbt?.type);
         
-        // 🎯 SE FOR createOffer, enviar para /api/atomic-swap/:id/seller-signature automaticamente!
+        // 🎯 SE FOR createOffer, enviar para /api/atomic-swap/:id/sign automaticamente!
         if (pendingPsbt?.type === 'createOffer') {
             console.log('🛒 ===== CREATE OFFER FLOW (ATOMIC SWAP) =====');
-            console.log('   Sending signed PSBT to /api/atomic-swap/seller-signature...');
+            console.log('   Sending signed PSBT to /api/atomic-swap/:id/sign...');
             console.log('   Order ID:', pendingPsbt.order_id);
             console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
             
@@ -6362,12 +6362,12 @@ async function handlePsbtSign() {
                 throw new Error('Missing order_id from listing creation');
             }
             
-            // Enviar para /api/atomic-swap/:id/seller-signature
-            const offerResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.order_id}/seller-signature`, {
+            // Enviar para /api/atomic-swap/:id/sign (endpoint correto!)
+            const offerResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.order_id}/sign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    listing_psbt_base64: response.signedPsbt
+                    signed_psbt_base64: response.signedPsbt
                 })
             });
             
@@ -6384,8 +6384,10 @@ async function handlePsbtSign() {
             // Limpar pending PSBT
             await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
             
-            // Mostrar sucesso e voltar para a wallet
-            showNotification(`✅ Atomic Swap listing created!\n\nInscription: ${pendingPsbt.inscriptionId}\nPrice: ${pendingPsbt.price.toLocaleString()} sats\nStatus: ${offerResult.status}`, 'success');
+            hideLoading();
+            
+            // Mostrar sucesso com modal bonito
+            showNotification(`✅ Listing is now LIVE!\n\n🎨 Inscription listed for sale\n💰 Price: ${pendingPsbt.price.toLocaleString()} sats\n🔐 Atomic Swap: SIGHASH_SINGLE|ANYONECANPAY`, 'success');
             
             // Aguardar 2s e voltar para tela principal
             await new Promise(resolve => setTimeout(resolve, 2000));

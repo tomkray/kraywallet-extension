@@ -1563,20 +1563,34 @@ async function createOffer({ inscriptionId, price, description }) {
         }
         
         const listingData = await listingResponse.json();
+        
+        if (!listingData.success) {
+            throw new Error(listingData.error || 'Failed to create listing');
+        }
+        
         console.log('✅ Atomic swap listing created:', {
             order_id: listingData.order_id,
-            status: 'PENDING_SIGNATURES'
+            status: listingData.status || 'PENDING'
         });
         
         // 🖊️ Step 3: Save PSBT request for signing with SIGHASH_SINGLE|ANYONECANPAY (0x83)
+        // Note: API returns psbt_base64, not template_psbt_base64
+        const psbtBase64 = listingData.psbt_base64 || listingData.template_psbt_base64;
+        
+        if (!psbtBase64) {
+            throw new Error('No PSBT returned from server');
+        }
+        
         pendingPsbtRequest = {
-            psbt: listingData.template_psbt_base64,
+            psbt: psbtBase64,
             inscriptionId,
             price,
             description,
             type: 'createOffer',
             sighashType: 'SINGLE|ANYONECANPAY', // 🔐 ATOMIC SWAP: SIGHASH_SINGLE|ANYONECANPAY (0x83)
+            sighashTypeHex: 0x83,
             order_id: listingData.order_id,
+            seller_value: seller_value,
             timestamp: Date.now()
         };
         
