@@ -7,3 +7,4 @@ mkdir -p data
 echo "🚀 Starting KRAY L2..."
 npm start
 
+

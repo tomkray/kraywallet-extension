@@ -803,3 +803,4 @@ PRIORIDADE NORMAL (6+ meses):
 
 *Este documento contém informações sensíveis sobre vulnerabilidades. Tratar como confidencial.*
 
+

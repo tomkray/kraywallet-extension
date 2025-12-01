@@ -210,3 +210,4 @@ PORT=5002 DB_PATH=./data/mainnet.db npm start
 **Depois disso: 100% PRONTO!** ✅
 
 **Faço isso agora?** 🔧
+

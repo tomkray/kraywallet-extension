@@ -575,3 +575,4 @@ BITCOIN_NETWORK=mainnet
 *Documento gerado em 30/11/2025*  
 *KRAY SPACE - Self-Custodial Bitcoin*
 
+

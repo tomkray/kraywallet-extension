@@ -30,3 +30,4 @@ services:
       - key: VALIDATOR_3_MNEMONIC
         sync: false
 
+

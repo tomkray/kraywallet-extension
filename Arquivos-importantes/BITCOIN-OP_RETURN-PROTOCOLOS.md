@@ -522,3 +522,4 @@ O custo é mínimo (apenas taxas de mineração), e os dados ficam **imutáveis 
 
 *"Origin. Honor. Bitcoin."* ⚓
 
+

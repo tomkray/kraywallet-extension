@@ -1462,9 +1462,29 @@ const WITHDRAWAL_TX_VBYTES = 280;
 const MIN_WITHDRAWAL_SATS = 3000;
 
 /**
- * Fetch current fee rates from mempool.space
+ * Fetch current fee rates (via backend API - uses QuickNode first!)
  */
 async function fetchMempoolFees() {
+    try {
+        // Use backend API which uses QuickNode first, then Mempool.space as fallback
+        const backendResponse = await fetch('https://kraywallet-backend.onrender.com/api/wallet/fees');
+        if (backendResponse.ok) {
+            const data = await backendResponse.json();
+            if (data.success) {
+                withdrawalFeeRates = {
+                    low: data.fees.low || 10,
+                    medium: data.fees.medium || 20,
+                    high: data.fees.high || 30
+                };
+                console.log(`⛽ Fees from backend (${data.source}):`, withdrawalFeeRates);
+                return withdrawalFeeRates;
+            }
+        }
+    } catch (backendError) {
+        console.warn('⚠️ Backend API failed, trying mempool.space directly...');
+    }
+    
+    // Fallback to mempool.space directly
     try {
         const response = await fetch('https://mempool.space/api/v1/fees/recommended');
         if (response.ok) {
@@ -1474,10 +1494,10 @@ async function fetchMempoolFees() {
                 medium: fees.halfHourFee || 20,
                 high: fees.fastestFee || 30
             };
-            console.log('⛽ Mempool fees:', withdrawalFeeRates);
+            console.log('⛽ Mempool fees (fallback):', withdrawalFeeRates);
         }
     } catch (error) {
-        console.warn('⚠️ Could not fetch mempool fees, using defaults');
+        console.warn('⚠️ Could not fetch fees, using defaults');
     }
     return withdrawalFeeRates;
 }

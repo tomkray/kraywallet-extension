@@ -1125,3 +1125,4 @@ PRÓXIMO TRIMESTRE:
 
 *"De um sistema federado a um ZK-Rollup trustless: a jornada de 3 anos que transformará a KRAY L2 em referência mundial."*
 
+
