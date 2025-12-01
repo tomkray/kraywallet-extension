@@ -277,7 +277,12 @@ async function updateL2Transactions() {
         
         if (txResponse.ok) {
             const txData = await txResponse.json();
-            regularTxs = txData.transactions || [];
+            const myAccountId = txData.account_id; // Internal account ID (acc_...)
+            regularTxs = (txData.transactions || []).map(tx => ({
+                ...tx,
+                type: tx.type || 'transfer',
+                _isSender: tx.from === myAccountId // Compare with internal ID
+            }));
         }
 
         // Fetch bridge deposits
@@ -722,7 +727,8 @@ function displayL2Transactions() {
         } else if (tx.type === 'withdrawal') {
             isSent = true;   // Withdrawals are always sent
         } else {
-            isSent = tx.from === l2Account || tx.from_account === l2Account;
+            // Use _isSender flag set during fetch (compares with internal account ID)
+            isSent = tx._isSender === true;
         }
         const txId = tx.id || tx.tx_hash;
         
