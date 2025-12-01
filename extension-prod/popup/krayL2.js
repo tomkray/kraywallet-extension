@@ -265,24 +265,55 @@ async function updateL2Balance() {
 }
 
 /**
- * Update L2 transactions
+ * Update L2 transactions (including bridge deposits and withdrawals)
  */
 async function updateL2Transactions() {
     if (!l2Account) return;
 
     try {
-        const response = await fetch(`${L2_API_URL}/account/${l2Account}/transactions?limit=10`);
-
-        if (!response.ok) {
-            console.warn('⚠️ Transactions fetch failed');
-            l2Transactions = [];
-            return;
+        // Fetch regular L2 transactions
+        const txResponse = await fetch(`${L2_API_URL}/account/${l2Account}/transactions?limit=10`);
+        let regularTxs = [];
+        if (txResponse.ok) {
+            const txData = await txResponse.json();
+            regularTxs = txData.transactions || [];
         }
 
-        const data = await response.json();
-        l2Transactions = data.transactions || [];
+        // Fetch bridge deposits
+        let deposits = [];
+        try {
+            const depResponse = await fetch(`${L2_API_URL}/bridge/deposits/${l2Account}`);
+            if (depResponse.ok) {
+                const depData = await depResponse.json();
+                deposits = (depData.deposits || []).map(d => ({
+                    id: d.id, type: 'deposit', amount: d.credits_minted || d.amount_l1,
+                    gas_fee: 0, from: 'L1 Bitcoin', to: l2Account, status: d.status,
+                    l1_txid: d.l1_txid, created_at: d.created_at
+                }));
+            }
+        } catch (e) { console.warn('Could not fetch deposits:', e); }
 
-        console.log(`📜 Found ${l2Transactions.length} L2 transactions`);
+        // Fetch bridge withdrawals (ALL statuses)
+        let withdrawals = [];
+        try {
+            const wdResponse = await fetch(`${L2_API_URL}/bridge/withdrawals/${l2Account}`);
+            if (wdResponse.ok) {
+                const wdData = await wdResponse.json();
+                withdrawals = (wdData.withdrawals || []).map(w => ({
+                    id: w.id, type: 'withdrawal', amount: w.credits_burned || w.amount_l1,
+                    gas_fee: w.l2_fee || 0, from: l2Account, to: w.l1_address,
+                    status: w.status, display_status: w.display_status, l1_txid: w.l1_txid,
+                    challenge_deadline: w.challenge_deadline, created_at: w.created_at
+                }));
+            }
+        } catch (e) { console.warn('Could not fetch withdrawals:', e); }
+
+        // Combine, sort by date, take top 15
+        const allTxs = [...regularTxs, ...deposits, ...withdrawals];
+        allTxs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        l2Transactions = allTxs.slice(0, 15);
+
+        console.log(\`📜 Found \${l2Transactions.length} L2 txs (\${deposits.length} dep, \${withdrawals.length} wd)\`);
 
     } catch (error) {
         console.error('❌ Error fetching L2 transactions:', error);
@@ -682,12 +713,16 @@ function displayL2Transactions() {
         
         // Status badge for withdrawals
         let statusBadge = '';
-        if (tx.type === 'withdrawal' && tx.status) {
+        if ((tx.type === 'withdrawal' || tx.type === 'deposit') && tx.status) {
             if (tx.status === 'completed' && tx.l1_txid) {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">📡 Broadcast</span>';
             } else if (tx.status === 'failed') {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:4px;color:#ef4444;">❌ Failed</span>';
-            } else if (tx.status === 'challenge_period') {
+            } else if (tx.status === 'challenge_period' || tx.status === 'pending_user_signature') {
+                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:4px;color:#fbbf24;">⏳ Processing</span>';
+            } else if (tx.status === 'claimed') {
+                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">✅ Claimed</span>';
+            } else if (tx.status === 'confirming') {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:4px;color:#fbbf24;">⏳ Pending</span>';
             }
         }
@@ -726,6 +761,8 @@ function displayL2Transactions() {
 function getTransactionIcon(type) {
     const icons = {
         'transfer': '💸',
+        'deposit': '📥',
+        'withdrawal': '📤',
         'swap': '🔄',
         'stake': '🔒',
         'unstake': '🔓',
@@ -741,6 +778,8 @@ function getTransactionIcon(type) {
 function getTransactionLabel(type) {
     const labels = {
         'transfer': 'Transfer',
+        'deposit': 'Deposit L1→L2',
+        'withdrawal': 'Withdrawal L2→L1',
         'swap': 'Swap',
         'stake': 'Stake',
         'unstake': 'Unstake',
