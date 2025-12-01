@@ -313,7 +313,7 @@ async function updateL2Transactions() {
         allTxs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         l2Transactions = allTxs.slice(0, 15);
 
-        console.log(\`📜 Found \${l2Transactions.length} L2 txs (\${deposits.length} dep, \${withdrawals.length} wd)\`);
+        console.log(`📜 Found ${l2Transactions.length} L2 txs (${deposits.length} dep, ${withdrawals.length} wd)`);
 
     } catch (error) {
         console.error('❌ Error fetching L2 transactions:', error);
@@ -1055,7 +1055,7 @@ async function showL2TransferScreen() {
         const amount = parseInt(amountInput.value);
         const recipient = recipientInput.value.trim();
         // Accept bc1p (Taproot) addresses for L2 accounts
-        const isValidRecipient = recipient.startsWith('bc1p') && recipient.length === 62;
+        const isValidRecipient = (recipient.startsWith('bc1p') || recipient.startsWith('bc1q')) && recipient.length >= 42 && recipient.length <= 90;
         const hasBalance = amount <= currentTokenBalance;
         sendBtn.disabled = !amount || amount < 1 || !isValidRecipient || !hasBalance;
         
