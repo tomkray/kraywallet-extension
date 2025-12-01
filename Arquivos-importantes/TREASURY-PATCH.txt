@@ -1,0 +1,11 @@
+=== TREASURY ADDRESS ===
+bc1p5u00mjuxy0c040t9jdvcjxmzjsy2yluzukdzkta0fnu0hc5m29aqhk3nhv
+
+=== SQL SUPABASE ===
+UPDATE l2_accounts 
+SET l1_address = 'bc1p5u00mjuxy0c040t9jdvcjxmzjsy2yluzukdzkta0fnu0hc5m29aqhk3nhv',
+    balance_credits = '3'
+WHERE id = 'treasury' OR l1_address = 'treasury_system';
+
+=== VERIFICAR ===
+SELECT * FROM l2_accounts ORDER BY balance_credits DESC;

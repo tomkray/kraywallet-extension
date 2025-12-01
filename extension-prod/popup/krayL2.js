@@ -274,6 +274,7 @@ async function updateL2Transactions() {
         // Fetch regular L2 transactions
         const txResponse = await fetch(`${L2_API_URL}/account/${l2Account}/transactions?limit=10`);
         let regularTxs = [];
+        
         if (txResponse.ok) {
             const txData = await txResponse.json();
             regularTxs = txData.transactions || [];
@@ -286,12 +287,20 @@ async function updateL2Transactions() {
             if (depResponse.ok) {
                 const depData = await depResponse.json();
                 deposits = (depData.deposits || []).map(d => ({
-                    id: d.id, type: 'deposit', amount: d.credits_minted || d.amount_l1,
-                    gas_fee: 0, from: 'L1 Bitcoin', to: l2Account, status: d.status,
-                    l1_txid: d.l1_txid, created_at: d.created_at
+                    id: d.id,
+                    type: 'deposit',
+                    amount: d.credits_minted || d.amount_l1,
+                    gas_fee: 0,
+                    from: 'L1 Bitcoin',
+                    to: l2Account,
+                    status: d.status,
+                    l1_txid: d.l1_txid,
+                    created_at: d.created_at
                 }));
             }
-        } catch (e) { console.warn('Could not fetch deposits:', e); }
+        } catch (e) {
+            console.warn('Could not fetch deposits:', e);
+        }
 
         // Fetch bridge withdrawals (ALL statuses)
         let withdrawals = [];
@@ -300,20 +309,34 @@ async function updateL2Transactions() {
             if (wdResponse.ok) {
                 const wdData = await wdResponse.json();
                 withdrawals = (wdData.withdrawals || []).map(w => ({
-                    id: w.id, type: 'withdrawal', amount: w.credits_burned || w.amount_l1,
-                    gas_fee: w.l2_fee || 0, from: l2Account, to: w.l1_address,
-                    status: w.status, display_status: w.display_status, l1_txid: w.l1_txid,
-                    challenge_deadline: w.challenge_deadline, created_at: w.created_at
+                    id: w.id,
+                    type: 'withdrawal',
+                    amount: w.credits_burned || w.amount_l1,
+                    gas_fee: w.l2_fee || 0,
+                    from: l2Account,
+                    to: w.l1_address,
+                    status: w.status,
+                    display_status: w.display_status,
+                    l1_txid: w.l1_txid,
+                    challenge_deadline: w.challenge_deadline,
+                    created_at: w.created_at,
+                    completed_at: w.completed_at
                 }));
             }
-        } catch (e) { console.warn('Could not fetch withdrawals:', e); }
+        } catch (e) {
+            console.warn('Could not fetch withdrawals:', e);
+        }
 
-        // Combine, sort by date, take top 15
+        // Combine all transactions
         const allTxs = [...regularTxs, ...deposits, ...withdrawals];
+        
+        // Sort by created_at (newest first)
         allTxs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        // Take top 15
         l2Transactions = allTxs.slice(0, 15);
 
-        console.log(`📜 Found ${l2Transactions.length} L2 txs (${deposits.length} dep, ${withdrawals.length} wd)`);
+        console.log(`📜 Found ${l2Transactions.length} L2 txs (${regularTxs.length} regular, ${deposits.length} deposits, ${withdrawals.length} withdrawals)`);
 
     } catch (error) {
         console.error('❌ Error fetching L2 transactions:', error);
@@ -427,7 +450,7 @@ function displayPendingWithdrawals() {
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div>
-                        <div style="font-size: 18px; font-weight: 700; color: #ffffff;">${parseInt(w.amount_l1 || w.credits_burned).toLocaleString()} KRAY</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #ffffff;">${parseInt(w.amount_l1 || w.credits_burned).toLocaleString()} ▽</div>
                         <div style="font-size: 10px; color: var(--color-text-tertiary);">→ ${w.l1_address?.substring(0, 12)}...${w.l1_address?.substring(54)}</div>
                     </div>
                     <img src="../images/bitcoin.png" style="width: 28px; height: 28px; opacity: 0.7;" alt="L1">
@@ -713,16 +736,12 @@ function displayL2Transactions() {
         
         // Status badge for withdrawals
         let statusBadge = '';
-        if ((tx.type === 'withdrawal' || tx.type === 'deposit') && tx.status) {
+        if (tx.type === 'withdrawal' && tx.status) {
             if (tx.status === 'completed' && tx.l1_txid) {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">📡 Broadcast</span>';
             } else if (tx.status === 'failed') {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:4px;color:#ef4444;">❌ Failed</span>';
-            } else if (tx.status === 'challenge_period' || tx.status === 'pending_user_signature') {
-                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:4px;color:#fbbf24;">⏳ Processing</span>';
-            } else if (tx.status === 'claimed') {
-                statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:#10b981;">✅ Claimed</span>';
-            } else if (tx.status === 'confirming') {
+            } else if (tx.status === 'challenge_period') {
                 statusBadge = '<span style="font-size:8px;padding:2px 6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:4px;color:#fbbf24;">⏳ Pending</span>';
             }
         }
@@ -747,7 +766,7 @@ function displayL2Transactions() {
             </div>
             <div class="l2-transaction-amount">
                 <div class="l2-transaction-amount-value ${isSent ? 'negative' : 'positive'}">
-                    ${isSent ? '-' : '+'}${amount} KRAY
+                    ${isSent ? '-' : '+'}${amount} ▽
                 </div>
                 <div class="l2-transaction-gas">${gasFee === 0 ? 'FREE ⚡' : `Gas: ${gasFee} KRAY`}</div>
             </div>
@@ -761,8 +780,6 @@ function displayL2Transactions() {
 function getTransactionIcon(type) {
     const icons = {
         'transfer': '💸',
-        'deposit': '📥',
-        'withdrawal': '📤',
         'swap': '🔄',
         'stake': '🔒',
         'unstake': '🔓',
@@ -778,8 +795,6 @@ function getTransactionIcon(type) {
 function getTransactionLabel(type) {
     const labels = {
         'transfer': 'Transfer',
-        'deposit': 'Deposit L1→L2',
-        'withdrawal': 'Withdrawal L2→L1',
         'swap': 'Swap',
         'stake': 'Stake',
         'unstake': 'Unstake',
@@ -1055,7 +1070,7 @@ async function showL2TransferScreen() {
         const amount = parseInt(amountInput.value);
         const recipient = recipientInput.value.trim();
         // Accept bc1p (Taproot) addresses for L2 accounts
-        const isValidRecipient = (recipient.startsWith('bc1p') || recipient.startsWith('bc1q')) && recipient.length >= 42 && recipient.length <= 90;
+        const isValidRecipient = recipient.startsWith('bc1p') && recipient.length === 62;
         const hasBalance = amount <= currentTokenBalance;
         sendBtn.disabled = !amount || amount < 1 || !isValidRecipient || !hasBalance;
         
@@ -1300,7 +1315,7 @@ function showL2TransferConfirm() {
     };
     
     // Update confirmation screen
-    document.getElementById('l2-confirm-amount').textContent = `${amount} KRAY`;
+    document.getElementById('l2-confirm-amount').textContent = `${amount} ▽`;
     document.getElementById('l2-confirm-recipient').textContent = 
         recipient.substring(0, 12) + '...' + recipient.substring(recipient.length - 8);
     
@@ -1371,7 +1386,7 @@ async function executeTransferWithPassword() {
         
         console.log(`   From: ${l2Account}`);
         console.log(`   To: ${recipient}`);
-        console.log(`   Amount: ${amount} KRAY`);
+        console.log(`   Amount: ${amount} ▽`);
         console.log(`   Nonce: ${nonce}`);
         
         // Sign transaction with password
@@ -1422,7 +1437,7 @@ async function executeTransferWithPassword() {
         }
         
         // Show success notification
-        window.showNotification(`⚡ Sent ${amount} KRAY instantly!`, 'success');
+        window.showNotification(`⚡ Sent ${amount} ▽ instantly!`, 'success');
         
         // Refresh balance in background (don't await)
         refreshL2Data();
@@ -2050,7 +2065,7 @@ async function executeWithdrawalWithPassword() {
     }
     
     try {
-        console.log(`   Amount: ${amount} KRAY`);
+        console.log(`   Amount: ${amount} ▽`);
         console.log(`   L2 Fee: ${l2Fee} KRAY`);
         console.log(`   L1 Fee: ${l1FeeSats} sats (${feeRate} sat/vB)`);
         console.log(`   Receive: ${receiveAmount} KRAY`);

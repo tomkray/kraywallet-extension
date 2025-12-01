@@ -949,3 +949,5 @@ E eu faço toda a configuração no código! 🚀
 *Versão: 1.0*
 *Autor: KrayWallet Team*
 
+
+

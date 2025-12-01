@@ -801,3 +801,5 @@ Não criamos apenas uma L2. Criamos:
 **© 2025 KRAY SPACE - Proof-of-Origin™ é uma marca registrada**
 
 
+
+

@@ -207,3 +207,5 @@ Antes de colocar no .env, verifique:
 **Precisa de ajuda para criar o endpoint testnet ou já conseguiu?** 😊
 
 
+
+

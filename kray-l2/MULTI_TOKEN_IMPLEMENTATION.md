@@ -175,3 +175,5 @@ Vai adicionar:
 **Me diga: continuar multi-token ou testar KRAY primeiro?** 😊
 
 
+
+
