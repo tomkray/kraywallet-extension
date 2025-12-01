@@ -116,26 +116,26 @@ const SatRarity = (function() {
         
         // Rare
         if (block > 0n && block % BLOCKS_PER_DIFFICULTY_ADJUSTMENT === 0n && isFirstInBlock && !EPIC_SATS.includes(sat)) {
-            rarities.push({ name: 'Rare', emoji: '✨', color: '#3b82f6', tier: 3 });
+            rarities.push({ name: 'Rare', emoji: '🔹', color: '#3b82f6', tier: 3 });
             if (primaryRarity === 'common') {
                 primaryRarity = 'rare';
-                emoji = '✨';
+                emoji = '🔹';
                 color = '#3b82f6';
             }
         }
         
         // Uncommon
         if (isFirstInBlock && primaryRarity === 'common') {
-            rarities.push({ name: 'Uncommon', emoji: '🔸', color: '#22c55e', tier: 2 });
+            rarities.push({ name: 'Uncommon', emoji: '💎', color: '#22c55e', tier: 2 });
             primaryRarity = 'uncommon';
-            emoji = '🔸';
+            emoji = '💎';
             color = '#22c55e';
         }
         
         // Palindrome
         const satStr = sat.toString();
         if (satStr === satStr.split('').reverse().join('')) {
-            rarities.push({ name: 'Palindrome', emoji: '🔄', color: '#ec4899', tier: 1 });
+            rarities.push({ name: 'Palindrome', emoji: '🎱', color: '#ec4899', tier: 1 });
         }
         
         // Vintage
