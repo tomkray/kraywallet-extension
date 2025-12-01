@@ -5654,115 +5654,35 @@ function showNotification(message, type = 'info') {
 }
 
 /**
- * Modal de sucesso para listagem no marketplace
+ * Tela de sucesso para listagem no marketplace (dentro do popup)
  */
-function showListingSuccessModal(inscriptionId, price, orderId) {
-    // Remover modal anterior se existir
-    const existingModal = document.querySelector('.listing-success-modal');
-    if (existingModal) existingModal.remove();
+function showListingSuccessScreen(inscriptionId, price, orderId) {
+    // Atualizar preço na tela
+    const priceEl = document.getElementById('listing-success-price');
+    if (priceEl) {
+        priceEl.textContent = `${price.toLocaleString()} sats`;
+    }
     
-    const krayscanUrl = `https://kraywallet-backend.onrender.com/krayscan.html?inscription=${inscriptionId}`;
-    const marketplaceUrl = `https://kraywallet-backend.onrender.com/marketplace.html`;
+    // Configurar botão View on KrayScan
+    const viewBtn = document.getElementById('listing-success-view-btn');
+    if (viewBtn) {
+        viewBtn.onclick = () => {
+            const krayscanUrl = `https://kraywallet-backend.onrender.com/krayscan.html?inscription=${inscriptionId}`;
+            window.open(krayscanUrl, '_blank');
+        };
+    }
     
-    const modal = document.createElement('div');
-    modal.className = 'listing-success-modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.85);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        padding: 20px;
-    `;
+    // Configurar botão Done
+    const doneBtn = document.getElementById('listing-success-done-btn');
+    if (doneBtn) {
+        doneBtn.onclick = () => {
+            showScreen('wallet');
+            loadWalletData();
+        };
+    }
     
-    modal.innerHTML = `
-        <div style="
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 320px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        ">
-            <!-- Success Icon -->
-            <div style="
-                width: 64px;
-                height: 64px;
-                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 16px;
-                font-size: 32px;
-            ">✓</div>
-            
-            <!-- Title -->
-            <h3 style="
-                color: white;
-                font-size: 20px;
-                font-weight: 700;
-                margin: 0 0 8px;
-            ">Listed Successfully!</h3>
-            
-            <!-- Price -->
-            <div style="
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                padding: 12px;
-                margin: 16px 0;
-            ">
-                <div style="color: #888; font-size: 12px; margin-bottom: 4px;">Price</div>
-                <div style="color: #4CAF50; font-size: 24px; font-weight: 700;">${price.toLocaleString()} sats</div>
-            </div>
-            
-            <!-- Buttons -->
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-                <button onclick="window.open('${krayscanUrl}', '_blank'); this.closest('.listing-success-modal').remove();" style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 12px 16px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                ">
-                    🔍 View on KrayScan
-                </button>
-                
-                <button onclick="this.closest('.listing-success-modal').remove();" style="
-                    background: transparent;
-                    color: #888;
-                    border: 1px solid #333;
-                    border-radius: 8px;
-                    padding: 12px 16px;
-                    font-size: 14px;
-                    cursor: pointer;
-                ">
-                    Close
-                </button>
-            </div>
-        </div>
-    `;
-    
-    // Fechar ao clicar fora
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
-    
-    document.body.appendChild(modal);
+    // Mostrar tela de sucesso
+    showScreen('listing-success');
 }
 
 // Notificação especial para transações (clicável)
@@ -6498,16 +6418,10 @@ async function handlePsbtSign() {
             
             hideLoading();
             
-            // 🔄 IMEDIATAMENTE voltar para wallet (antes da notificação)
-            showScreen('wallet');
-            
-            // Mostrar modal de sucesso com botões
+            // Mostrar tela de sucesso (dentro do popup, padrão KrayWallet)
             const inscriptionId = pendingPsbt.inscriptionId;
             const price = pendingPsbt.price;
-            showListingSuccessModal(inscriptionId, price, offerResult.order_id);
-            
-            // Recarregar dados da wallet
-            await loadWalletData();
+            showListingSuccessScreen(inscriptionId, price, offerResult.order_id);
             
         } else if (pendingPsbt?.type === 'buyAtomicSwap') {
             console.log('🛒 ===== BUY ATOMIC SWAP FLOW =====');
