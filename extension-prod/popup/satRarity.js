@@ -152,7 +152,7 @@ const SatRarity = (function() {
         // Palindrome
         const satStr = sat.toString();
         if (satStr === satStr.split('').reverse().join('')) {
-            rarities.push({ name: 'Palindrome', emoji: '🦋', color: '#ec4899', tier: 1 });
+            rarities.push({ name: 'Palindrome', emoji: '🦋', color: '#06b6d4', tier: 1 });
         }
         
         // Vintage
