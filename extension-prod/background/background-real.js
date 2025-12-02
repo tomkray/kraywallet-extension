@@ -1694,10 +1694,14 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
                 'Please send some pure BTC (without inscriptions/runes) to your wallet to be able to buy.');
         }
         
-        // Calculate total needed (price + market fee 2% + miner fee)
+        // Calculate total needed (price + market fee 2% + miner fee + inscription postage)
         const marketFee = Math.max(Math.floor(priceSats * 0.02), 546);
-        const minerFee = 1000; // Estimate
-        const totalNeeded = priceSats + marketFee + minerFee;
+        const inscriptionPostage = 555; // Postage para a inscription
+        const minerFee = 2500; // Estimate conservador (~250 vB * 10 sat/vB)
+        const totalNeeded = priceSats + marketFee + minerFee + inscriptionPostage;
+        
+        console.log(`💰 Total needed estimate: ${totalNeeded} sats`);
+        console.log(`   Price: ${priceSats}, Market Fee: ${marketFee}, Miner Fee: ${minerFee}, Postage: ${inscriptionPostage}`);
         
         // Select UTXOs
         let selectedUtxos = [];
