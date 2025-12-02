@@ -1731,46 +1731,55 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
         console.log('📦 Preparing purchase...');
         console.log(`   Using fee rate: ${feeRate} sat/vB`);
         
-        const prepareResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${orderId}/buy/prepare`, {
+        // ✅ Endpoint correto: /:id/buy (não /buy/prepare)
+        const prepareResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${orderId}/buy`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 buyer_address: buyerAddress,
-                buyer_change_address: buyerChangeAddress,
-                buyer_inputs: selectedUtxos,
-                miner_fee_rate: feeRate // ✅ Passar fee customizada
+                buyer_utxos: selectedUtxos.map(u => ({
+                    txid: u.txid,
+                    vout: u.vout,
+                    value: u.value,
+                    scriptPubKey: u.script_pubkey
+                })),
+                fee_rate: feeRate
             })
         });
         
         if (!prepareResponse.ok) {
-            const error = await prepareResponse.json();
-            throw new Error(error.error || 'Failed to prepare purchase');
+            const errorText = await prepareResponse.text();
+            console.error('❌ Prepare response error:', errorText);
+            try {
+                const error = JSON.parse(errorText);
+                throw new Error(error.error || 'Failed to prepare purchase');
+            } catch (e) {
+                throw new Error('Failed to prepare purchase: ' + errorText.substring(0, 100));
+            }
         }
         
         const prepareData = await prepareResponse.json();
-        console.log('✅ Purchase prepared:', {
-            attempt_id: prepareData.attempt_id,
-            summary: prepareData.summary
+        console.log('✅ Purchase PSBT prepared:', {
+            order_id: prepareData.order_id,
+            inputs_to_sign: prepareData.inputs_to_sign,
+            breakdown: prepareData.breakdown
         });
         
         // 🖊️ Step 3: Save PSBT request for signing
-        // ⚠️ IMPORTANTE: Buyer só assina seus próprios inputs (input[1], input[2], etc.)
+        // ⚠️ IMPORTANTE: Buyer só assina seus próprios inputs (retornados pelo backend)
         // O input[0] é do seller e já está assinado!
-        const buyerInputIndexes = [];
-        for (let i = 0; i < selectedUtxos.length; i++) {
-            buyerInputIndexes.push(i + 1); // +1 porque input[0] é do seller
-        }
+        const buyerInputIndexes = prepareData.inputs_to_sign || [];
         
         console.log(`✍️  Buyer will sign inputs: [${buyerInputIndexes.join(', ')}]`);
+        console.log(`📊 Breakdown:`, prepareData.breakdown);
         
         pendingPsbtRequest = {
-            psbt: prepareData.psbt_to_sign_base64,
+            psbt: prepareData.psbt_base64,
             type: 'buyAtomicSwap',
             orderId,
-            attemptId: prepareData.attempt_id,
-            summary: prepareData.summary,
-            inputsToSign: buyerInputIndexes, // ✅ Especificar quais inputs assinar
-            feeRate: feeRate, // ✅ Fee rate usada
+            inputsToSign: buyerInputIndexes, // ✅ Usar inputs_to_sign do backend
+            breakdown: prepareData.breakdown,
+            feeRate: feeRate,
             timestamp: Date.now()
         };
         
@@ -1788,7 +1797,7 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
         return {
             success: true,
             requiresSignature: true,
-            attempt_id: prepareData.attempt_id,
+            orderId: orderId,
             message: 'Click the Kray Wallet extension icon to sign the purchase'
         };
         
