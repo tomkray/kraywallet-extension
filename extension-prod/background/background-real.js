@@ -1781,7 +1781,8 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
             psbt: prepareData.psbt_base64,
             type: 'buyAtomicSwap',
             orderId,
-            inputsToSign: buyerInputIndexes, // ✅ Usar inputs_to_sign do backend
+            buyerAddress: buyerAddress, // ✅ IMPORTANTE: Salvar para validação de consenso
+            inputsToSign: buyerInputIndexes,
             breakdown: prepareData.breakdown,
             feeRate: feeRate,
             timestamp: Date.now()
