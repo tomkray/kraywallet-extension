@@ -1781,12 +1781,16 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
             psbt: prepareData.psbt_base64,
             type: 'buyAtomicSwap',
             orderId,
-            buyerAddress: buyerAddress, // ✅ IMPORTANTE: Salvar para validação de consenso
+            buyerAddress: buyerAddress,
             inputsToSign: buyerInputIndexes,
             breakdown: prepareData.breakdown,
             feeRate: feeRate,
-            // 🔐 CRITICAL: Seller signature for injection during broadcast
+            // 🔐 GUARDIAN BUILD MODEL: Store seller data for final TX construction
             sellerSignatureHex: prepareData.seller_signature_hex,
+            sellerTxContext: prepareData.seller_tx_context, // Full TX context from seller
+            model: prepareData.model || 'GUARDIAN_BUILD',
+            // 🔐 SIGHASH: Buyer signs with ALL|ANYONECANPAY (0x81)
+            sighashType: 0x81,
             timestamp: Date.now()
         };
         

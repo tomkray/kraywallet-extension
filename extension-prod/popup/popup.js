@@ -6508,19 +6508,22 @@ async function handlePsbtSign() {
             showLoading('Broadcasting purchase (with consensus validation)...');
             
             // 🔍 DEBUG: Log what we're sending
-            console.log('📤 Sending to broadcast endpoint:');
+            console.log('📤 Sending to GUARDIAN BUILD broadcast:');
             console.log(`   signed_psbt_base64: ${response.signedPsbt?.length || 0} chars`);
             console.log(`   buyer_address: ${pendingPsbt.buyerAddress}`);
-            console.log(`   seller_signature_hex: ${pendingPsbt.sellerSignatureHex ? `${pendingPsbt.sellerSignatureHex.substring(0, 32)}... (${pendingPsbt.sellerSignatureHex.length} chars)` : 'NOT FOUND!'}`);
+            console.log(`   seller_signature_hex: ${pendingPsbt.sellerSignatureHex ? `${pendingPsbt.sellerSignatureHex.length} chars` : 'NOT FOUND!'}`);
+            console.log(`   seller_tx_context: ${pendingPsbt.sellerTxContext ? 'PROVIDED' : 'NOT FOUND!'}`);
+            console.log(`   model: ${pendingPsbt.model || 'GUARDIAN_BUILD'}`);
             
-            // Enviar para /api/atomic-swap/:orderId/broadcast (com validação de consenso!)
+            // Enviar para /api/atomic-swap/:orderId/broadcast (Guardians will BUILD final TX!)
             const broadcastResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.orderId}/broadcast`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     signed_psbt_base64: response.signedPsbt,
-                    buyer_address: pendingPsbt.buyerAddress, // Para validação de consenso
-                    seller_signature_hex: pendingPsbt.sellerSignatureHex // 🔐 Seller signature for injection
+                    buyer_address: pendingPsbt.buyerAddress,
+                    seller_signature_hex: pendingPsbt.sellerSignatureHex,
+                    seller_tx_context: pendingPsbt.sellerTxContext // 🔐 Full seller TX context
                 })
             });
             
