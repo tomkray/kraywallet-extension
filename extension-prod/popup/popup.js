@@ -6507,6 +6507,12 @@ async function handlePsbtSign() {
             
             showLoading('Broadcasting purchase (with consensus validation)...');
             
+            // 🔍 DEBUG: Log what we're sending
+            console.log('📤 Sending to broadcast endpoint:');
+            console.log(`   signed_psbt_base64: ${response.signedPsbt?.length || 0} chars`);
+            console.log(`   buyer_address: ${pendingPsbt.buyerAddress}`);
+            console.log(`   seller_signature_hex: ${pendingPsbt.sellerSignatureHex ? `${pendingPsbt.sellerSignatureHex.substring(0, 32)}... (${pendingPsbt.sellerSignatureHex.length} chars)` : 'NOT FOUND!'}`);
+            
             // Enviar para /api/atomic-swap/:orderId/broadcast (com validação de consenso!)
             const broadcastResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${pendingPsbt.orderId}/broadcast`, {
                 method: 'POST',
