@@ -5999,13 +5999,89 @@ async function showPsbtConfirmation() {
             console.warn('⚠️ Could not decode PSBT:', decodeError);
         }
         
-        // Construir visualização detalhada do PSBT (como Unisat)
+        // Construir visualização detalhada do PSBT (design profissional)
         const detailsContainer = document.getElementById('psbt-details-container');
         
-        // Verificar se é transação de Runes
+        // Verificar tipo de transação
         const isRuneTransfer = pendingPsbt.isRuneTransfer || false;
+        const isAtomicSwap = pendingPsbt.type === 'createOffer' || pendingPsbt.type === 'buyAtomicSwap';
+        const isSeller = pendingPsbt.type === 'createOffer';
+        const isBuyer = pendingPsbt.type === 'buyAtomicSwap';
         
-        if (isRuneTransfer) {
+        // 🛡️ DESIGN PROFISSIONAL PARA ATOMIC SWAP (VENDEDOR E COMPRADOR)
+        if (isAtomicSwap) {
+            const sighashDisplay = pendingPsbt.sighashType || (isSeller ? 'NONE|ANYONECANPAY' : 'ALL');
+            const roleEmoji = isSeller ? '🏷️' : '🛒';
+            const roleText = isSeller ? 'List Inscription' : 'Buy Inscription';
+            const roleDescription = isSeller 
+                ? 'You are listing your inscription for sale on the marketplace.'
+                : 'You are purchasing an inscription from the marketplace.';
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="font-size: 32px;">${roleEmoji}</div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: 700; color: #fff;">${roleText}</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 4px;">${roleDescription}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
+                            <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Security</div>
+                            <div style="font-size: 14px; color: #10B981; font-weight: 600;">🛡️ Guardian Protected</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
+                            <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">SIGHASH</div>
+                            <div style="font-size: 12px; color: #FFC107; font-weight: 600; font-family: monospace;">${sighashDisplay}</div>
+                        </div>
+                    </div>
+            `;
+            
+            // Info específica para vendedor
+            if (isSeller && pendingPsbt.seller_value) {
+                html += `
+                    <div style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #8B5CF6;">Inscription Value</span>
+                            <span style="font-size: 14px; color: #fff; font-weight: 600;">${pendingPsbt.seller_value} sats</span>
+                        </div>
+                        ${pendingPsbt.price ? `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(139,92,246,0.2);">
+                            <span style="font-size: 12px; color: #8B5CF6;">Listing Price</span>
+                            <span style="font-size: 16px; color: #10B981; font-weight: 700;">${pendingPsbt.price} sats</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            // Info específica para comprador
+            if (isBuyer && pendingPsbt.breakdown) {
+                const b = pendingPsbt.breakdown;
+                html += `
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 12px; color: #10B981;">Price</span>
+                            <span style="font-size: 14px; color: #fff;">${b.price || 0} sats</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 12px; color: #10B981;">Market Fee (2%)</span>
+                            <span style="font-size: 14px; color: #fff;">${b.marketFee || 0} sats</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(16,185,129,0.2);">
+                            <span style="font-size: 12px; color: #10B981; font-weight: 600;">Total</span>
+                            <span style="font-size: 16px; color: #10B981; font-weight: 700;">${b.totalRequired || 0} sats</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            
+            detailsContainer.innerHTML = html;
+        } else if (isRuneTransfer) {
             // Transação de Runes - mostrar info simplificada
             detailsContainer.innerHTML = `
                 <div class="alert alert-info" style="margin-bottom: 16px;">
@@ -6385,7 +6461,7 @@ async function handlePsbtSign() {
             console.log('🛒 ===== CREATE OFFER FLOW (ATOMIC SWAP) =====');
             console.log('   Sending signed PSBT to /api/atomic-swap/:id/sign...');
             console.log('   Order ID:', pendingPsbt.order_id);
-            console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
+            console.log('   SIGHASH: NONE|ANYONECANPAY (0x82) - ARA MODEL');
             
             showLoading('Publishing atomic swap listing...');
             
@@ -6437,7 +6513,8 @@ async function handlePsbtSign() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     signed_psbt_base64: response.signedPsbt,
-                    buyer_address: pendingPsbt.buyerAddress // Para validação de consenso
+                    buyer_address: pendingPsbt.buyerAddress, // Para validação de consenso
+                    seller_signature_hex: pendingPsbt.sellerSignatureHex // 🔐 Seller signature for injection
                 })
             });
             

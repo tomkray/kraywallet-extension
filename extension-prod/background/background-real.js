@@ -1578,7 +1578,7 @@ async function createOffer({ inscriptionId, price, description }) {
             status: listingData.status || 'PENDING'
         });
         
-        // 🖊️ Step 3: Save PSBT request for signing with SIGHASH_SINGLE|ANYONECANPAY (0x83)
+        // 🖊️ Step 3: Save PSBT request for signing with SIGHASH_NONE|ANYONECANPAY (0x82) - ARA MODEL
         // Note: API returns psbt_base64, not template_psbt_base64
         const psbtBase64 = listingData.psbt_base64 || listingData.template_psbt_base64;
         
@@ -1592,8 +1592,8 @@ async function createOffer({ inscriptionId, price, description }) {
             price,
             description,
             type: 'createOffer',
-            sighashType: 'SINGLE|ANYONECANPAY', // 🔐 ATOMIC SWAP: SIGHASH_SINGLE|ANYONECANPAY (0x83)
-            sighashTypeHex: 0x83,
+            sighashType: 'NONE|ANYONECANPAY', // 🔐 ARA MODEL: SIGHASH_NONE|ANYONECANPAY (0x82)
+            sighashTypeHex: 0x82,
             order_id: listingData.order_id,
             seller_value: seller_value,
             timestamp: Date.now()
@@ -1602,7 +1602,7 @@ async function createOffer({ inscriptionId, price, description }) {
         // Salvar no storage também
         await chrome.storage.local.set({ pendingPsbtRequest });
         console.log('💾 Pending PSBT saved to storage');
-        console.log('   🔐 SIGHASH: SINGLE|ANYONECANPAY (0x83)');
+        console.log('   🔐 SIGHASH: NONE|ANYONECANPAY (0x82) - ARA MODEL');
         console.log('   📋 Order ID:', listingData.order_id);
         
         // 4. Notificar frontend que precisa abrir o popup
@@ -1620,7 +1620,7 @@ async function createOffer({ inscriptionId, price, description }) {
             success: true,
             requiresSignature: true,
             order_id: listingData.order_id,
-            message: 'Click the Kray Wallet extension icon to sign the transaction with SIGHASH_SINGLE|ANYONECANPAY'
+            message: 'Click the Kray Wallet extension icon to sign the transaction with SIGHASH_NONE|ANYONECANPAY (ARA MODEL)'
         };
         
         console.log('📤 Returning response to frontend:', response);
@@ -1785,6 +1785,8 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
             inputsToSign: buyerInputIndexes,
             breakdown: prepareData.breakdown,
             feeRate: feeRate,
+            // 🔐 CRITICAL: Seller signature for injection during broadcast
+            sellerSignatureHex: prepareData.seller_signature_hex,
             timestamp: Date.now()
         };
         
@@ -1963,7 +1965,7 @@ async function updateListingPrice({ orderId, newPrice }) {
             pendingPsbtRequest = {
                 psbt: data.template_psbt_base64,
                 type: 'createOffer',
-                sighashType: 'SINGLE|ANYONECANPAY',
+                sighashType: 'NONE|ANYONECANPAY', // ARA MODEL
                 order_id: orderId,
                 timestamp: Date.now()
             };
