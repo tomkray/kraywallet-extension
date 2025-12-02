@@ -93,6 +93,10 @@ function lockWallet() {
     // Stop keep-alive (Service Worker can be terminated now)
     stopKeepAlive();
     
+    // 🏷️ Stop offers checker
+    stopOffersChecker();
+    chrome.action.setBadgeText({ text: '' });
+    
     // Clear auto-lock alarm
     chrome.alarms.clear(AUTOLOCK_ALARM_NAME);
     
@@ -135,6 +139,87 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === KEEPALIVE_INTERVAL_NAME) {
         // Não precisa fazer nada, só o fato de receber o alarm mantém SW vivo
         console.log('💓 Keep-alive ping');
+    }
+});
+
+// ==========================================
+// 🏷️ AUCTION OFFERS NOTIFICATION SYSTEM
+// ==========================================
+const OFFERS_CHECK_ALARM = 'kraywallet-offers-check';
+const BACKEND_URL = 'https://kraywallet-backend.onrender.com';
+let lastOffersCount = 0;
+
+// Start offers checking alarm (every 2 minutes when wallet is unlocked)
+function startOffersChecker() {
+    chrome.alarms.create(OFFERS_CHECK_ALARM, {
+        periodInMinutes: 2 // Check every 2 minutes
+    });
+    console.log('🏷️ Auction offers checker started');
+    // Check immediately
+    checkPendingOffers();
+}
+
+function stopOffersChecker() {
+    chrome.alarms.clear(OFFERS_CHECK_ALARM);
+}
+
+// Check for pending offers
+async function checkPendingOffers() {
+    if (!walletState.unlocked || !walletState.address) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auction/offers/${walletState.address}?status=PENDING`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const pendingCount = data.pending_count || 0;
+        
+        // If new offers arrived, show notification
+        if (pendingCount > lastOffersCount && pendingCount > 0) {
+            showOfferNotification(pendingCount);
+        }
+        
+        lastOffersCount = pendingCount;
+        
+        // Update badge
+        if (pendingCount > 0) {
+            chrome.action.setBadgeText({ text: String(pendingCount) });
+            chrome.action.setBadgeBackgroundColor({ color: '#F59E0B' }); // Amber
+        } else {
+            chrome.action.setBadgeText({ text: '' });
+        }
+        
+    } catch (error) {
+        console.warn('⚠️ Error checking offers:', error.message);
+    }
+}
+
+// Show browser notification for new offers
+function showOfferNotification(count) {
+    chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon-128.png',
+        title: '🏷️ New Offer Received!',
+        message: `You have ${count} pending offer${count > 1 ? 's' : ''} on your inscriptions.`,
+        buttons: [{ title: 'View Offers' }],
+        priority: 2
+    });
+}
+
+// Handle notification button click
+chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+    if (buttonIndex === 0) {
+        // Open extension popup
+        chrome.action.openPopup();
+    }
+});
+
+// Listen for offers check alarm
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === OFFERS_CHECK_ALARM) {
+        checkPendingOffers();
     }
 });
 
@@ -364,6 +449,23 @@ async function handleMessage(request, sender) {
         case 'signPsbtWithPassword':
             // Sign PSBT with password (for L2 withdrawals)
             return await signPsbtWithPasswordAction(data);
+        
+        // ════════════════════════════════════════════════════════════
+        // 🏷️ AUCTION MODE HANDLERS
+        // ════════════════════════════════════════════════════════════
+        
+        case 'getAuctionOffers':
+            // Get pending offers for this wallet
+            return await getAuctionOffers();
+        
+        case 'checkAuctionOffers':
+            // Force check for new offers
+            await checkPendingOffers();
+            return { success: true };
+        
+        case 'getAuctionListings':
+            // Get auction listings for this wallet
+            return await getAuctionListings(data);
         
         default:
             throw new Error(`Unknown action: ${action}`);
@@ -2954,6 +3056,9 @@ async function unlockWalletAction(data) {
         // Start keep-alive to prevent Service Worker termination
         startKeepAlive();
         
+        // 🏷️ Start offers checker for auction mode
+        startOffersChecker();
+        
         // Start auto-lock timer
         resetAutolockTimer();
         
@@ -3213,6 +3318,61 @@ async function sendPayment({ invoice }) {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// 🏷️ AUCTION MODE - Functions
+// ═══════════════════════════════════════════════════════════════════
+
+async function getAuctionOffers() {
+    try {
+        if (!walletState.unlocked || !walletState.address) {
+            return { success: false, error: 'Wallet not unlocked' };
+        }
+        
+        const response = await fetch(`${BACKEND_URL}/api/auction/offers/${walletState.address}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+        
+        const data = await response.json();
+        return {
+            success: true,
+            offers: data.offers || [],
+            pending_count: data.pending_count || 0
+        };
+    } catch (error) {
+        console.error('❌ Error getting auction offers:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function getAuctionListings(data) {
+    try {
+        if (!walletState.unlocked || !walletState.address) {
+            return { success: false, error: 'Wallet not unlocked' };
+        }
+        
+        const seller = data?.seller_address || walletState.address;
+        const status = data?.status || 'OPEN';
+        
+        const response = await fetch(`${BACKEND_URL}/api/auction/listings?seller_address=${seller}&status=${status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+        
+        const result = await response.json();
+        return {
+            success: true,
+            listings: result.listings || [],
+            count: result.count || 0
+        };
+    } catch (error) {
+        console.error('❌ Error getting auction listings:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 console.log('🔥 MyWallet Background Script loaded (REAL WALLET MODE)!');
 console.log('✅ Using real BIP39 mnemonic generation');
 console.log('✅ Using real Taproot address derivation');
@@ -3221,4 +3381,5 @@ console.log('✅ Runes Send functionality ready!');
 console.log('🔒 Lock/Unlock system active!');
 console.log('🏪 Marketplace integration ready!');
 console.log('⚡ Lightning Payment functionality ready!');
+console.log('🏷️ Auction Mode ready!');
 
