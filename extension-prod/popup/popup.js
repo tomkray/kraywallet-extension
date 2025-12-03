@@ -6929,16 +6929,18 @@ async function handlePsbtSign() {
             
             try {
                 // Send signed PSBT to confirm the listing
-                console.log('📤 Sending to backend...');
+                const requestBody = {
+                    inscription_id: pendingPsbt.inscriptionId,
+                    price_sats: pendingPsbt.priceSats,
+                    order_id: pendingPsbt.orderId,
+                    seller_signed_psbt: response.signedPsbt
+                };
+                console.log('📤 Sending to backend:', JSON.stringify(requestBody, null, 2));
+                
                 const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        inscription_id: pendingPsbt.inscriptionId,
-                        price_sats: pendingPsbt.priceSats,
-                        order_id: pendingPsbt.orderId,
-                        seller_signed_psbt: response.signedPsbt
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const confirmResult = await confirmResponse.json();
