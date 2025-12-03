@@ -5686,6 +5686,147 @@ function showListingSuccessScreen(inscriptionId, price, orderId) {
 }
 
 /**
+ * 🎉 Show Listing Success Modal
+ * Beautiful success modal for completed listings (same style as Buy Now)
+ */
+function showListingSuccessModal(inscriptionId, price) {
+    console.log('🎉 Showing Listing success modal');
+    console.log('   Inscription:', inscriptionId);
+    console.log('   Price:', price);
+    
+    // Remove any existing modal
+    const existingModal = document.getElementById('listing-success-modal');
+    if (existingModal) existingModal.remove();
+    
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'listing-success-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid #3d5a80;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        ">
+            <div style="
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+                animation: pulse 2s infinite;
+            ">
+                <span style="font-size: 40px;">✅</span>
+            </div>
+            
+            <h2 style="
+                color: #fff;
+                font-size: 24px;
+                margin: 0 0 10px 0;
+                font-weight: 700;
+            ">Listing is LIVE!</h2>
+            
+            <p style="
+                color: #94a3b8;
+                font-size: 14px;
+                margin: 0 0 20px 0;
+            ">Your inscription is now on the marketplace.</p>
+            
+            <div style="
+                background: rgba(34, 197, 94, 0.1);
+                border: 1px solid rgba(34, 197, 94, 0.3);
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 20px;
+            ">
+                <div style="color: #94a3b8; font-size: 12px; margin-bottom: 5px;">Price</div>
+                <div style="
+                    color: #22c55e;
+                    font-size: 28px;
+                    font-weight: 700;
+                ">${price.toLocaleString()} sats</div>
+            </div>
+            
+            <button onclick="window.open('https://krayspace.com/krayscan.html?inscription=${inscriptionId}', '_blank')" style="
+                width: 100%;
+                background: transparent;
+                border: 1px solid #3d5a80;
+                color: #fff;
+                padding: 12px;
+                border-radius: 10px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-bottom: 10px;
+            ">
+                🔍 View on KrayScan
+            </button>
+            
+            <button id="listing-modal-done-btn" style="
+                width: 100%;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                border: none;
+                color: #fff;
+                padding: 14px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            ">
+                ✅ Done
+            </button>
+        </div>
+        
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add click handler for Done button
+    document.getElementById('listing-modal-done-btn').onclick = () => {
+        modal.remove();
+        showScreen('wallet');
+        loadWalletData();
+    };
+}
+
+/**
  * 🎉 Show Buy Now Success Modal
  * Beautiful success modal for completed Buy Now sales
  */
@@ -6808,34 +6949,11 @@ async function handlePsbtSign() {
                 
                 hideLoading();
                 
-                // 🎉 Use the standard success screen (beautiful, consistent design)
+                // 🎉 Show beautiful success modal (same style as Buy Now success)
                 const inscriptionId = pendingPsbt.inscriptionId;
                 const price = pendingPsbt.priceSats;
                 
-                // Update success screen content
-                const priceEl = document.getElementById('listing-success-price');
-                if (priceEl) {
-                    priceEl.textContent = `${price.toLocaleString()} sats`;
-                }
-                
-                // Setup buttons
-                const viewBtn = document.getElementById('listing-success-view-btn');
-                if (viewBtn) {
-                    viewBtn.onclick = () => {
-                        window.open(`https://krayspace.com/krayscan.html?inscription=${inscriptionId}`, '_blank');
-                    };
-                }
-                
-                const doneBtn = document.getElementById('listing-success-done-btn');
-                if (doneBtn) {
-                    doneBtn.onclick = () => {
-                        showScreen('wallet');
-                        loadWalletData();
-                    };
-                }
-                
-                // Show the success screen
-                showScreen('listing-success-screen');
+                showListingSuccessModal(inscriptionId, price);
                 
             } catch (confirmError) {
                 console.error('❌ Error confirming listing:', confirmError);
