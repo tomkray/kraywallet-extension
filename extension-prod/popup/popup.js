@@ -10175,10 +10175,15 @@ function showListingConfirmScreen(inscription, price, message) {
 
 /**
  * Create listing with verified signature
+ * 
+ * MAGIC EDEN MODEL:
+ * 1. Backend returns PSBT for seller to sign
+ * 2. Seller signs with SIGHASH_SINGLE|ANYONECANPAY
+ * 3. PSBT sent back to backend → Listing LIVE!
  */
 async function createListingWithSignature(inscriptionId, price, description, signature, message, timestamp) {
     console.log('🛒 Creating listing with signature...');
-    showLoading('Publishing listing...');
+    showLoading('Creating listing...');
     
     try {
         const createListingResponse = await chrome.runtime.sendMessage({
@@ -10197,6 +10202,28 @@ async function createListingWithSignature(inscriptionId, price, description, sig
             throw new Error(createListingResponse.error || 'Failed to create listing');
         }
         
+        console.log('📋 Listing response:', createListingResponse);
+        
+        // 🔐 MAGIC EDEN MODEL: If requiresSignature, wait for PSBT signing
+        if (createListingResponse.requiresSignature) {
+            console.log('🔐 Listing requires PSBT signature to activate...');
+            console.log('   Order ID:', createListingResponse.order_id);
+            console.log('   Status:', createListingResponse.status);
+            
+            hideLoading();
+            
+            // Hide list screen
+            document.getElementById('list-market-screen')?.classList.add('hidden');
+            
+            // Show notification that PSBT signing is needed
+            showNotification('📝 Sign the PSBT to activate your listing', 'info');
+            
+            // The popup will auto-detect the pending PSBT and show the sign screen
+            // After signing, handlePsbtSign will send to backend and show success
+            return;
+        }
+        
+        // If already OPEN (no signature needed - backwards compatibility)
         console.log('✅ BUY NOW listing created!');
         console.log('   Order ID:', createListingResponse.order_id);
         hideLoading();
