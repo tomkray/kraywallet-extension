@@ -2100,9 +2100,10 @@ async function createAndSignListing({ inscriptionId, priceSats, description, pas
         console.log('🔐 Step 2: Signing PSBT internally...');
         
         // Decrypt wallet with password
-        const storage = await chrome.storage.local.get(['encryptedWallet']);
-        if (!storage.encryptedWallet) {
-            throw new Error('No wallet found');
+        // Note: wallet key is 'walletEncrypted', not 'encryptedWallet'
+        const storage = await chrome.storage.local.get(['walletEncrypted']);
+        if (!storage.walletEncrypted) {
+            throw new Error('No wallet found. Please restore or create a wallet first.');
         }
         
         const decrypted = await decryptWallet(password);
