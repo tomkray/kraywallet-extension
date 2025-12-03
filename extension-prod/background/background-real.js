@@ -265,6 +265,9 @@ async function handleMessage(request, sender) {
         case 'cancelListing':
             return await cancelListing(data);
         
+        case 'updateListingPrice':
+            return await updateListingPrice(data);
+        
         // 🚀 UNIFIED: Create AND Sign in ONE step!
         case 'createAndSignListing':
             return await createAndSignListing(data);
@@ -1849,21 +1852,70 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
     }
 }
 
-async function cancelListing({ orderId }) {
+async function cancelListing({ orderId, inscriptionId }) {
     try {
-        console.log('\n❌ ===== CANCEL LISTING (WITH SIGNATURE) =====');
+        console.log('\n❌ ===== CANCEL LISTING =====');
         console.log('   Order ID:', orderId);
+        console.log('   Inscription ID:', inscriptionId);
         console.log('   Wallet address:', walletState.address);
         
         if (!walletState.address) {
             throw new Error('No wallet address found');
         }
         
-        // 🔐 STEP 1: Prepare message and FORCE popup to open
-        const message = `I cancel this listing: ${orderId} - ${Date.now()}`;
-        console.log('🔐 Preparing cancellation message...');
+        // If we have inscriptionId but no orderId, find the listing
+        if (!orderId && inscriptionId) {
+            console.log('🔍 Finding listing by inscription ID...');
+            const listingsResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now`);
+            const listingsData = await listingsResponse.json();
+            
+            const listing = listingsData.listings?.find(l => 
+                l.inscription_id === inscriptionId && 
+                ['OPEN', 'PENDING'].includes(l.status)
+            );
+            
+            if (listing) {
+                orderId = listing.order_id;
+                console.log('   Found order:', orderId);
+            }
+        }
         
-        // Save pending request FIRST (antes de tentar abrir popup)
+        if (!orderId) {
+            throw new Error('Listing not found');
+        }
+        
+        // Check if it's a buy-now listing
+        const isBuyNow = orderId.startsWith('buynow_');
+        
+        if (isBuyNow) {
+            // Simple DELETE for buy-now (no signature required)
+            console.log('🛒 Cancelling buy-now listing...');
+            const response = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${orderId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    seller_address: walletState.address
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to cancel listing');
+            }
+            
+            const data = await response.json();
+            console.log('✅ Buy-now listing cancelled!');
+            
+            return {
+                success: true,
+                message: data.message || 'Listing cancelled'
+            };
+        }
+        
+        // Legacy: For old atomic-swap listings that require signature
+        console.log('🔐 Cancelling legacy listing with signature...');
+        const message = `I cancel this listing: ${orderId} - ${Date.now()}`;
+        
         pendingMessageRequest = {
             message: message,
             timestamp: Date.now(),
@@ -1872,30 +1924,19 @@ async function cancelListing({ orderId }) {
         };
         
         await chrome.storage.local.set({ pendingMessageRequest });
-        console.log('💾 Pending message request saved');
         
-        // 🚀 FORCE popup to open
         try {
-            console.log('🚀 Attempting to open popup...');
             await chrome.action.openPopup();
-            console.log('✅ Popup opened via chrome.action.openPopup()');
         } catch (err) {
-            console.log('⚠️  chrome.action.openPopup() failed');
-            console.log('   User must click the extension icon to sign');
-            // O pendingMessageRequest já foi salvo, popup vai detectar quando abrir
+            console.log('⚠️  User must click extension icon to sign');
         }
         
-        // 🔐 STEP 2: Wait for signature from popup
-        console.log('⏳ Waiting for user signature...');
         const signatureResult = await waitForMessageSign();
         
-        if (!signatureResult || !signatureResult.success) {
+        if (!signatureResult?.success) {
             throw new Error('Failed to sign cancellation message');
         }
         
-        console.log('✅ Signature created:', signatureResult.signature.substring(0, 20) + '...');
-        
-        // 🔐 STEP 2: Send signed cancellation to backend
         const response = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/${orderId}/cancel`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1912,7 +1953,7 @@ async function cancelListing({ orderId }) {
         }
         
         const data = await response.json();
-        console.log('✅ Listing cancelled successfully with signature verification!');
+        console.log('✅ Legacy listing cancelled!');
         
         return {
             success: true,
@@ -1921,6 +1962,72 @@ async function cancelListing({ orderId }) {
         
     } catch (error) {
         console.error('❌ Error cancelling listing:', error);
+        throw error;
+    }
+}
+
+/**
+ * Update listing price
+ */
+async function updateListingPrice({ inscriptionId, newPrice }) {
+    try {
+        console.log('\n💰 ===== UPDATE LISTING PRICE =====');
+        console.log('   Inscription:', inscriptionId);
+        console.log('   New Price:', newPrice, 'sats');
+        console.log('   Wallet:', walletState.address);
+        
+        if (!walletState.address) {
+            throw new Error('No wallet address found');
+        }
+        
+        if (!newPrice || newPrice < 546) {
+            throw new Error('Price must be at least 546 sats');
+        }
+        
+        // Find the listing for this inscription
+        const listingsResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now?inscription_id=${inscriptionId}`);
+        const listingsData = await listingsResponse.json();
+        
+        const listing = listingsData.listings?.find(l => 
+            l.inscription_id === inscriptionId && 
+            ['OPEN', 'PENDING'].includes(l.status)
+        );
+        
+        if (!listing) {
+            throw new Error('Listing not found');
+        }
+        
+        // Update the price
+        const response = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${listing.order_id}/price`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                new_price: newPrice,
+                seller_address: walletState.address
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to update price');
+        }
+        
+        const data = await response.json();
+        console.log('✅ Price updated!');
+        console.log('   Old:', data.old_price, 'sats');
+        console.log('   New:', data.new_price, 'sats');
+        
+        return {
+            success: true,
+            order_id: listing.order_id,
+            old_price: data.old_price,
+            new_price: data.new_price,
+            requires_signature: data.requires_signature,
+            message: data.message
+        };
+        
+    } catch (error) {
+        console.error('❌ Error updating price:', error);
         throw error;
     }
 }

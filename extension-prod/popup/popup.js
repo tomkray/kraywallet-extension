@@ -10332,9 +10332,288 @@ function showListingConfirmScreen(inscription, price, message) {
             
         } catch (error) {
             console.error('❌ Error:', error);
+            
+            // Check if already listed - show special modal with options
+            if (error.message.includes('already listed') || error.message.includes('already_listed')) {
+                btn.disabled = false;
+                btn.innerHTML = '🔐 Sign & List for Sale';
+                showAlreadyListedModal(pendingData);
+                return;
+            }
+            
             showNotification('❌ ' + error.message, 'error');
             btn.disabled = false;
             btn.innerHTML = '🔐 Sign & List for Sale';
+        }
+    });
+}
+
+/**
+ * Show modal when inscription is already listed
+ * Gives options to cancel or update price
+ */
+function showAlreadyListedModal(listingData) {
+    const existingOverlay = document.getElementById('already-listed-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'already-listed-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="
+            background: var(--color-surface, #1a1a2e);
+            border: 1px solid var(--color-border, #333);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+        ">
+            <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+            <h3 style="color: var(--color-text, white); margin: 0 0 12px;">Inscrição Já Listada</h3>
+            <p style="color: var(--color-text-secondary, #888); font-size: 13px; margin: 0 0 20px; line-height: 1.5;">
+                Esta inscrição já está listada no marketplace. Você pode:
+            </p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="update-price-btn" style="
+                    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    color: white;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                ">
+                    💰 Atualizar Preço
+                </button>
+                
+                <button id="cancel-listing-btn" style="
+                    background: rgba(239, 68, 68, 0.2);
+                    border: 1px solid rgba(239, 68, 68, 0.5);
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    color: #ef4444;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                ">
+                    🗑️ Cancelar Listagem
+                </button>
+                
+                <button id="close-modal-btn" style="
+                    background: transparent;
+                    border: 1px solid var(--color-border, #333);
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    color: var(--color-text-secondary, #888);
+                    cursor: pointer;
+                    margin-top: 8px;
+                ">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Close button
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    // Update price button
+    document.getElementById('update-price-btn').addEventListener('click', async () => {
+        overlay.remove();
+        showUpdatePriceModal(listingData);
+    });
+    
+    // Cancel listing button
+    document.getElementById('cancel-listing-btn').addEventListener('click', async () => {
+        const confirmed = confirm('🗑️ Tem certeza que deseja cancelar esta listagem?');
+        if (!confirmed) return;
+        
+        try {
+            showLoading('Cancelando listagem...');
+            
+            const result = await chrome.runtime.sendMessage({
+                action: 'cancelListing',
+                data: { inscriptionId: listingData.inscriptionId }
+            });
+            
+            hideLoading();
+            
+            if (result.success) {
+                overlay.remove();
+                showNotification('✅ Listagem cancelada com sucesso!', 'success');
+                // Remove the confirm overlay too
+                document.getElementById('listing-confirm-overlay')?.remove();
+            } else {
+                showNotification('❌ ' + (result.error || 'Erro ao cancelar'), 'error');
+            }
+        } catch (error) {
+            hideLoading();
+            showNotification('❌ ' + error.message, 'error');
+        }
+    });
+}
+
+/**
+ * Show modal to update listing price
+ */
+function showUpdatePriceModal(listingData) {
+    const existingOverlay = document.getElementById('update-price-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'update-price-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="
+            background: var(--color-surface, #1a1a2e);
+            border: 1px solid var(--color-border, #333);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 350px;
+            width: 100%;
+        ">
+            <h3 style="color: var(--color-text, white); margin: 0 0 16px; text-align: center;">
+                💰 Atualizar Preço
+            </h3>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; color: var(--color-text-secondary, #888); font-size: 12px; margin-bottom: 6px;">
+                    Novo Preço (sats)
+                </label>
+                <input type="number" id="new-price-input" min="546" placeholder="Ex: 10000" value="${listingData.priceSats || ''}" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: var(--color-background, #0a0a0f);
+                    border: 1px solid var(--color-border, #333);
+                    border-radius: 8px;
+                    color: var(--color-text, white);
+                    font-size: 16px;
+                    box-sizing: border-box;
+                ">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="confirm-update-btn" style="
+                    flex: 1;
+                    background: linear-gradient(135deg, #22c55e, #16a34a);
+                    border: none;
+                    padding: 12px;
+                    border-radius: 10px;
+                    color: white;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">
+                    ✅ Confirmar
+                </button>
+                <button id="cancel-update-btn" style="
+                    flex: 1;
+                    background: transparent;
+                    border: 1px solid var(--color-border, #333);
+                    padding: 12px;
+                    border-radius: 10px;
+                    color: var(--color-text-secondary, #888);
+                    cursor: pointer;
+                ">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    document.getElementById('new-price-input').focus();
+    
+    // Cancel button
+    document.getElementById('cancel-update-btn').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    // Confirm button
+    document.getElementById('confirm-update-btn').addEventListener('click', async () => {
+        const newPrice = parseInt(document.getElementById('new-price-input').value);
+        
+        if (!newPrice || newPrice < 546) {
+            showNotification('❌ Preço mínimo é 546 sats', 'error');
+            return;
+        }
+        
+        try {
+            showLoading('Atualizando preço...');
+            
+            const result = await chrome.runtime.sendMessage({
+                action: 'updateListingPrice',
+                data: {
+                    inscriptionId: listingData.inscriptionId,
+                    newPrice: newPrice
+                }
+            });
+            
+            hideLoading();
+            
+            if (result.success) {
+                overlay.remove();
+                document.getElementById('listing-confirm-overlay')?.remove();
+                
+                if (result.requires_signature) {
+                    showNotification('✅ Preço atualizado! Assine novamente para ativar.', 'success');
+                    // Re-trigger listing flow with new price
+                    // The user will need to list again
+                } else {
+                    showNotification('✅ Preço atualizado para ' + newPrice.toLocaleString() + ' sats!', 'success');
+                }
+            } else {
+                showNotification('❌ ' + (result.error || 'Erro ao atualizar'), 'error');
+            }
+        } catch (error) {
+            hideLoading();
+            showNotification('❌ ' + error.message, 'error');
+        }
+    });
+    
+    // Enter to confirm
+    document.getElementById('new-price-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('confirm-update-btn').click();
         }
     });
 }
