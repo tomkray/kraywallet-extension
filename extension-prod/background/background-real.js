@@ -1660,6 +1660,13 @@ async function buyAtomicSwap({ orderId, priceSats, buyerAddress, buyerChangeAddr
         console.log('   Buyer address:', buyerAddress);
         console.log('   Wallet unlocked:', walletState.unlocked);
         
+        // 🛒 Check if this is a Buy Now listing (new model)
+        const isBuyNow = orderId && orderId.startsWith('buynow_');
+        if (isBuyNow) {
+            console.log('🛒 Detected BUY NOW listing - using new model');
+            return await buyNow({ orderId, buyerAddress: buyerAddress || walletState.address });
+        }
+        
         if (!walletState.unlocked) {
             console.error('❌ Wallet is locked!');
             throw new Error('Wallet is locked. Please unlock your wallet first.');
