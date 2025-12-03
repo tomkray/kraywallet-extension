@@ -10293,7 +10293,7 @@ function showListingConfirmScreen(inscription, price, message) {
         
         const btn = document.getElementById('listing-confirm-btn');
         btn.disabled = true;
-        btn.innerHTML = '⏳ Signing...';
+        btn.innerHTML = '⏳ Creating & Signing...';
         
         try {
             // Get pending listing data
@@ -10304,38 +10304,34 @@ function showListingConfirmScreen(inscription, price, message) {
                 throw new Error('Listing data not found');
             }
             
-            // Sign the message with password
-            console.log('🔐 Signing message with password...');
-            const signResult = await chrome.runtime.sendMessage({
-                action: 'signMessageWithPassword',
+            // 🚀 UNIFIED: Create AND Sign in ONE step!
+            console.log('🚀 Creating and signing listing in ONE step...');
+            const result = await chrome.runtime.sendMessage({
+                action: 'createAndSignListing',
                 data: {
-                    message: pendingData.message,
+                    inscriptionId: pendingData.inscriptionId,
+                    priceSats: pendingData.priceSats,
+                    description: pendingData.description,
                     password: password
                 }
             });
             
-            if (!signResult.success) {
-                throw new Error(signResult.error || 'Signature failed');
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to create listing');
             }
             
-            console.log('✅ Message signed successfully!');
-            
-            // Create listing with signature
-            await createListingWithSignature(
-                pendingData.inscriptionId,
-                pendingData.priceSats,
-                pendingData.description,
-                signResult.signature,
-                pendingData.message,
-                pendingData.timestamp
-            );
+            console.log('🎉 Listing created and signed successfully!');
+            console.log('   Order ID:', result.order_id);
             
             // Cleanup
             await chrome.storage.local.remove('pendingListingData');
             overlay.remove();
             
+            // 🎉 Show success modal
+            showListingSuccessModal(pendingData.inscriptionId, pendingData.priceSats);
+            
         } catch (error) {
-            console.error('❌ Error signing:', error);
+            console.error('❌ Error:', error);
             showNotification('❌ ' + error.message, 'error');
             btn.disabled = false;
             btn.innerHTML = '🔐 Sign & List for Sale';

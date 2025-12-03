@@ -265,7 +265,11 @@ async function handleMessage(request, sender) {
         case 'cancelListing':
             return await cancelListing(data);
         
-        // 🛒 BUY NOW MODE (Magic Eden Style)
+        // 🚀 UNIFIED: Create AND Sign in ONE step!
+        case 'createAndSignListing':
+            return await createAndSignListing(data);
+        
+        // 🛒 BUY NOW MODE (Magic Eden Style) - LEGACY
         case 'createBuyNowListing':
             return await createBuyNowListing(data);
         
@@ -1935,9 +1939,164 @@ async function cancelListing({ orderId }) {
  * 4. Listing is LIVE! Seller goes away.
  * 5. When buyer purchases, we use the stored signature.
  */
+/**
+ * 🚀 UNIFIED: Create AND Sign listing in ONE step!
+ * No more two popups - everything happens at once.
+ */
+async function createAndSignListing({ inscriptionId, priceSats, description, password }) {
+    try {
+        console.log('\n🚀 ===== CREATE AND SIGN LISTING (UNIFIED FLOW) =====');
+        console.log('   Inscription:', inscriptionId);
+        console.log('   Price:', priceSats, 'sats');
+        console.log('   Password:', password ? '✅ PROVIDED' : '❌ MISSING');
+        console.log('   Wallet address:', walletState.address);
+        
+        if (!walletState.unlocked) {
+            throw new Error('Wallet is locked. Please unlock your wallet first.');
+        }
+        
+        if (!password) {
+            throw new Error('Password required to sign listing');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // STEP 1: Create listing on backend (get PSBT to sign)
+        // ═══════════════════════════════════════════════════════════════
+        console.log('📤 Step 1: Creating listing on backend...');
+        const createResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                inscription_id: inscriptionId,
+                price_sats: priceSats,
+                seller_address: walletState.address,
+                description: description || ''
+            })
+        });
+        
+        if (!createResponse.ok) {
+            const error = await createResponse.json();
+            throw new Error(error.error || 'Failed to create listing');
+        }
+        
+        const createData = await createResponse.json();
+        console.log('✅ Listing created (PENDING)');
+        console.log('   Order ID:', createData.order_id);
+        
+        if (!createData.psbt_base64) {
+            throw new Error('Backend did not return PSBT to sign');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // STEP 2: Sign the PSBT with password (internal signing)
+        // ═══════════════════════════════════════════════════════════════
+        console.log('🔐 Step 2: Signing PSBT internally...');
+        
+        // Decrypt wallet with password
+        const storage = await chrome.storage.local.get(['encryptedWallet']);
+        if (!storage.encryptedWallet) {
+            throw new Error('No wallet found');
+        }
+        
+        const decrypted = await decryptWallet(password);
+        if (!decrypted || !decrypted.mnemonic) {
+            throw new Error('Failed to decrypt wallet - wrong password?');
+        }
+        
+        // Sign the PSBT
+        const signedPsbt = await signPsbtInternal(createData.psbt_base64, decrypted.mnemonic, createData.toSignInputs);
+        
+        // Clear mnemonic from memory immediately
+        decrypted.mnemonic = null;
+        console.log('🗑️ Mnemonic cleared from memory');
+        
+        if (!signedPsbt) {
+            throw new Error('Failed to sign PSBT');
+        }
+        
+        console.log('✅ PSBT signed successfully');
+        console.log('   Signed PSBT length:', signedPsbt.length);
+        
+        // ═══════════════════════════════════════════════════════════════
+        // STEP 3: Confirm listing with signed PSBT
+        // ═══════════════════════════════════════════════════════════════
+        console.log('📤 Step 3: Confirming listing with signature...');
+        
+        const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                order_id: createData.order_id,
+                seller_signed_psbt: signedPsbt
+            })
+        });
+        
+        if (!confirmResponse.ok) {
+            const error = await confirmResponse.json();
+            throw new Error(error.error || 'Failed to confirm listing');
+        }
+        
+        const confirmData = await confirmResponse.json();
+        console.log('🎉 Listing is LIVE!');
+        console.log('   Order ID:', confirmData.order_id);
+        console.log('   Status:', confirmData.status);
+        
+        return {
+            success: true,
+            order_id: confirmData.order_id || createData.order_id,
+            inscription_id: inscriptionId,
+            price_sats: priceSats,
+            status: 'OPEN',
+            message: 'Listing is LIVE! Buyers can purchase anytime.'
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in createAndSignListing:', error);
+        throw error;
+    }
+}
+
+/**
+ * Internal PSBT signing via backend (secure)
+ */
+async function signPsbtInternal(psbtBase64, mnemonic, inputsToSign) {
+    try {
+        console.log('📡 Signing PSBT via backend...');
+        
+        // Sign via backend (mnemonic is sent temporarily, then cleared)
+        const response = await fetch('https://kraywallet-backend.onrender.com/api/kraywallet/sign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mnemonic,
+                psbt: psbtBase64,
+                network: 'mainnet',
+                sighashType: 0x83, // SIGHASH_SINGLE|ANYONECANPAY for seller listing
+                inputsToSign: inputsToSign || [{ index: 0, sighashTypes: [0x83] }]
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to sign PSBT');
+        }
+        
+        console.log('✅ PSBT signed via backend');
+        console.log('   Signed PSBT length:', data.signedPsbt?.length || 0);
+        
+        return data.signedPsbt;
+        
+    } catch (error) {
+        console.error('❌ Error signing PSBT:', error);
+        throw error;
+    }
+}
+
+// LEGACY: Keep old function for backwards compatibility
 async function createBuyNowListing({ inscriptionId, priceSats, description, step, orderId, signedPsbt }) {
     try {
-        console.log('\n📝 ===== CREATE BUY NOW LISTING (MAGIC EDEN MODEL) =====');
+        console.log('\n📝 ===== CREATE BUY NOW LISTING (LEGACY) =====');
         console.log('   Inscription:', inscriptionId);
         console.log('   Price:', priceSats, 'sats');
         console.log('   Step:', step || 'create');
