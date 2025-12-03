@@ -6811,6 +6811,9 @@ async function handlePsbtSign() {
         
         console.log('✅ PSBT signed successfully!');
         console.log('📋 Pending PSBT type (using saved):', pendingPsbt?.type);
+        console.log('📋 Pending PSBT orderId:', pendingPsbt?.orderId);
+        console.log('📋 Signed PSBT length:', response.signedPsbt?.length || 0);
+        console.log('📋 Full pendingPsbt object:', JSON.stringify(pendingPsbt, null, 2));
         
         // 🎯 SE FOR createOffer, enviar para /api/atomic-swap/:id/sign automaticamente!
         if (pendingPsbt?.type === 'createOffer') {
