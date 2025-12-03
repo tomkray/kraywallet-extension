@@ -1912,12 +1912,13 @@ async function cancelListing({ orderId }) {
  * Create a Buy Now listing (seller lists inscription with fixed price)
  * NO signature needed upfront - seller signs when buyer purchases
  */
-async function createBuyNowListing({ inscriptionId, priceSats, description }) {
+async function createBuyNowListing({ inscriptionId, priceSats, description, signature, message, timestamp }) {
     try {
         console.log('\n📝 ===== CREATE BUY NOW LISTING =====');
         console.log('   Inscription:', inscriptionId);
         console.log('   Price:', priceSats, 'sats');
         console.log('   Wallet address:', walletState.address);
+        console.log('   Signature provided:', !!signature);
         
         if (!walletState.unlocked) {
             throw new Error('Wallet is locked. Please unlock your wallet first.');
@@ -1935,8 +1936,8 @@ async function createBuyNowListing({ inscriptionId, priceSats, description }) {
             throw new Error('Price must be at least 546 sats');
         }
         
-        // Create listing on backend (no signing needed!)
-        console.log('📤 Creating listing on backend...');
+        // 🔐 Create listing on backend WITH signature verification
+        console.log('📤 Creating listing on backend (with signature)...');
         const response = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1944,7 +1945,10 @@ async function createBuyNowListing({ inscriptionId, priceSats, description }) {
                 inscription_id: inscriptionId,
                 price_sats: priceSats,
                 seller_address: walletState.address,
-                description: description || ''
+                description: description || '',
+                signature: signature || null,
+                message: message || null,
+                timestamp: timestamp || Date.now()
             })
         });
         

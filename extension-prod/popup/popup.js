@@ -9713,17 +9713,293 @@ async function createMarketListing() {
     
     try {
         // Show loading
-        showLoading('Creating listing...');
+        showLoading('Preparing listing...');
         
-        // 🛒 STEP 1: Usar novo fluxo BUY NOW (SEM assinatura prévia!)
-        console.log('🛒 Creating BUY NOW listing via background...');
+        // 🔐 STEP 1: Criar mensagem para assinar (prova de propriedade)
+        const timestamp = Date.now();
+        const messageToSign = `KraySpace Listing Authorization\n\nI authorize listing inscription ${currentInscriptionToList.id} for sale at ${price} sats.\n\nTimestamp: ${timestamp}\nSeller: ${walletState?.address || 'unknown'}`;
         
+        console.log('🔐 Requesting ownership signature...');
+        console.log('   Message:', messageToSign);
+        
+        hideLoading();
+        
+        // 🔐 STEP 2: Pedir assinatura via popup de senha
+        const signResult = await chrome.runtime.sendMessage({
+            action: 'signMessageWithPassword',
+            data: {
+                message: messageToSign,
+                purpose: 'listing_authorization'
+            }
+        });
+        
+        // Se precisa senha, mostrar popup de senha
+        if (signResult.requiresPassword) {
+            console.log('🔐 Password required for signature...');
+            
+            // Salvar dados pendentes
+            await chrome.storage.local.set({
+                pendingListingData: {
+                    inscriptionId: currentInscriptionToList.id,
+                    priceSats: price,
+                    description: description,
+                    message: messageToSign,
+                    timestamp: timestamp
+                }
+            });
+            
+            // Mostrar tela de confirmação de listagem com senha
+            document.getElementById('list-market-screen')?.classList.add('hidden');
+            showListingConfirmScreen(currentInscriptionToList, price, messageToSign);
+            return;
+        }
+        
+        if (!signResult.success || !signResult.signature) {
+            throw new Error(signResult.error || 'Signature failed');
+        }
+        
+        // 🛒 STEP 3: Criar listagem COM assinatura
+        await createListingWithSignature(
+            currentInscriptionToList.id,
+            price,
+            description,
+            signResult.signature,
+            messageToSign,
+            timestamp
+        )
+        
+    } catch (error) {
+        console.error('❌ Error creating listing:', error);
+        hideLoading();
+        showNotification('❌ Failed to create listing: ' + error.message, 'error');
+    } finally {
+        // ✅ SEMPRE resetar flag no final
+        isCreatingListing = false;
+        console.log('🔓 isCreatingListing reset to false');
+    }
+}
+
+// ========================================
+// 🔐 LISTING CONFIRMATION WITH SIGNATURE
+// ========================================
+
+/**
+ * Show listing confirmation screen with password input
+ */
+function showListingConfirmScreen(inscription, price, message) {
+    console.log('🔐 Showing listing confirmation screen...');
+    
+    const container = document.getElementById('main-content') || document.body;
+    
+    // Create confirmation overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'listing-confirm-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--color-background, #0a0a0f);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+            <button id="listing-confirm-back" style="
+                background: transparent;
+                border: none;
+                color: var(--color-text);
+                font-size: 20px;
+                cursor: pointer;
+                padding: 8px;
+            ">←</button>
+            <h2 style="margin: 0; font-size: 18px; color: var(--color-text);">🔐 Confirm Listing</h2>
+        </div>
+        
+        <div style="
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        ">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <img src="https://ordinals.com/content/${inscription.id}" 
+                     style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;"
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
+                <div>
+                    <div style="font-weight: 600; color: var(--color-text);">#${inscription.number || '?'}</div>
+                    <div style="font-size: 12px; color: var(--color-text-secondary);">${inscription.id.slice(0, 12)}...</div>
+                </div>
+            </div>
+            
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                padding: 12px;
+                background: rgba(34, 197, 94, 0.1);
+                border-radius: 8px;
+                border: 1px solid rgba(34, 197, 94, 0.3);
+            ">
+                <span style="color: var(--color-text-secondary);">Sale Price</span>
+                <span style="font-weight: 700; color: #22c55e;">${price.toLocaleString()} sats</span>
+            </div>
+        </div>
+        
+        <div style="
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #fbbf24;
+        ">
+            ⚠️ <strong>Authentication Required</strong><br>
+            Enter your password to prove ownership and authorize this listing.
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                Password
+            </label>
+            <input type="password" id="listing-confirm-password" placeholder="Enter your wallet password" style="
+                width: 100%;
+                padding: 14px 16px;
+                background: var(--color-surface);
+                border: 1px solid var(--color-border);
+                border-radius: 8px;
+                color: var(--color-text);
+                font-size: 14px;
+                box-sizing: border-box;
+            " autofocus>
+        </div>
+        
+        <button id="listing-confirm-btn" style="
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        ">
+            🔐 Sign & List for Sale
+        </button>
+        
+        <p style="
+            text-align: center;
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-top: 16px;
+        ">
+            Your signature proves you own this inscription.<br>
+            No funds will be moved until a buyer purchases.
+        </p>
+    `;
+    
+    container.appendChild(overlay);
+    
+    // Event listeners
+    document.getElementById('listing-confirm-back').addEventListener('click', () => {
+        overlay.remove();
+        document.getElementById('list-market-screen')?.classList.remove('hidden');
+        isCreatingListing = false;
+    });
+    
+    document.getElementById('listing-confirm-password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('listing-confirm-btn').click();
+        }
+    });
+    
+    document.getElementById('listing-confirm-btn').addEventListener('click', async () => {
+        const password = document.getElementById('listing-confirm-password').value;
+        
+        if (!password) {
+            showNotification('❌ Please enter your password', 'error');
+            return;
+        }
+        
+        const btn = document.getElementById('listing-confirm-btn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Signing...';
+        
+        try {
+            // Get pending listing data
+            const storage = await chrome.storage.local.get('pendingListingData');
+            const pendingData = storage.pendingListingData;
+            
+            if (!pendingData) {
+                throw new Error('Listing data not found');
+            }
+            
+            // Sign the message with password
+            console.log('🔐 Signing message with password...');
+            const signResult = await chrome.runtime.sendMessage({
+                action: 'signMessageWithPassword',
+                data: {
+                    message: pendingData.message,
+                    password: password
+                }
+            });
+            
+            if (!signResult.success) {
+                throw new Error(signResult.error || 'Signature failed');
+            }
+            
+            console.log('✅ Message signed successfully!');
+            
+            // Create listing with signature
+            await createListingWithSignature(
+                pendingData.inscriptionId,
+                pendingData.priceSats,
+                pendingData.description,
+                signResult.signature,
+                pendingData.message,
+                pendingData.timestamp
+            );
+            
+            // Cleanup
+            await chrome.storage.local.remove('pendingListingData');
+            overlay.remove();
+            
+        } catch (error) {
+            console.error('❌ Error signing:', error);
+            showNotification('❌ ' + error.message, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '🔐 Sign & List for Sale';
+        }
+    });
+}
+
+/**
+ * Create listing with verified signature
+ */
+async function createListingWithSignature(inscriptionId, price, description, signature, message, timestamp) {
+    console.log('🛒 Creating listing with signature...');
+    showLoading('Publishing listing...');
+    
+    try {
         const createListingResponse = await chrome.runtime.sendMessage({
             action: 'createBuyNowListing',
             data: {
-                inscriptionId: currentInscriptionToList.id,
+                inscriptionId: inscriptionId,
                 priceSats: price,
-                description: description
+                description: description,
+                signature: signature,
+                message: message,
+                timestamp: timestamp
             }
         });
         
@@ -9735,28 +10011,22 @@ async function createMarketListing() {
         console.log('   Order ID:', createListingResponse.order_id);
         hideLoading();
         
-        // 🎉 STEP 2: Mostrar tela de SUCESSO (não precisa assinar!)
-        // O modelo BUY NOW não requer assinatura prévia do seller
+        // Hide list screen and show success
         document.getElementById('list-market-screen')?.classList.add('hidden');
         
-        // Mostrar sucesso
         showListingSuccessScreen(
-            currentInscriptionToList.id, 
+            inscriptionId, 
             price, 
             createListingResponse.order_id
         );
         
-        console.log('✅ Listing is LIVE! No signature needed upfront.');
-        console.log('   Seller will sign when buyer purchases.')
+        showNotification('✅ Listing published successfully!', 'success');
         
     } catch (error) {
-        console.error('❌ Error creating listing:', error);
         hideLoading();
-        showNotification('❌ Failed to create listing: ' + error.message, 'error');
+        throw error;
     } finally {
-        // ✅ SEMPRE resetar flag no final
         isCreatingListing = false;
-        console.log('🔓 isCreatingListing reset to false');
     }
 }
 

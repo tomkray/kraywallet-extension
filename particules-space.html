@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Particles - Fixed</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000000; font-family: sans-serif; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #input-video { position: absolute; visibility: hidden; width: 0; height: 0; }
+        
+        /* UI */
+        #ui-container {
+            position: absolute; top: 20px; right: 20px; z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white; width: 200px;
+        }
+        .ui-label { font-size: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px;}
+        input[type="color"] { width: 100%; border: none; height: 30px; cursor: pointer; background: none; }
+        
+        /* Status/Loading */
+        #status-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; z-index: 20; font-size: 14px; text-align: center;
+            background: rgba(0,0,0,0.8); padding: 20px; border-radius: 8px;
+            pointer-events: none; transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status-msg">Inicializando Sistema Cósmico...<br><span style="font-size:10px; opacity:0.7">Permita o uso da câmera quando solicitado.</span></div>
+    <div id="canvas-container"></div>
+    <video id="input-video"></video>
+
+    <div id="ui-container">
+        <div class="ui-label">Cor do Núcleo</div>
+        <input type="color" id="color-picker" value="#ffffff">
+        <div style="margin-top:10px; font-size: 10px; opacity: 0.6;">Dica: Use as duas mãos e afaste os dedos indicadores.</div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+
+        let scene, camera, renderer, clock;
+        let logoParticles, starfield;
+        let handTension = 0;
+        const statusEl = document.getElementById('status-msg');
+
+        // URL original (pode falhar dependendo do CORS)
+        const svgUrl = 'https://ordinals.com/inscription/1e1b954168c7174cca9646994b5b5a41f0c612a2a098c3e636b6d43b69666ea0i0';
+
+        init();
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            
+            // CENA
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.0015);
+
+            // CÂMERA
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.z = 300;
+
+            // RENDERER
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            clock = new THREE.Clock();
+
+            // 1. STARFIELD
+            createStarfield();
+
+            // 2. LOGO (Tenta carregar SVG, se falhar, desenha manual)
+            loadLogo();
+
+            // 3. MEDIAPIPE (Câmera)
+            setupMediaPipe();
+
+            // 4. EVENTOS
+            setupUI();
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function createStarfield() {
+            const count = 3000;
+            const pos = new Float32Array(count * 3);
+            const sizes = new Float32Array(count);
+            for(let i=0; i<count*3; i+=3) {
+                pos[i] = (Math.random()-0.5)*2000;
+                pos[i+1] = (Math.random()-0.5)*2000;
+                pos[i+2] = (Math.random()-0.5)*2000 - 200;
+                sizes[i/3] = Math.random() * 2;
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const mat = new THREE.PointsMaterial({
+                color: 0x888888, size: 1, transparent: true, blending: THREE.AdditiveBlending, sizeAttenuation: true
+            });
+            starfield = new THREE.Points(geo, mat);
+            scene.add(starfield);
+        }
+
+        function loadLogo() {
+            const loader = new SVGLoader();
+            statusEl.innerHTML = "Carregando Geometria...";
+
+            loader.load(svgUrl, 
+                (data) => {
+                    // SUCESSO NO LOAD
+                    createParticlesFromPaths(data.paths);
+                    statusEl.style.opacity = 0; // Esconde msg
+                },
+                undefined,
+                (error) => {
+                    // ERRO NO LOAD (CORS ou Arquivo Local)
+                    console.warn("SVG falhou (CORS), gerando forma manual.", error);
+                    createFallbackLogo(); // Usa o backup
+                    statusEl.style.opacity = 0;
+                }
+            );
+        }
+
+        // Gera o logo manualmente se o SVG falhar
+        function createFallbackLogo() {
+            const vertices = [];
+            // Desenhar um Triângulo Invertido "Estilo Tech"
+            // Ponto A (-100, 100), B (100, 100), C (0, -100)
+            
+            // Linha Superior
+            for(let x = -80; x <= 80; x+=2) vertices.push(x, 80, 0);
+            // Lado Direito
+            for(let i = 0; i <= 1; i+=0.01) vertices.push(80 * (1-i), 80 * (1-i) + (-100 * i), 0);
+            // Lado Esquerdo
+            for(let i = 0; i <= 1; i+=0.01) vertices.push(-80 * (1-i), 80 * (1-i) + (-100 * i), 0);
+            
+            // Triângulo Interno Menor
+            for(let x = -50; x <= 50; x+=2) vertices.push(x, 50, 0);
+            for(let i = 0; i <= 1; i+=0.015) vertices.push(50 * (1-i), 50 * (1-i) + (-40 * i), 0);
+            for(let i = 0; i <= 1; i+=0.015) vertices.push(-50 * (1-i), 50 * (1-i) + (-40 * i), 0);
+
+            buildParticleSystem(vertices);
+        }
+
+        function createParticlesFromPaths(paths) {
+            const vertices = [];
+            paths.forEach(path => {
+                const shapes = SVGLoader.createShapes(path);
+                shapes.forEach(shape => {
+                    // Extrai pontos
+                    const points = shape.getSpacedPoints(shape.getLength() / 1.5); 
+                    points.forEach(p => vertices.push(p.x - 150, -p.y + 150, 0));
+                });
+            });
+            buildParticleSystem(vertices);
+        }
+
+        function buildParticleSystem(verticesArray) {
+            if(logoParticles) scene.remove(logoParticles);
+
+            const geo = new THREE.BufferGeometry();
+            const posAttr = new THREE.Float32BufferAttribute(verticesArray, 3);
+            geo.setAttribute('position', posAttr);
+            geo.setAttribute('target', posAttr.clone()); // Onde deve voltar
+            
+            // Direções de explosão aleatórias
+            const dirs = [];
+            for(let i=0; i<verticesArray.length; i+=3) {
+                dirs.push((Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5));
+            }
+            geo.setAttribute('direction', new THREE.Float32BufferAttribute(dirs, 3));
+
+            const mat = new THREE.PointsMaterial({
+                color: 0xffffff, size: 2.5, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, sizeAttenuation: true
+            });
+
+            logoParticles = new THREE.Points(geo, mat);
+            logoParticles.scale.set(1.2, 1.2, 1.2);
+            scene.add(logoParticles);
+        }
+
+        function setupMediaPipe() {
+            const videoElement = document.getElementById('input-video');
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            
+            hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+            
+            hands.onResults((results) => {
+                handTension = 0;
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    // Detecta se tem 2 mãos (mede distância entre indicadores)
+                    if (results.multiHandLandmarks.length === 2) {
+                        const h1 = results.multiHandLandmarks[0][8];
+                        const h2 = results.multiHandLandmarks[1][8];
+                        const dist = Math.sqrt(Math.pow(h1.x-h2.x,2) + Math.pow(h1.y-h2.y,2));
+                        handTension = Math.min(Math.max((dist - 0.05) / 0.5, 0), 1);
+                    } else {
+                        // 1 mão (pinça)
+                        const t = results.multiHandLandmarks[0][4];
+                        const i = results.multiHandLandmarks[0][8];
+                        const dist = Math.sqrt(Math.pow(t.x-i.x,2) + Math.pow(t.y-i.y,2));
+                        handTension = Math.min(Math.max((dist - 0.05) / 0.2, 0), 1);
+                    }
+                }
+            });
+
+            const cameraUtils = new Camera(videoElement, {
+                onFrame: async () => { await hands.send({image: videoElement}); },
+                width: 640, height: 480
+            });
+            cameraUtils.start().catch(e => {
+                statusEl.innerHTML = "Erro na Câmera: Permissão negada ou indisponível.";
+                statusEl.style.opacity = 1;
+            });
+        }
+
+        function setupUI() {
+            document.getElementById('color-picker').addEventListener('input', (e) => {
+                if(logoParticles) logoParticles.material.color.set(e.target.value);
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            if(starfield) starfield.rotation.y = time * 0.05;
+
+            if (logoParticles) {
+                const positions = logoParticles.geometry.attributes.position.array;
+                const targets = logoParticles.geometry.attributes.target.array;
+                const dirs = logoParticles.geometry.attributes.direction.array;
+                
+                // Força da explosão controlada pela mão
+                const force = Math.pow(handTension, 2) * 500; 
+
+                // Animação de flutuação (Respiração)
+                const breathe = Math.sin(time) * 5;
+
+                for (let i = 0; i < positions.length; i += 3) {
+                    // Posição alvo = Posição original + (Direção * Força)
+                    const tx = targets[i] + dirs[i] * force;
+                    const ty = targets[i+1] + dirs[i+1] * force + breathe; // + breathe para flutuar
+                    const tz = targets[i+2] + dirs[i+2] * force;
+
+                    // Suavização (Lerp)
+                    positions[i] += (tx - positions[i]) * 0.1;
+                    positions[i+1] += (ty - positions[i+1]) * 0.1;
+                    positions[i+2] += (tz - positions[i+2]) * 0.1;
+                }
+                logoParticles.geometry.attributes.position.needsUpdate = true;
+            }
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
