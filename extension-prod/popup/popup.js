@@ -6162,7 +6162,10 @@ async function showPsbtConfirmation() {
         
         // 🛡️ DESIGN PROFISSIONAL PARA ATOMIC SWAP (VENDEDOR E COMPRADOR)
         if (isAtomicSwap) {
-            const sighashDisplay = pendingPsbt.sighashType || (isSeller ? 'NONE|ANYONECANPAY' : 'ALL');
+            // Detect Buy Now model (uses SIGHASH_ALL, not Guardians)
+            const isBuyNowModel = pendingPsbt.type === 'buyNow' || pendingPsbt.orderId?.startsWith('buynow_');
+            const sighashDisplay = isBuyNowModel ? 'ALL (0x01)' : (pendingPsbt.sighashType || (isSeller ? 'NONE|ANYONECANPAY' : 'ALL'));
+            const securityText = isBuyNowModel ? '🔐 Atomic Swap' : '🛡️ Guardian Protected';
             const roleEmoji = isSeller ? '🏷️' : '🛒';
             const roleText = isSeller ? 'List Inscription' : 'Buy Inscription';
             const roleDescription = isSeller 
@@ -6182,7 +6185,7 @@ async function showPsbtConfirmation() {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                         <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
                             <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Security</div>
-                            <div style="font-size: 14px; color: #10B981; font-weight: 600;">🛡️ Guardian Protected</div>
+                            <div style="font-size: 14px; color: #10B981; font-weight: 600;">${securityText}</div>
                         </div>
                         <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
                             <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">SIGHASH</div>
