@@ -2022,8 +2022,8 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, step
         console.log('   Status:', data.status);
         console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
         
-        // If status is AWAITING_SELLER_SIG, we need to sign the PSBT
-        if (data.status === 'AWAITING_SELLER_SIG' && data.psbt_base64) {
+        // If status is PENDING, we need to sign the PSBT
+        if (data.status === 'PENDING' && data.psbt_base64) {
             console.log('🔐 Saving PSBT for seller signature...');
             
             // Save pending PSBT request for signing
@@ -2056,7 +2056,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, step
                 order_id: data.order_id,
                 inscription_id: inscriptionId,
                 price_sats: priceSats,
-                status: 'AWAITING_SELLER_SIG',
+                status: 'PENDING',
                 message: 'Sign the listing to activate it. Click the wallet extension icon.'
             };
         }
