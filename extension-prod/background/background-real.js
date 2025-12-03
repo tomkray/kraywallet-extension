@@ -1259,6 +1259,16 @@ async function signMessageWithPassword({ message, password }) {
         console.log('✍️  Signing message:', message);
         console.log('   Password provided:', password ? 'YES ✅' : 'NO ❌');
         
+        // 🔐 If no password provided, return requiresPassword flag
+        if (!password || password.length < 6) {
+            console.log('⚠️ No password provided - returning requiresPassword flag');
+            return {
+                success: false,
+                requiresPassword: true,
+                message: 'Password required to sign message'
+            };
+        }
+        
         // Get wallet from storage (salt is hardcoded in encryptData/decryptData)
         const storage = await chrome.storage.local.get(['walletEncrypted']);
         console.log('   Storage check:', {
