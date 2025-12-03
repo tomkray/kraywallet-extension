@@ -5769,7 +5769,8 @@ function showListingSuccessModal(inscriptionId, price) {
                 ">${price.toLocaleString()} sats</div>
             </div>
             
-            <button onclick="window.open('https://krayspace.com/krayscan.html?inscription=${inscriptionId}', '_blank')" style="
+            <a href="https://krayspace.com/krayscan.html?inscription=${inscriptionId}" target="_blank" style="
+                display: block;
                 width: 100%;
                 background: transparent;
                 border: 1px solid #3d5a80;
@@ -5780,9 +5781,12 @@ function showListingSuccessModal(inscriptionId, price) {
                 cursor: pointer;
                 transition: all 0.2s;
                 margin-bottom: 10px;
+                text-decoration: none;
+                text-align: center;
+                box-sizing: border-box;
             ">
                 🔍 View on KrayScan
-            </button>
+            </a>
             
             <button id="listing-modal-done-btn" style="
                 width: 100%;
