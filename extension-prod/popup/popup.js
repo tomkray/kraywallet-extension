@@ -10257,7 +10257,7 @@ async function createListingWithSignature(inscriptionId, price, description, sig
         
         console.log('📋 Listing response:', createListingResponse);
         
-        // 🔐 MAGIC EDEN MODEL: If requiresSignature, wait for PSBT signing
+        // 🔐 MAGIC EDEN MODEL: If requiresSignature, show PSBT signing screen immediately
         if (createListingResponse.requiresSignature) {
             console.log('🔐 Listing requires PSBT signature to activate...');
             console.log('   Order ID:', createListingResponse.order_id);
@@ -10268,11 +10268,13 @@ async function createListingWithSignature(inscriptionId, price, description, sig
             // Hide list screen
             document.getElementById('list-market-screen')?.classList.add('hidden');
             
-            // Show notification that PSBT signing is needed
-            showNotification('📝 Sign the PSBT to activate your listing', 'info');
+            // 🔐 SHOW PSBT SIGNING SCREEN IMMEDIATELY!
+            console.log('📱 Switching to PSBT signing screen...');
+            showScreen('confirm-psbt');
             
-            // The popup will auto-detect the pending PSBT and show the sign screen
-            // After signing, handlePsbtSign will send to backend and show success
+            // Load PSBT confirmation data
+            await showPsbtConfirmation();
+            
             return;
         }
         
