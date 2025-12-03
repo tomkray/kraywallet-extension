@@ -9715,9 +9715,13 @@ async function createMarketListing() {
         // Show loading
         showLoading('Preparing listing...');
         
+        // 🔐 Get wallet address first
+        const walletInfo = await chrome.runtime.sendMessage({ action: 'getWalletInfo' });
+        const sellerAddress = walletInfo?.address || 'unknown';
+        
         // 🔐 STEP 1: Criar mensagem para assinar (prova de propriedade)
         const timestamp = Date.now();
-        const messageToSign = `KraySpace Listing Authorization\n\nI authorize listing inscription ${currentInscriptionToList.id} for sale at ${price} sats.\n\nTimestamp: ${timestamp}\nSeller: ${walletState?.address || 'unknown'}`;
+        const messageToSign = `KraySpace Listing Authorization\n\nI authorize listing inscription ${currentInscriptionToList.id} for sale at ${price} sats.\n\nTimestamp: ${timestamp}\nSeller: ${sellerAddress}`;
         
         console.log('🔐 Requesting ownership signature...');
         console.log('   Message:', messageToSign);
