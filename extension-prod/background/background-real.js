@@ -2082,8 +2082,19 @@ async function createAndSignListing({ inscriptionId, priceSats, description, pas
         });
         
         if (!createResponse.ok) {
-            const error = await createResponse.json();
-            throw new Error(error.error || 'Failed to create listing');
+            const errorData = await createResponse.json();
+            // If already listed, return the details so popup can show options
+            if (errorData.error === 'already_listed') {
+                return {
+                    success: false,
+                    error: 'already_listed',
+                    message: errorData.message,
+                    existing_order_id: errorData.existing_order_id,
+                    current_price: errorData.current_price,
+                    status: errorData.status
+                };
+            }
+            throw new Error(errorData.error || 'Failed to create listing');
         }
         
         const createData = await createResponse.json();

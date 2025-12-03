@@ -10317,6 +10317,18 @@ function showListingConfirmScreen(inscription, price, message) {
             });
             
             if (!result.success) {
+                // Check if it's an already_listed response with details
+                if (result.error === 'already_listed') {
+                    btn.disabled = false;
+                    btn.innerHTML = '🔐 Sign & List for Sale';
+                    showAlreadyListedModal({
+                        inscriptionId: pendingData.inscriptionId,
+                        priceSats: pendingData.priceSats,
+                        existingOrderId: result.existing_order_id,
+                        currentPrice: result.current_price
+                    });
+                    return;
+                }
                 throw new Error(result.error || 'Failed to create listing');
             }
             
@@ -10337,7 +10349,14 @@ function showListingConfirmScreen(inscription, price, message) {
             if (error.message.includes('already listed') || error.message.includes('already_listed')) {
                 btn.disabled = false;
                 btn.innerHTML = '🔐 Sign & List for Sale';
-                showAlreadyListedModal(pendingData);
+                
+                // Get pendingData from storage again (it's out of scope here)
+                const storageData = await chrome.storage.local.get('pendingListingData');
+                if (storageData.pendingListingData) {
+                    showAlreadyListedModal(storageData.pendingListingData);
+                } else {
+                    showNotification('⚠️ Esta inscrição já está listada no marketplace!', 'warning');
+                }
                 return;
             }
             
@@ -10356,6 +10375,11 @@ function showAlreadyListedModal(listingData) {
     const existingOverlay = document.getElementById('already-listed-overlay');
     if (existingOverlay) existingOverlay.remove();
     
+    // Also remove the listing confirm overlay
+    document.getElementById('listing-confirm-overlay')?.remove();
+    
+    const currentPrice = listingData.currentPrice || listingData.priceSats || '?';
+    
     const overlay = document.createElement('div');
     overlay.id = 'already-listed-overlay';
     overlay.style.cssText = `
@@ -10364,7 +10388,7 @@ function showAlreadyListedModal(listingData) {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.95);
         z-index: 99999;
         display: flex;
         align-items: center;
@@ -10384,8 +10408,11 @@ function showAlreadyListedModal(listingData) {
         ">
             <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
             <h3 style="color: var(--color-text, white); margin: 0 0 12px;">Inscrição Já Listada</h3>
-            <p style="color: var(--color-text-secondary, #888); font-size: 13px; margin: 0 0 20px; line-height: 1.5;">
-                Esta inscrição já está listada no marketplace. Você pode:
+            <p style="color: var(--color-text-secondary, #888); font-size: 13px; margin: 0 0 8px; line-height: 1.5;">
+                Esta inscrição já está listada no marketplace.
+            </p>
+            <p style="color: #10b981; font-size: 16px; font-weight: 600; margin: 0 0 20px;">
+                Preço atual: ${Number(currentPrice).toLocaleString()} sats
             </p>
             
             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -10457,9 +10484,16 @@ function showAlreadyListedModal(listingData) {
         try {
             showLoading('Cancelando listagem...');
             
+            // Use existingOrderId if available, otherwise use inscriptionId
+            const orderId = listingData.existingOrderId;
+            console.log('🗑️ Cancelling listing:', orderId || listingData.inscriptionId);
+            
             const result = await chrome.runtime.sendMessage({
                 action: 'cancelListing',
-                data: { inscriptionId: listingData.inscriptionId }
+                data: { 
+                    orderId: orderId,
+                    inscriptionId: listingData.inscriptionId 
+                }
             });
             
             hideLoading();
@@ -10467,8 +10501,9 @@ function showAlreadyListedModal(listingData) {
             if (result.success) {
                 overlay.remove();
                 showNotification('✅ Listagem cancelada com sucesso!', 'success');
-                // Remove the confirm overlay too
-                document.getElementById('listing-confirm-overlay')?.remove();
+                // Reload wallet data
+                await loadWalletData();
+                showScreen('wallet');
             } else {
                 showNotification('❌ ' + (result.error || 'Erro ao cancelar'), 'error');
             }
