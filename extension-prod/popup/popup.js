@@ -6792,6 +6792,14 @@ async function handlePsbtSign() {
         
         console.log('✍️  Confirming PSBT sign...');
         
+        // 🔐 CRITICAL FIX: Salvar pendingPsbt ANTES de assinar!
+        // Depois de confirmPsbtSign, o pendingPsbtRequest é limpo do storage
+        const pendingResponse = await sendMessage({ action: 'getPendingPsbt' });
+        const pendingPsbt = pendingResponse?.pending;
+        
+        console.log('📋 Pending PSBT type (BEFORE sign):', pendingPsbt?.type);
+        console.log('📋 Pending PSBT orderId:', pendingPsbt?.orderId);
+        
         const response = await sendMessage({
             action: 'confirmPsbtSign',
             data: { password }
@@ -6802,12 +6810,7 @@ async function handlePsbtSign() {
         }
         
         console.log('✅ PSBT signed successfully!');
-        
-        // 🔍 Buscar pendingPsbtRequest para ver o tipo
-        const pendingResponse = await sendMessage({ action: 'getPendingPsbt' });
-        const pendingPsbt = pendingResponse?.pending;
-        
-        console.log('📋 Pending PSBT type:', pendingPsbt?.type);
+        console.log('📋 Pending PSBT type (using saved):', pendingPsbt?.type);
         
         // 🎯 SE FOR createOffer, enviar para /api/atomic-swap/:id/sign automaticamente!
         if (pendingPsbt?.type === 'createOffer') {
