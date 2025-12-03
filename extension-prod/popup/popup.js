@@ -5685,6 +5685,158 @@ function showListingSuccessScreen(inscriptionId, price, orderId) {
     showScreen('listing-success');
 }
 
+/**
+ * 🎉 Show Buy Now Success Modal
+ * Beautiful success modal for completed Buy Now sales
+ */
+function showBuyNowSuccessModal(txid, orderId) {
+    console.log('🎉 Showing Buy Now success modal');
+    console.log('   TXID:', txid);
+    
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'buynow-success-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid #3d5a80;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        ">
+            <div style="
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+                animation: pulse 2s infinite;
+            ">
+                <span style="font-size: 40px;">✅</span>
+            </div>
+            
+            <h2 style="
+                color: #fff;
+                font-size: 24px;
+                margin: 0 0 10px 0;
+                font-weight: 700;
+            ">Sale Complete!</h2>
+            
+            <p style="
+                color: #94a3b8;
+                font-size: 14px;
+                margin: 0 0 20px 0;
+            ">The inscription has been transferred successfully.</p>
+            
+            <div style="
+                background: rgba(34, 197, 94, 0.1);
+                border: 1px solid rgba(34, 197, 94, 0.3);
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 20px;
+            ">
+                <div style="color: #94a3b8; font-size: 12px; margin-bottom: 5px;">Transaction ID</div>
+                <div style="
+                    color: #22c55e;
+                    font-size: 13px;
+                    font-family: monospace;
+                    word-break: break-all;
+                ">${txid}</div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="window.open('https://mempool.space/tx/${txid}', '_blank')" style="
+                    flex: 1;
+                    background: transparent;
+                    border: 1px solid #3d5a80;
+                    color: #fff;
+                    padding: 12px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    🔗 Mempool
+                </button>
+                <button onclick="window.open('https://krayspace.com/krayscan.html?txid=${txid}', '_blank')" style="
+                    flex: 1;
+                    background: transparent;
+                    border: 1px solid #3d5a80;
+                    color: #fff;
+                    padding: 12px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    🔍 KrayScan
+                </button>
+            </div>
+            
+            <button id="buynow-success-done-btn" style="
+                width: 100%;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                border: none;
+                color: #fff;
+                padding: 14px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 15px;
+                transition: all 0.2s;
+            ">
+                ✅ Done
+            </button>
+        </div>
+        
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Done button closes modal and returns to wallet
+    document.getElementById('buynow-success-done-btn').onclick = () => {
+        modal.remove();
+        showScreen('wallet');
+        loadWalletData();
+    };
+}
+
 // Notificação especial para transações (clicável)
 function showTransactionNotification(txid, txidShort) {
     const notification = document.getElementById('notification');
@@ -6558,6 +6710,79 @@ async function handlePsbtSign() {
             
             // Recarregar dados da wallet
             await loadWalletData();
+            
+        } else if (pendingPsbt?.type === 'buyNow') {
+            // 🛒 BUY NOW FLOW - Buyer signs and confirms
+            console.log('🛒 ===== BUY NOW FLOW =====');
+            console.log('   Confirming purchase with backend...');
+            console.log('   Order ID:', pendingPsbt.orderId);
+            console.log('   Purchase ID:', pendingPsbt.purchaseId);
+            
+            showLoading('Confirming purchase...');
+            
+            // Send signed PSBT to confirm endpoint
+            const confirmResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${pendingPsbt.orderId}/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    buyer_signed_psbt: response.signedPsbt,
+                    purchase_id: pendingPsbt.purchaseId
+                })
+            });
+            
+            const confirmResult = await confirmResponse.json();
+            
+            if (!confirmResponse.ok || !confirmResult.success) {
+                throw new Error(confirmResult.error || 'Failed to confirm purchase');
+            }
+            
+            console.log('✅ Purchase confirmed!', confirmResult);
+            
+            // Clear pending PSBT
+            await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
+            
+            hideLoading();
+            showScreen('wallet');
+            
+            showNotification(`✅ Purchase confirmed!\n\n⏳ Waiting for seller to accept.\n\n📋 Order: ${pendingPsbt.orderId.slice(0, 20)}...`, 'success');
+            
+            await loadWalletData();
+            
+        } else if (pendingPsbt?.type === 'acceptBuyNow') {
+            // 🎉 ACCEPT BUY NOW FLOW - Seller signs and broadcasts
+            console.log('🎉 ===== ACCEPT BUY NOW FLOW =====');
+            console.log('   Broadcasting sale...');
+            console.log('   Order ID:', pendingPsbt.orderId);
+            console.log('   Purchase ID:', pendingPsbt.purchaseId);
+            
+            showLoading('Broadcasting sale...');
+            
+            // Send signed PSBT to accept endpoint (broadcasts automatically!)
+            const acceptResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${pendingPsbt.orderId}/accept`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    seller_signed_psbt: response.signedPsbt,
+                    purchase_id: pendingPsbt.purchaseId
+                })
+            });
+            
+            const acceptResult = await acceptResponse.json();
+            
+            if (!acceptResponse.ok || !acceptResult.success) {
+                throw new Error(acceptResult.error || 'Failed to broadcast sale');
+            }
+            
+            console.log('✅ Sale broadcast!', acceptResult);
+            console.log('   TXID:', acceptResult.txid);
+            
+            // Clear pending PSBT
+            await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
+            
+            hideLoading();
+            
+            // Show success modal
+            showBuyNowSuccessModal(acceptResult.txid, pendingPsbt.orderId);
             
         } else {
             // 🎯 FLUXO NORMAL (outros): Salvar resultado no storage

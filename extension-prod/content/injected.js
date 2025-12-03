@@ -180,6 +180,8 @@
         async signPsbt(psbt, options = {}) {
             console.log('✍️  KrayWallet: signPsbt()');
             console.log('   SIGHASH:', options.sighashType || 'ALL');
+            console.log('   toSignInputs:', JSON.stringify(options.toSignInputs));
+            console.log('   autoFinalized:', options.autoFinalized);
             
             const response = await sendMessage('signPsbt', {
                 psbt,
@@ -187,6 +189,11 @@
                 toSignInputs: options.toSignInputs,
                 autoFinalized: options.autoFinalized
             });
+            
+            console.log('   Response:', response?.success ? '✅ SUCCESS' : '❌ FAILED');
+            if (!response?.success) {
+                console.error('   Error:', response?.error);
+            }
             
             // Retornar o response completo (com success e signedPsbt)
             return response;
@@ -412,6 +419,83 @@
             }
             
             throw new Error(response.error || 'Failed to buy atomic swap');
+        },
+        
+        /**
+         * 🛒 BUY NOW - Magic Eden style purchase
+         */
+        async buyNow({ orderId, buyerAddress }) {
+            console.log('🛒 KrayWallet: buyNow()');
+            console.log('   Order ID:', orderId);
+            console.log('   Buyer Address:', buyerAddress);
+            
+            const response = await sendMessage('buyNow', {
+                orderId,
+                buyerAddress
+            });
+            
+            if (response.success) {
+                return {
+                    success: true,
+                    purchaseId: response.purchaseId,
+                    requiresSignature: response.requiresSignature,
+                    breakdown: response.breakdown,
+                    message: response.message || 'Purchase initiated!'
+                };
+            }
+            
+            throw new Error(response.error || 'Failed to initiate Buy Now');
+        },
+        
+        /**
+         * 📝 Create Buy Now Listing
+         */
+        async createBuyNowListing({ inscriptionId, priceSats, description }) {
+            console.log('📝 KrayWallet: createBuyNowListing()');
+            console.log('   Inscription:', inscriptionId);
+            console.log('   Price:', priceSats, 'sats');
+            
+            const response = await sendMessage('createBuyNowListing', {
+                inscriptionId,
+                priceSats,
+                description
+            });
+            
+            if (response.success) {
+                return {
+                    success: true,
+                    orderId: response.order_id,
+                    status: response.status,
+                    message: response.message || 'Listing created!'
+                };
+            }
+            
+            throw new Error(response.error || 'Failed to create listing');
+        },
+        
+        /**
+         * ✅ Accept Buy Now (Seller)
+         */
+        async acceptBuyNow({ orderId, purchaseId, buyerSignedPsbt }) {
+            console.log('✅ KrayWallet: acceptBuyNow()');
+            console.log('   Order ID:', orderId);
+            console.log('   Purchase ID:', purchaseId);
+            
+            const response = await sendMessage('acceptBuyNow', {
+                orderId,
+                purchaseId,
+                buyerSignedPsbt
+            });
+            
+            if (response.success) {
+                return {
+                    success: true,
+                    requiresSignature: response.requiresSignature,
+                    message: response.message
+                };
+            }
+            
+            throw new Error(response.error || 'Failed to accept Buy Now');
         },
         
         /**

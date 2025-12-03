@@ -265,6 +265,16 @@ async function handleMessage(request, sender) {
         case 'cancelListing':
             return await cancelListing(data);
         
+        // 🛒 BUY NOW MODE (Magic Eden Style)
+        case 'createBuyNowListing':
+            return await createBuyNowListing(data);
+        
+        case 'buyNow':
+            return await buyNow(data);
+        
+        case 'acceptBuyNow':
+            return await acceptBuyNow(data);
+        
         case 'updateListingPrice':
             return await updateListingPrice(data);
         
@@ -1890,6 +1900,294 @@ async function cancelListing({ orderId }) {
         
     } catch (error) {
         console.error('❌ Error cancelling listing:', error);
+        throw error;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🛒 BUY NOW MODE - Magic Eden Style Atomic Swap
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Create a Buy Now listing (seller lists inscription with fixed price)
+ * NO signature needed upfront - seller signs when buyer purchases
+ */
+async function createBuyNowListing({ inscriptionId, priceSats, description }) {
+    try {
+        console.log('\n📝 ===== CREATE BUY NOW LISTING =====');
+        console.log('   Inscription:', inscriptionId);
+        console.log('   Price:', priceSats, 'sats');
+        console.log('   Wallet address:', walletState.address);
+        
+        if (!walletState.unlocked) {
+            throw new Error('Wallet is locked. Please unlock your wallet first.');
+        }
+        
+        if (!walletState.address) {
+            throw new Error('No wallet address found');
+        }
+        
+        if (!inscriptionId) {
+            throw new Error('Missing inscription ID');
+        }
+        
+        if (!priceSats || priceSats < 546) {
+            throw new Error('Price must be at least 546 sats');
+        }
+        
+        // Create listing on backend (no signing needed!)
+        console.log('📤 Creating listing on backend...');
+        const response = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                inscription_id: inscriptionId,
+                price_sats: priceSats,
+                seller_address: walletState.address,
+                description: description || ''
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create listing');
+        }
+        
+        const data = await response.json();
+        console.log('✅ Buy Now listing created:', data.order_id);
+        console.log('   Status:', data.status);
+        console.log('   Price:', data.price_sats, 'sats');
+        
+        return {
+            success: true,
+            order_id: data.order_id,
+            inscription_id: inscriptionId,
+            price_sats: priceSats,
+            status: data.status,
+            message: 'Listing is live! Buyers can purchase anytime.'
+        };
+        
+    } catch (error) {
+        console.error('❌ Error creating Buy Now listing:', error);
+        throw error;
+    }
+}
+
+/**
+ * Buy Now - Buyer purchases a listed inscription
+ * Creates PSBT, buyer signs, then waits for seller to accept
+ */
+async function buyNow({ orderId, buyerAddress }) {
+    try {
+        console.log('\n🛒 ===== BUY NOW PURCHASE =====');
+        console.log('   Order ID:', orderId);
+        console.log('   Buyer address:', buyerAddress || walletState.address);
+        console.log('   Wallet unlocked:', walletState.unlocked);
+        
+        if (!walletState.unlocked) {
+            throw new Error('Wallet is locked. Please unlock your wallet first.');
+        }
+        
+        const actualBuyerAddress = buyerAddress || walletState.address;
+        
+        if (!orderId) {
+            throw new Error('Missing order ID');
+        }
+        
+        // 🔍 Step 1: Get recommended fees
+        console.log('💰 Fetching recommended network fees...');
+        let feeRate = 5;
+        try {
+            const feesResponse = await fetch('https://kraywallet-backend.onrender.com/api/wallet/fees');
+            if (feesResponse.ok) {
+                const feesData = await feesResponse.json();
+                feeRate = feesData.fees?.medium || 5;
+                console.log(`✅ Using fee rate: ${feeRate} sat/vB`);
+            }
+        } catch (e) {
+            console.warn('⚠️ Using default fee rate:', feeRate);
+        }
+        
+        // 🔍 Step 2: Get buyer UTXOs
+        console.log('🔍 Fetching buyer UTXOs...');
+        const utxosResponse = await fetch(`https://kraywallet-backend.onrender.com/api/wallet/utxos/${actualBuyerAddress}`);
+        
+        if (!utxosResponse.ok) {
+            throw new Error('Failed to fetch buyer UTXOs');
+        }
+        
+        const utxosData = await utxosResponse.json();
+        const utxos = utxosData.utxos || [];
+        console.log(`✅ Found ${utxos.length} total UTXOs`);
+        
+        // Filter pure UTXOs (no inscriptions/runes)
+        const pureUtxos = utxos.filter(u => !u.hasInscription && !u.hasRunes);
+        console.log(`✅ Found ${pureUtxos.length} pure BTC UTXOs`);
+        
+        if (pureUtxos.length === 0) {
+            throw new Error('No pure Bitcoin UTXOs available. Please send some BTC without inscriptions/runes.');
+        }
+        
+        // 🔍 Step 3: Get listing details to calculate required amount
+        const listingResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${orderId}`);
+        if (!listingResponse.ok) {
+            throw new Error('Listing not found');
+        }
+        const listingData = await listingResponse.json();
+        const listing = listingData.listing;
+        
+        const price = listing.price_sats;
+        const marketFee = Math.max(Math.floor(price * 0.02), 546);
+        const minerFee = 2500; // Conservative estimate
+        const totalNeeded = price + marketFee + minerFee;
+        
+        console.log(`💰 Total needed: ${totalNeeded} sats`);
+        console.log(`   Price: ${price}, Market Fee: ${marketFee}, Miner Fee: ${minerFee}`);
+        
+        // Select UTXOs
+        let selectedUtxos = [];
+        let totalInput = 0;
+        
+        for (const utxo of pureUtxos) {
+            if (totalInput >= totalNeeded) break;
+            
+            if (!utxo.scriptPubKey) {
+                console.warn(`⚠️ UTXO ${utxo.txid}:${utxo.vout} missing scriptPubKey, skipping`);
+                continue;
+            }
+            
+            selectedUtxos.push({
+                txid: utxo.txid,
+                vout: utxo.vout,
+                value: utxo.value,
+                scriptPubKey: utxo.scriptPubKey
+            });
+            totalInput += utxo.value;
+        }
+        
+        if (totalInput < totalNeeded) {
+            throw new Error(`Insufficient funds: need ${totalNeeded} sats, have ${totalInput} sats`);
+        }
+        
+        console.log(`✅ Selected ${selectedUtxos.length} UTXOs (total: ${totalInput} sats)`);
+        
+        // 📦 Step 4: Create purchase PSBT
+        console.log('📦 Creating purchase PSBT...');
+        const buyResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${orderId}/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buyer_address: actualBuyerAddress,
+                buyer_utxos: selectedUtxos,
+                fee_rate: feeRate
+            })
+        });
+        
+        if (!buyResponse.ok) {
+            const error = await buyResponse.json();
+            throw new Error(error.error || 'Failed to create purchase');
+        }
+        
+        const buyData = await buyResponse.json();
+        console.log('✅ Purchase PSBT created');
+        console.log('   Purchase ID:', buyData.purchase_id);
+        console.log('   Inputs to sign:', buyData.toSignInputs);
+        console.log('   Breakdown:', buyData.breakdown);
+        
+        // 💾 Step 5: Save pending PSBT for signing
+        const buyerInputIndexes = buyData.toSignInputs.map(i => i.index);
+        
+        pendingPsbtRequest = {
+            psbt: buyData.psbt_base64,
+            type: 'buyNow',
+            orderId: orderId,
+            purchaseId: buyData.purchase_id,
+            buyerAddress: actualBuyerAddress,
+            sellerAddress: buyData.seller_address,
+            inputsToSign: buyerInputIndexes.map(idx => ({
+                index: idx,
+                sighashTypes: [0x01] // SIGHASH_ALL
+            })),
+            breakdown: buyData.breakdown,
+            feeRate: feeRate,
+            timestamp: Date.now()
+        };
+        
+        await chrome.storage.local.set({ pendingPsbtRequest });
+        console.log('💾 Pending PSBT saved for buyer signature');
+        
+        // Open popup for signature
+        try {
+            await chrome.action.openPopup();
+        } catch (e) {
+            console.log('⚠️ Could not auto-open popup:', e.message);
+        }
+        
+        return {
+            success: true,
+            requiresSignature: true,
+            orderId: orderId,
+            purchaseId: buyData.purchase_id,
+            breakdown: buyData.breakdown,
+            message: 'Click the Kray Wallet extension icon to sign the purchase'
+        };
+        
+    } catch (error) {
+        console.error('❌ Error in Buy Now:', error);
+        throw error;
+    }
+}
+
+/**
+ * Accept Buy Now - Seller accepts and signs the purchase
+ * Called when seller wants to accept a pending purchase
+ */
+async function acceptBuyNow({ orderId, purchaseId, buyerSignedPsbt }) {
+    try {
+        console.log('\n✅ ===== ACCEPT BUY NOW =====');
+        console.log('   Order ID:', orderId);
+        console.log('   Purchase ID:', purchaseId);
+        console.log('   Seller address:', walletState.address);
+        
+        if (!walletState.unlocked) {
+            throw new Error('Wallet is locked. Please unlock your wallet first.');
+        }
+        
+        if (!buyerSignedPsbt) {
+            throw new Error('Missing buyer signed PSBT');
+        }
+        
+        // Save pending PSBT for seller to sign
+        pendingPsbtRequest = {
+            psbt: buyerSignedPsbt,
+            type: 'acceptBuyNow',
+            orderId: orderId,
+            purchaseId: purchaseId,
+            inputsToSign: [{
+                index: 0, // Seller's input is always index 0
+                sighashTypes: [0x01] // SIGHASH_ALL
+            }],
+            timestamp: Date.now()
+        };
+        
+        await chrome.storage.local.set({ pendingPsbtRequest });
+        console.log('💾 Pending PSBT saved for seller signature');
+        
+        // Open popup for signature
+        try {
+            await chrome.action.openPopup();
+        } catch (e) {
+            console.log('⚠️ Could not auto-open popup:', e.message);
+        }
+        
+        return {
+            success: true,
+            requiresSignature: true,
+            message: 'Click the Kray Wallet extension icon to accept and sign'
+        };
+        
+    } catch (error) {
+        console.error('❌ Error accepting Buy Now:', error);
         throw error;
     }
 }
