@@ -269,7 +269,7 @@ async function handleMessage(request, sender) {
         case 'createAndSignListing':
             return await createAndSignListing(data);
         
-        // 🛒 BUY NOW MODE (Magic Eden Style) - LEGACY
+        // 🛒 BUY NOW MODE (KrayWallet Atomic Swap) - LEGACY
         case 'createBuyNowListing':
             return await createBuyNowListing(data);
         
@@ -1926,11 +1926,11 @@ async function cancelListing({ orderId }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 🛒 BUY NOW MODE - Magic Eden Style Atomic Swap
+// 🛒 BUY NOW MODE - KrayWallet Atomic Swap
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Create Buy Now Listing (MAGIC EDEN MODEL)
+ * Create Buy Now Listing (KRAYWALLET MODEL)
  * 
  * FLOW:
  * 1. Backend returns PSBT for seller to sign
@@ -2237,7 +2237,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, step
 }
 
 /**
- * Buy Now - Buyer purchases a listed inscription (MAGIC EDEN MODEL)
+ * Buy Now - Buyer purchases a listed inscription (KRAYWALLET MODEL)
  * 
  * FLOW:
  * 1. Get PSBT from backend (seller's signature already injected!)

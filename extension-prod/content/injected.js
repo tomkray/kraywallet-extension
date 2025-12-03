@@ -1,6 +1,6 @@
 /**
  * 🔥 KrayWallet Extension - Injected Script
- * Cria window.krayWallet API (compatível com Unisat)
+ * Cria window.krayWallet API (compatível com wallets padrão)
  */
 
 (function() {
@@ -54,7 +54,7 @@
         });
     }
     
-    // API KrayWallet (compatível com Unisat)
+    // API KrayWallet (compatível com wallets padrão)
     window.krayWallet = {
         /**
          * 🔌 Conectar wallet (retorna endereço se já unlocked, ou pede para usuário clicar no ícone)
@@ -251,7 +251,7 @@
             const response = await sendMessage('getInscriptions', { offset, limit });
             
             if (response.success && response.inscriptions) {
-                // Formatar para compatibilidade com Unisat API
+                // Formatar para compatibilidade padrão
                 return {
                     total: response.inscriptions.length,
                     list: response.inscriptions.map(i => {
@@ -422,7 +422,7 @@
         },
         
         /**
-         * 🛒 BUY NOW - Magic Eden style purchase
+         * 🛒 BUY NOW - KrayWallet style purchase
          */
         async buyNow({ orderId, buyerAddress }) {
             console.log('🛒 KrayWallet: buyNow()');
@@ -518,7 +518,7 @@
     
     console.log('🔥 KrayWallet API injected!');
     console.log('   window.krayWallet is now available');
-    console.log('   Compatible with Unisat API');
+    console.log('   Compatible with standard wallet API');
     console.log('   ⭐ Supports SIGHASH customizado!');
 })();
 

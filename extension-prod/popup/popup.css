@@ -2118,7 +2118,7 @@ input, select, textarea {
 }
 
 /* ==========================================
-   RUNES TAB (Estilo Unisat)
+   RUNES TAB (Estilo KrayWallet)
    ========================================== */
 
 /* Runes List Container - Estilo lista limpa */
@@ -2129,8 +2129,8 @@ input, select, textarea {
     padding: 0 16px;
 }
 
-/* Rune Item Card - Estilo Unisat/Xverse (compacto e limpo) */
-/* ✨ LAYOUT GRID ALINHADO - Estilo Unisat/Xverse */
+/* Rune Item Card - Estilo KrayWallet/Xverse (compacto e limpo) */
+/* ✨ LAYOUT GRID ALINHADO - Estilo KrayWallet/Xverse */
 .rune-item {
     display: grid;
     grid-template-columns: 52px 1fr auto 32px;

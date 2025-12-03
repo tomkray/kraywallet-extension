@@ -3612,7 +3612,7 @@ async function loadRunes(address) {
 //
 // 🎯 Propósito:
 // - Proteger usuários contra scams e runes falsas
-// - Diferencial competitivo vs Unisat/Xverse/Leather
+// - Diferencial competitivo vs outras wallets
 // - Posicionar MyWallet como autoridade no ecossistema Runes
 // - Criar oportunidade de monetização futura (verificação paga)
 //
@@ -4258,7 +4258,7 @@ async function loadInscriptionActions(fullDetails, inscription, detailsScreen) {
             });
             
             document.getElementById('list-inscription-btn')?.addEventListener('click', () => {
-                alert('🏪 List on Market feature coming soon!\n\nThis will allow you to list your inscription on marketplaces like Magic Eden, Unisat, etc.');
+                alert('🏪 List on Market feature coming soon!\n\nThis will allow you to list your inscription on the KrayWallet marketplace!');
             });
         }
         
@@ -6919,8 +6919,8 @@ async function handlePsbtSign() {
             await loadWalletData();
             
         } else if (pendingPsbt?.type === 'createBuyNowListing') {
-            // 🏷️ CREATE BUY NOW LISTING - Seller signs to activate listing (Magic Eden Model)
-            console.log('🏷️ ===== CREATE BUY NOW LISTING (MAGIC EDEN MODEL) =====');
+            // 🏷️ CREATE BUY NOW LISTING - Seller signs to activate listing (KrayWallet Model)
+            console.log('🏷️ ===== CREATE BUY NOW LISTING (KRAYWALLET MODEL) =====');
             console.log('   Confirming listing with signed PSBT...');
             console.log('   Order ID:', pendingPsbt.orderId);
             console.log('   Inscription ID:', pendingPsbt.inscriptionId);
@@ -6975,8 +6975,8 @@ async function handlePsbtSign() {
             }
             
         } else if (pendingPsbt?.type === 'buyNow') {
-            // 🛒 BUY NOW FLOW (MAGIC EDEN MODEL) - Buyer signs → INSTANT BROADCAST!
-            console.log('🛒 ===== BUY NOW FLOW (MAGIC EDEN MODEL) =====');
+            // 🛒 BUY NOW FLOW (KRAYWALLET MODEL) - Buyer signs → INSTANT BROADCAST!
+            console.log('🛒 ===== BUY NOW FLOW (KRAYWALLET MODEL) =====');
             console.log('   Broadcasting purchase IMMEDIATELY...');
             console.log('   Order ID:', pendingPsbt.orderId);
             console.log('   Purchase ID:', pendingPsbt.purchaseId);
@@ -10054,7 +10054,7 @@ async function createMarketListing() {
 
 /**
  * Show listing confirmation screen with password input
- * Shows UTXO details like Magic Eden and other marketplaces
+ * Shows UTXO details like KrayWallet and other marketplaces
  */
 function showListingConfirmScreen(inscription, price, message) {
     console.log('🔐 Showing listing confirmation screen...');
@@ -10117,7 +10117,7 @@ function showListingConfirmScreen(inscription, price, message) {
             </div>
         </div>
         
-        <!-- UTXO Details (like Magic Eden) -->
+        <!-- UTXO Details (like KrayWallet) -->
         <div style="
             background: var(--color-surface);
             border: 1px solid var(--color-border);
@@ -10342,7 +10342,7 @@ function showListingConfirmScreen(inscription, price, message) {
 /**
  * Create listing with verified signature
  * 
- * MAGIC EDEN MODEL:
+ * KRAYWALLET MODEL:
  * 1. Backend returns PSBT for seller to sign
  * 2. Seller signs with SIGHASH_SINGLE|ANYONECANPAY
  * 3. PSBT sent back to backend → Listing LIVE!
@@ -10370,7 +10370,7 @@ async function createListingWithSignature(inscriptionId, price, description, sig
         
         console.log('📋 Listing response:', createListingResponse);
         
-        // 🔐 MAGIC EDEN MODEL: If requiresSignature, show PSBT signing screen immediately
+        // 🔐 KRAYWALLET MODEL: If requiresSignature, show PSBT signing screen immediately
         if (createListingResponse.requiresSignature) {
             console.log('🔐 Listing requires PSBT signature to activate...');
             console.log('   Order ID:', createListingResponse.order_id);
