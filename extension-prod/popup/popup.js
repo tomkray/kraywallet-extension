@@ -10465,9 +10465,10 @@ function showAlreadyListedModal(listingData) {
     
     document.body.appendChild(overlay);
     
-    // Close button
+    // Close button - close modal AND popup extension
     document.getElementById('close-modal-btn').addEventListener('click', () => {
         overlay.remove();
+        window.close(); // Close the extension popup entirely
     });
     
     // Update price button
