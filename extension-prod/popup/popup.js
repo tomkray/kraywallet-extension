@@ -9864,7 +9864,7 @@ function showListingConfirmScreen(inscription, price, message) {
                 📦 UTXO Details
             </div>
             
-            <!-- Input UTXO -->
+            <!-- Input UTXO with Thumbnail -->
             <div style="
                 background: rgba(239, 68, 68, 0.1);
                 border: 1px solid rgba(239, 68, 68, 0.3);
@@ -9872,12 +9872,20 @@ function showListingConfirmScreen(inscription, price, message) {
                 padding: 12px;
                 margin-bottom: 8px;
             ">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 10px; color: #ef4444; font-weight: 600; text-transform: uppercase;">INPUT (Your Inscription)</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 10px; color: #ef4444; font-weight: 600; text-transform: uppercase;">📥 INPUT</span>
                     <span style="font-size: 12px; color: #ef4444; font-weight: 700;">${outputValue} sats</span>
                 </div>
-                <div style="font-family: monospace; font-size: 11px; color: var(--color-text); word-break: break-all;">
-                    ${shortTxid}:${utxoVout}
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <img src="https://ordinals.com/content/${inscription.id}" 
+                         style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 2px solid rgba(239, 68, 68, 0.5);"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--color-text);">#${inscription.number || '?'}</div>
+                        <div style="font-family: monospace; font-size: 10px; color: var(--color-text-secondary); word-break: break-all;">
+                            ${shortTxid}:${utxoVout}
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -9891,12 +9899,20 @@ function showListingConfirmScreen(inscription, price, message) {
                 border-radius: 8px;
                 padding: 12px;
             ">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 10px; color: #22c55e; font-weight: 600; text-transform: uppercase;">OUTPUT (To Buyer)</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 10px; color: #22c55e; font-weight: 600; text-transform: uppercase;">📤 OUTPUT</span>
                     <span style="font-size: 12px; color: #22c55e; font-weight: 700;">${outputValue} sats</span>
                 </div>
-                <div style="font-size: 11px; color: var(--color-text-secondary);">
-                    Inscription will transfer to buyer's address
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <img src="https://ordinals.com/content/${inscription.id}" 
+                         style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 2px solid rgba(34, 197, 94, 0.5); opacity: 0.7;"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; font-weight: 600; color: #22c55e;">→ Buyer's Address</div>
+                        <div style="font-size: 10px; color: var(--color-text-secondary);">
+                            Inscription transfers when purchased
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
