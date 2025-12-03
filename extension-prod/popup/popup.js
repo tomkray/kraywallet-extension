@@ -9789,11 +9789,19 @@ async function createMarketListing() {
 
 /**
  * Show listing confirmation screen with password input
+ * Shows UTXO details like Magic Eden and other marketplaces
  */
 function showListingConfirmScreen(inscription, price, message) {
     console.log('🔐 Showing listing confirmation screen...');
+    console.log('   Inscription:', inscription);
     
     const container = document.getElementById('main-content') || document.body;
+    
+    // Extract UTXO info from inscription
+    const utxoTxid = inscription.utxo?.split(':')[0] || inscription.location?.split(':')[0] || inscription.id?.slice(0, 64) || '?';
+    const utxoVout = inscription.utxo?.split(':')[1] || inscription.location?.split(':')[1] || '0';
+    const outputValue = inscription.outputValue || inscription.value || 555;
+    const shortTxid = utxoTxid.slice(0, 8) + '...' + utxoTxid.slice(-8);
     
     // Create confirmation overlay
     const overlay = document.createElement('div');
@@ -9809,10 +9817,11 @@ function showListingConfirmScreen(inscription, price, message) {
         display: flex;
         flex-direction: column;
         padding: 20px;
+        overflow-y: auto;
     `;
     
     overlay.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
             <button id="listing-confirm-back" style="
                 background: transparent;
                 border: none;
@@ -9824,52 +9833,117 @@ function showListingConfirmScreen(inscription, price, message) {
             <h2 style="margin: 0; font-size: 18px; color: var(--color-text);">🔐 Confirm Listing</h2>
         </div>
         
+        <!-- Inscription Preview -->
         <div style="
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         ">
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
                 <img src="https://ordinals.com/content/${inscription.id}" 
-                     style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;"
+                     style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover;"
                      onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
-                <div>
-                    <div style="font-weight: 600; color: var(--color-text);">#${inscription.number || '?'}</div>
-                    <div style="font-size: 12px; color: var(--color-text-secondary);">${inscription.id.slice(0, 12)}...</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 16px; color: var(--color-text);">Inscription #${inscription.number || '?'}</div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">${inscription.content_type || 'image/webp'}</div>
                 </div>
-            </div>
-            
-            <div style="
-                display: flex;
-                justify-content: space-between;
-                padding: 12px;
-                background: rgba(34, 197, 94, 0.1);
-                border-radius: 8px;
-                border: 1px solid rgba(34, 197, 94, 0.3);
-            ">
-                <span style="color: var(--color-text-secondary);">Sale Price</span>
-                <span style="font-weight: 700; color: #22c55e;">${price.toLocaleString()} sats</span>
             </div>
         </div>
         
+        <!-- UTXO Details (like Magic Eden) -->
+        <div style="
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        ">
+            <div style="font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+                📦 UTXO Details
+            </div>
+            
+            <!-- Input UTXO -->
+            <div style="
+                background: rgba(239, 68, 68, 0.1);
+                border: 1px solid rgba(239, 68, 68, 0.3);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 8px;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 10px; color: #ef4444; font-weight: 600; text-transform: uppercase;">INPUT (Your Inscription)</span>
+                    <span style="font-size: 12px; color: #ef4444; font-weight: 700;">${outputValue} sats</span>
+                </div>
+                <div style="font-family: monospace; font-size: 11px; color: var(--color-text); word-break: break-all;">
+                    ${shortTxid}:${utxoVout}
+                </div>
+            </div>
+            
+            <!-- Arrow -->
+            <div style="text-align: center; color: var(--color-text-secondary); font-size: 16px; margin: 4px 0;">↓</div>
+            
+            <!-- Output (Buyer will receive) -->
+            <div style="
+                background: rgba(34, 197, 94, 0.1);
+                border: 1px solid rgba(34, 197, 94, 0.3);
+                border-radius: 8px;
+                padding: 12px;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 10px; color: #22c55e; font-weight: 600; text-transform: uppercase;">OUTPUT (To Buyer)</span>
+                    <span style="font-size: 12px; color: #22c55e; font-weight: 700;">${outputValue} sats</span>
+                </div>
+                <div style="font-size: 11px; color: var(--color-text-secondary);">
+                    Inscription will transfer to buyer's address
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sale Price -->
+        <div style="
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        ">
+            <div style="font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                💰 Sale Details
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--color-text);">Listing Price</span>
+                <span style="font-weight: 700; font-size: 18px; color: #22c55e;">${price.toLocaleString()} sats</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--color-border);">
+                <span style="font-size: 12px; color: var(--color-text-secondary);">Market Fee (2%)</span>
+                <span style="font-size: 12px; color: var(--color-text-secondary);">${Math.max(Math.floor(price * 0.02), 546)} sats</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span style="font-size: 12px; color: var(--color-text-secondary);">You Receive</span>
+                <span style="font-size: 12px; font-weight: 600; color: var(--color-text);">~${(price - Math.max(Math.floor(price * 0.02), 546)).toLocaleString()} sats</span>
+            </div>
+        </div>
+        
+        <!-- Warning -->
         <div style="
             background: rgba(251, 191, 36, 0.1);
             border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 8px;
             padding: 12px;
-            margin-bottom: 20px;
-            font-size: 12px;
+            margin-bottom: 16px;
+            font-size: 11px;
             color: #fbbf24;
         ">
             ⚠️ <strong>Authentication Required</strong><br>
             Enter your password to prove ownership and authorize this listing.
         </div>
         
-        <div style="margin-bottom: 20px;">
+        <!-- Password Input -->
+        <div style="margin-bottom: 16px;">
             <label style="display: block; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Password
+                🔑 Password
             </label>
             <input type="password" id="listing-confirm-password" placeholder="Enter your wallet password" style="
                 width: 100%;
@@ -9883,6 +9957,7 @@ function showListingConfirmScreen(inscription, price, message) {
             " autofocus>
         </div>
         
+        <!-- Sign Button -->
         <button id="listing-confirm-btn" style="
             width: 100%;
             padding: 16px;
@@ -9903,9 +9978,9 @@ function showListingConfirmScreen(inscription, price, message) {
         
         <p style="
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--color-text-secondary);
-            margin-top: 16px;
+            margin-top: 12px;
         ">
             Your signature proves you own this inscription.<br>
             No funds will be moved until a buyer purchases.
