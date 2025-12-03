@@ -2106,10 +2106,13 @@ async function createAndSignListing({ inscriptionId, priceSats, description, pas
             throw new Error('No wallet found. Please restore or create a wallet first.');
         }
         
-        const decrypted = await decryptWallet(password);
+        // Use decryptData function (not decryptWallet)
+        const decrypted = await decryptData(storage.walletEncrypted, password);
         if (!decrypted || !decrypted.mnemonic) {
             throw new Error('Failed to decrypt wallet - wrong password?');
         }
+        
+        console.log('✅ Wallet decrypted successfully');
         
         // Sign the PSBT
         const signedPsbt = await signPsbtInternal(createData.psbt_base64, decrypted.mnemonic, createData.toSignInputs);

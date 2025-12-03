@@ -10009,14 +10009,14 @@ async function createMarketListing() {
             // Salvar dados pendentes
             await chrome.storage.local.set({
                 pendingListingData: {
-                    inscriptionId: currentInscriptionToList.id,
+                inscriptionId: currentInscriptionToList.id,
                     priceSats: price,
                     description: description,
                     message: messageToSign,
                     timestamp: timestamp
-                }
-            });
-            
+            }
+        });
+        
             // Mostrar tela de confirmação de listagem com senha
             document.getElementById('list-market-screen')?.classList.add('hidden');
             showListingConfirmScreen(currentInscriptionToList, price, messageToSign);
@@ -10658,15 +10658,15 @@ async function createListingWithSignature(inscriptionId, price, description, sig
             hideLoading();
             
             // Hide list screen
-            document.getElementById('list-market-screen')?.classList.add('hidden');
+        document.getElementById('list-market-screen')?.classList.add('hidden');
             
             // 🔐 SHOW PSBT SIGNING SCREEN IMMEDIATELY!
             console.log('📱 Switching to PSBT signing screen...');
-            showScreen('confirm-psbt');
-            
+        showScreen('confirm-psbt');
+        
             // Load PSBT confirmation data
-            await showPsbtConfirmation();
-            
+        await showPsbtConfirmation();
+        
             return;
         }
         
