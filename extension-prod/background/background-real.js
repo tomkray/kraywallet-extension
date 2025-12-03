@@ -1926,16 +1926,22 @@ async function cancelListing({ orderId }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Create a Buy Now listing (seller lists inscription with fixed price)
- * NO signature needed upfront - seller signs when buyer purchases
+ * Create Buy Now Listing (MAGIC EDEN MODEL)
+ * 
+ * FLOW:
+ * 1. Backend returns PSBT for seller to sign
+ * 2. Seller signs with SIGHASH_SINGLE|ANYONECANPAY (0x83)
+ * 3. Signed PSBT sent back to confirm listing
+ * 4. Listing is LIVE! Seller goes away.
+ * 5. When buyer purchases, we use the stored signature.
  */
-async function createBuyNowListing({ inscriptionId, priceSats, description, signature, message, timestamp }) {
+async function createBuyNowListing({ inscriptionId, priceSats, description, step, orderId, signedPsbt }) {
     try {
-        console.log('\n📝 ===== CREATE BUY NOW LISTING =====');
+        console.log('\n📝 ===== CREATE BUY NOW LISTING (MAGIC EDEN MODEL) =====');
         console.log('   Inscription:', inscriptionId);
         console.log('   Price:', priceSats, 'sats');
+        console.log('   Step:', step || 'create');
         console.log('   Wallet address:', walletState.address);
-        console.log('   Signature provided:', !!signature);
         
         if (!walletState.unlocked) {
             throw new Error('Wallet is locked. Please unlock your wallet first.');
@@ -1945,6 +1951,46 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, sign
             throw new Error('No wallet address found');
         }
         
+        // ═══════════════════════════════════════════════════════════════
+        // STEP 2: Confirm listing with signed PSBT
+        // ═══════════════════════════════════════════════════════════════
+        if (step === 'confirm' && orderId && signedPsbt) {
+            console.log('📤 Confirming listing with signed PSBT...');
+            
+            const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    inscription_id: inscriptionId,
+                    price_sats: priceSats,
+                    seller_address: walletState.address,
+                    order_id: orderId,
+                    seller_signed_psbt: signedPsbt
+                })
+            });
+            
+            if (!confirmResponse.ok) {
+                const error = await confirmResponse.json();
+                throw new Error(error.error || 'Failed to confirm listing');
+            }
+            
+            const confirmData = await confirmResponse.json();
+            console.log('✅ Listing confirmed and LIVE!');
+            console.log('   Order ID:', confirmData.order_id);
+            
+            return {
+                success: true,
+                order_id: confirmData.order_id,
+                inscription_id: inscriptionId,
+                price_sats: priceSats,
+                status: 'OPEN',
+                message: 'Listing is LIVE! Buyers can purchase anytime.'
+            };
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // STEP 1: Create listing and get PSBT to sign
+        // ═══════════════════════════════════════════════════════════════
         if (!inscriptionId) {
             throw new Error('Missing inscription ID');
         }
@@ -1953,8 +1999,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, sign
             throw new Error('Price must be at least 546 sats');
         }
         
-        // 🔐 Create listing on backend WITH signature verification
-        console.log('📤 Creating listing on backend (with signature)...');
+        console.log('📤 Creating listing on backend...');
         const response = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1962,10 +2007,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, sign
                 inscription_id: inscriptionId,
                 price_sats: priceSats,
                 seller_address: walletState.address,
-                description: description || '',
-                signature: signature || null,
-                message: message || null,
-                timestamp: timestamp || Date.now()
+                description: description || ''
             })
         });
         
@@ -1975,10 +2017,51 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, sign
         }
         
         const data = await response.json();
-        console.log('✅ Buy Now listing created:', data.order_id);
+        console.log('📋 Listing created, PSBT ready for signature');
+        console.log('   Order ID:', data.order_id);
         console.log('   Status:', data.status);
-        console.log('   Price:', data.price_sats, 'sats');
+        console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
         
+        // If status is AWAITING_SELLER_SIG, we need to sign the PSBT
+        if (data.status === 'AWAITING_SELLER_SIG' && data.psbt_base64) {
+            console.log('🔐 Saving PSBT for seller signature...');
+            
+            // Save pending PSBT request for signing
+            pendingPsbtRequest = {
+                psbt: data.psbt_base64,
+                type: 'createBuyNowListing',
+                orderId: data.order_id,
+                inscriptionId: inscriptionId,
+                priceSats: priceSats,
+                inputsToSign: data.toSignInputs || [{
+                    index: 0,
+                    sighashTypes: [0x83] // SIGHASH_SINGLE|ANYONECANPAY
+                }],
+                timestamp: Date.now()
+            };
+            
+            await chrome.storage.local.set({ pendingPsbtRequest });
+            console.log('💾 PSBT saved for signature');
+            
+            // Open popup for signature
+            try {
+                await chrome.action.openPopup();
+            } catch (e) {
+                console.log('⚠️ Could not auto-open popup:', e.message);
+            }
+            
+            return {
+                success: true,
+                requiresSignature: true,
+                order_id: data.order_id,
+                inscription_id: inscriptionId,
+                price_sats: priceSats,
+                status: 'AWAITING_SELLER_SIG',
+                message: 'Sign the listing to activate it. Click the wallet extension icon.'
+            };
+        }
+        
+        // If already OPEN (shouldn't happen, but handle it)
         return {
             success: true,
             order_id: data.order_id,
@@ -1995,8 +2078,12 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, sign
 }
 
 /**
- * Buy Now - Buyer purchases a listed inscription
- * Creates PSBT, buyer signs, then waits for seller to accept
+ * Buy Now - Buyer purchases a listed inscription (MAGIC EDEN MODEL)
+ * 
+ * FLOW:
+ * 1. Get PSBT from backend (seller's signature already injected!)
+ * 2. Buyer signs their inputs
+ * 3. Backend broadcasts IMMEDIATELY!
  */
 async function buyNow({ orderId, buyerAddress }) {
     try {

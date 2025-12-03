@@ -6767,16 +6767,54 @@ async function handlePsbtSign() {
             // Recarregar dados da wallet
             await loadWalletData();
             
+        } else if (pendingPsbt?.type === 'createBuyNowListing') {
+            // 🏷️ CREATE BUY NOW LISTING - Seller signs to activate listing (Magic Eden Model)
+            console.log('🏷️ ===== CREATE BUY NOW LISTING (MAGIC EDEN MODEL) =====');
+            console.log('   Confirming listing with signed PSBT...');
+            console.log('   Order ID:', pendingPsbt.orderId);
+            console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
+            
+            showLoading('Activating listing...');
+            
+            // Send signed PSBT to confirm the listing
+            const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    inscription_id: pendingPsbt.inscriptionId,
+                    price_sats: pendingPsbt.priceSats,
+                    order_id: pendingPsbt.orderId,
+                    seller_signed_psbt: response.signedPsbt
+                })
+            });
+            
+            const confirmResult = await confirmResponse.json();
+            
+            if (!confirmResponse.ok || !confirmResult.success) {
+                throw new Error(confirmResult.error || 'Failed to activate listing');
+            }
+            
+            console.log('✅ Listing is LIVE!', confirmResult);
+            
+            // Clear pending PSBT
+            await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
+            
+            hideLoading();
+            
+            // Show success screen
+            showListingSuccessScreen(pendingPsbt.inscriptionId, pendingPsbt.priceSats, confirmResult.order_id);
+            
         } else if (pendingPsbt?.type === 'buyNow') {
-            // 🛒 BUY NOW FLOW - Buyer signs and confirms
-            console.log('🛒 ===== BUY NOW FLOW =====');
-            console.log('   Confirming purchase with backend...');
+            // 🛒 BUY NOW FLOW (MAGIC EDEN MODEL) - Buyer signs → INSTANT BROADCAST!
+            console.log('🛒 ===== BUY NOW FLOW (MAGIC EDEN MODEL) =====');
+            console.log('   Broadcasting purchase IMMEDIATELY...');
             console.log('   Order ID:', pendingPsbt.orderId);
             console.log('   Purchase ID:', pendingPsbt.purchaseId);
+            console.log('   Seller signature: PRE-SIGNED ✓');
             
-            showLoading('Confirming purchase...');
+            showLoading('Broadcasting purchase...');
             
-            // Send signed PSBT to confirm endpoint
+            // Send signed PSBT to confirm endpoint → INSTANT BROADCAST!
             const confirmResponse = await fetch(`https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/${pendingPsbt.orderId}/confirm`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -6789,18 +6827,19 @@ async function handlePsbtSign() {
             const confirmResult = await confirmResponse.json();
             
             if (!confirmResponse.ok || !confirmResult.success) {
-                throw new Error(confirmResult.error || 'Failed to confirm purchase');
+                throw new Error(confirmResult.error || 'Failed to broadcast purchase');
             }
             
-            console.log('✅ Purchase confirmed!', confirmResult);
+            console.log('✅ Purchase BROADCAST!', confirmResult);
+            console.log('   TXID:', confirmResult.txid);
             
             // Clear pending PSBT
             await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
             
             hideLoading();
-            showScreen('wallet');
             
-            showNotification(`✅ Purchase confirmed!\n\n⏳ Waiting for seller to accept.\n\n📋 Order: ${pendingPsbt.orderId.slice(0, 20)}...`, 'success');
+            // Show success modal with TXID!
+            showBuyNowSuccessModal(confirmResult.txid, pendingPsbt.orderId);
             
             await loadWalletData();
             
