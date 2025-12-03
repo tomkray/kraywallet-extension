@@ -6772,37 +6772,90 @@ async function handlePsbtSign() {
             console.log('🏷️ ===== CREATE BUY NOW LISTING (MAGIC EDEN MODEL) =====');
             console.log('   Confirming listing with signed PSBT...');
             console.log('   Order ID:', pendingPsbt.orderId);
+            console.log('   Inscription ID:', pendingPsbt.inscriptionId);
+            console.log('   Price:', pendingPsbt.priceSats, 'sats');
+            console.log('   Signed PSBT length:', response.signedPsbt?.length || 0);
             console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
             
             showLoading('Activating listing...');
             
-            // Send signed PSBT to confirm the listing
-            const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    inscription_id: pendingPsbt.inscriptionId,
-                    price_sats: pendingPsbt.priceSats,
-                    order_id: pendingPsbt.orderId,
-                    seller_signed_psbt: response.signedPsbt
-                })
-            });
-            
-            const confirmResult = await confirmResponse.json();
-            
-            if (!confirmResponse.ok || !confirmResult.success) {
-                throw new Error(confirmResult.error || 'Failed to activate listing');
+            try {
+                // Send signed PSBT to confirm the listing
+                console.log('📤 Sending to backend...');
+                const confirmResponse = await fetch('https://kraywallet-backend.onrender.com/api/atomic-swap/buy-now/list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        inscription_id: pendingPsbt.inscriptionId,
+                        price_sats: pendingPsbt.priceSats,
+                        order_id: pendingPsbt.orderId,
+                        seller_signed_psbt: response.signedPsbt
+                    })
+                });
+                
+                const confirmResult = await confirmResponse.json();
+                console.log('📥 Backend response:', confirmResult);
+                
+                if (!confirmResponse.ok || !confirmResult.success) {
+                    console.error('❌ Backend error:', confirmResult);
+                    throw new Error(confirmResult.error || 'Failed to activate listing');
+                }
+                
+                console.log('✅ Listing is LIVE!', confirmResult);
+                
+                // Clear pending PSBT
+                await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
+                
+                hideLoading();
+                
+                // Show success with beautiful modal (more reliable than screen)
+                const orderId = confirmResult.order_id || pendingPsbt.orderId;
+                const inscriptionId = pendingPsbt.inscriptionId;
+                const price = pendingPsbt.priceSats;
+                
+                // Create success modal
+                const modal = document.createElement('div');
+                modal.id = 'listing-success-modal';
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0, 0, 0, 0.95); display: flex;
+                    align-items: center; justify-content: center; z-index: 10000;
+                `;
+                modal.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+                                border-radius: 20px; padding: 30px; max-width: 350px; text-align: center;
+                                border: 1px solid rgba(34, 197, 94, 0.3); box-shadow: 0 0 40px rgba(34, 197, 94, 0.2);">
+                        <div style="font-size: 60px; margin-bottom: 16px;">🎉</div>
+                        <h2 style="color: #22c55e; margin: 0 0 8px 0; font-size: 24px;">Listing is LIVE!</h2>
+                        <p style="color: #888; margin: 0 0 20px 0; font-size: 14px;">Your inscription is now for sale</p>
+                        
+                        <div style="background: rgba(34, 197, 94, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                            <div style="color: #888; font-size: 12px; margin-bottom: 4px;">Price</div>
+                            <div style="color: #22c55e; font-size: 28px; font-weight: 700;">${price.toLocaleString()} sats</div>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="window.open('https://krayspace.com/krayscan.html?inscription=${inscriptionId}', '_blank')" style="
+                                background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
+                                padding: 14px 20px; border-radius: 12px; color: white;
+                                font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
+                            ">🔍 View on KrayScan</button>
+                            <button onclick="this.closest('#listing-success-modal').remove(); showScreen('wallet'); loadWalletData();" style="
+                                background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+                                padding: 12px 20px; border-radius: 12px; color: white;
+                                font-size: 14px; cursor: pointer; width: 100%;
+                            ">✓ Done</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+            } catch (confirmError) {
+                console.error('❌ Error confirming listing:', confirmError);
+                hideLoading();
+                showNotification('❌ ' + confirmError.message, 'error');
+                showScreen('wallet');
             }
-            
-            console.log('✅ Listing is LIVE!', confirmResult);
-            
-            // Clear pending PSBT
-            await sendMessage({ action: 'cancelPsbtSign', data: { cancelled: false } });
-            
-            hideLoading();
-            
-            // Show success screen
-            showListingSuccessScreen(pendingPsbt.inscriptionId, pendingPsbt.priceSats, confirmResult.order_id);
             
         } else if (pendingPsbt?.type === 'buyNow') {
             // 🛒 BUY NOW FLOW (MAGIC EDEN MODEL) - Buyer signs → INSTANT BROADCAST!
