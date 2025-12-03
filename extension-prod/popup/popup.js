@@ -6808,47 +6808,34 @@ async function handlePsbtSign() {
                 
                 hideLoading();
                 
-                // Show success with beautiful modal (more reliable than screen)
-                const orderId = confirmResult.order_id || pendingPsbt.orderId;
+                // 🎉 Use the standard success screen (beautiful, consistent design)
                 const inscriptionId = pendingPsbt.inscriptionId;
                 const price = pendingPsbt.priceSats;
                 
-                // Create success modal
-                const modal = document.createElement('div');
-                modal.id = 'listing-success-modal';
-                modal.style.cssText = `
-                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                    background: rgba(0, 0, 0, 0.95); display: flex;
-                    align-items: center; justify-content: center; z-index: 10000;
-                `;
-                modal.innerHTML = `
-                    <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
-                                border-radius: 20px; padding: 30px; max-width: 350px; text-align: center;
-                                border: 1px solid rgba(34, 197, 94, 0.3); box-shadow: 0 0 40px rgba(34, 197, 94, 0.2);">
-                        <div style="font-size: 60px; margin-bottom: 16px;">🎉</div>
-                        <h2 style="color: #22c55e; margin: 0 0 8px 0; font-size: 24px;">Listing is LIVE!</h2>
-                        <p style="color: #888; margin: 0 0 20px 0; font-size: 14px;">Your inscription is now for sale</p>
-                        
-                        <div style="background: rgba(34, 197, 94, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                            <div style="color: #888; font-size: 12px; margin-bottom: 4px;">Price</div>
-                            <div style="color: #22c55e; font-size: 28px; font-weight: 700;">${price.toLocaleString()} sats</div>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button onclick="window.open('https://krayspace.com/krayscan.html?inscription=${inscriptionId}', '_blank')" style="
-                                background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
-                                padding: 14px 20px; border-radius: 12px; color: white;
-                                font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
-                            ">🔍 View on KrayScan</button>
-                            <button onclick="this.closest('#listing-success-modal').remove(); showScreen('wallet'); loadWalletData();" style="
-                                background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-                                padding: 12px 20px; border-radius: 12px; color: white;
-                                font-size: 14px; cursor: pointer; width: 100%;
-                            ">✓ Done</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
+                // Update success screen content
+                const priceEl = document.getElementById('listing-success-price');
+                if (priceEl) {
+                    priceEl.textContent = `${price.toLocaleString()} sats`;
+                }
+                
+                // Setup buttons
+                const viewBtn = document.getElementById('listing-success-view-btn');
+                if (viewBtn) {
+                    viewBtn.onclick = () => {
+                        window.open(`https://krayspace.com/krayscan.html?inscription=${inscriptionId}`, '_blank');
+                    };
+                }
+                
+                const doneBtn = document.getElementById('listing-success-done-btn');
+                if (doneBtn) {
+                    doneBtn.onclick = () => {
+                        showScreen('wallet');
+                        loadWalletData();
+                    };
+                }
+                
+                // Show the success screen
+                showScreen('listing-success-screen');
                 
             } catch (confirmError) {
                 console.error('❌ Error confirming listing:', confirmError);
