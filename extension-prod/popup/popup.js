@@ -10355,7 +10355,7 @@ function showListingConfirmScreen(inscription, price, message) {
                 if (storageData.pendingListingData) {
                     showAlreadyListedModal(storageData.pendingListingData);
                 } else {
-                    showNotification('⚠️ Esta inscrição já está listada no marketplace!', 'warning');
+                    showNotification('⚠️ This inscription is already listed on the marketplace!', 'warning');
                 }
                 return;
             }
@@ -10407,12 +10407,12 @@ function showAlreadyListedModal(listingData) {
             text-align: center;
         ">
             <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-            <h3 style="color: var(--color-text, white); margin: 0 0 12px;">Inscrição Já Listada</h3>
+            <h3 style="color: var(--color-text, white); margin: 0 0 12px;">Already Listed</h3>
             <p style="color: var(--color-text-secondary, #888); font-size: 13px; margin: 0 0 8px; line-height: 1.5;">
-                Esta inscrição já está listada no marketplace.
+                This inscription is already listed on the marketplace.
             </p>
             <p style="color: #10b981; font-size: 16px; font-weight: 600; margin: 0 0 20px;">
-                Preço atual: ${Number(currentPrice).toLocaleString()} sats
+                Current price: ${Number(currentPrice).toLocaleString()} sats
             </p>
             
             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -10429,7 +10429,7 @@ function showAlreadyListedModal(listingData) {
                     justify-content: center;
                     gap: 8px;
                 ">
-                    💰 Atualizar Preço
+                    💰 Update Price
                 </button>
                 
                 <button id="cancel-listing-btn" style="
@@ -10445,7 +10445,7 @@ function showAlreadyListedModal(listingData) {
                     justify-content: center;
                     gap: 8px;
                 ">
-                    🗑️ Cancelar Listagem
+                    🗑️ Cancel Listing
                 </button>
                 
                 <button id="close-modal-btn" style="
@@ -10457,7 +10457,7 @@ function showAlreadyListedModal(listingData) {
                     cursor: pointer;
                     margin-top: 8px;
                 ">
-                    Fechar
+                    Close
                 </button>
             </div>
         </div>
@@ -10479,11 +10479,11 @@ function showAlreadyListedModal(listingData) {
     
     // Cancel listing button
     document.getElementById('cancel-listing-btn').addEventListener('click', async () => {
-        const confirmed = confirm('🗑️ Tem certeza que deseja cancelar esta listagem?');
+        const confirmed = confirm('🗑️ Are you sure you want to cancel this listing?');
         if (!confirmed) return;
         
         try {
-            showLoading('Cancelando listagem...');
+            showLoading('Cancelling listing...');
             
             // Use existingOrderId if available, otherwise use inscriptionId
             const orderId = listingData.existingOrderId;
@@ -10501,12 +10501,12 @@ function showAlreadyListedModal(listingData) {
             
             if (result.success) {
                 overlay.remove();
-                showNotification('✅ Listagem cancelada com sucesso!', 'success');
+                showNotification('✅ Listing cancelled successfully!', 'success');
                 // Reload wallet data
                 await loadWalletData();
                 showScreen('wallet');
             } else {
-                showNotification('❌ ' + (result.error || 'Erro ao cancelar'), 'error');
+                showNotification('❌ ' + (result.error || 'Failed to cancel'), 'error');
             }
         } catch (error) {
             hideLoading();
