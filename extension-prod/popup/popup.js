@@ -9715,37 +9715,39 @@ async function createMarketListing() {
         // Show loading
         showLoading('Creating listing...');
         
-        // STEP 1: Usar novo fluxo createOffer (já cria PSBT e prepara assinatura)
-        console.log('🔨 Creating offer via background...');
+        // 🛒 STEP 1: Usar novo fluxo BUY NOW (SEM assinatura prévia!)
+        console.log('🛒 Creating BUY NOW listing via background...');
         
-        const createOfferResponse = await chrome.runtime.sendMessage({
-            action: 'createOffer',
+        const createListingResponse = await chrome.runtime.sendMessage({
+            action: 'createBuyNowListing',
             data: {
                 inscriptionId: currentInscriptionToList.id,
-                price: price,
+                priceSats: price,
                 description: description
             }
         });
         
-        if (!createOfferResponse.success) {
-            throw new Error(createOfferResponse.error || 'Failed to create offer');
+        if (!createListingResponse.success) {
+            throw new Error(createListingResponse.error || 'Failed to create listing');
         }
         
-        console.log('✅ Offer PSBT created and saved for signing');
+        console.log('✅ BUY NOW listing created!');
+        console.log('   Order ID:', createListingResponse.order_id);
         hideLoading();
         
-        // STEP 2: Mostrar tela de assinatura (PSBT já está salvo no background)
-        console.log('📱 Showing confirm-psbt screen...');
+        // 🎉 STEP 2: Mostrar tela de SUCESSO (não precisa assinar!)
+        // O modelo BUY NOW não requer assinatura prévia do seller
         document.getElementById('list-market-screen')?.classList.add('hidden');
-        showScreen('confirm-psbt');
         
-        // Carregar dados do PSBT para exibir
-        await showPsbtConfirmation();
+        // Mostrar sucesso
+        showListingSuccessScreen(
+            currentInscriptionToList.id, 
+            price, 
+            createListingResponse.order_id
+        );
         
-        console.log('✅ Waiting for user to sign...');
-        
-        // O handlePsbtSign() vai detectar type='createOffer' e enviar para /api/offers automaticamente!
-        // Não precisa fazer mais nada aqui, o fluxo está no handlePsbtSign()
+        console.log('✅ Listing is LIVE! No signature needed upfront.');
+        console.log('   Seller will sign when buyer purchases.')
         
     } catch (error) {
         console.error('❌ Error creating listing:', error);
