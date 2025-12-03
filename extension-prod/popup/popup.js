@@ -6156,9 +6156,9 @@ async function showPsbtConfirmation() {
         
         // Verificar tipo de transação
         const isRuneTransfer = pendingPsbt.isRuneTransfer || false;
-        const isAtomicSwap = pendingPsbt.type === 'createOffer' || pendingPsbt.type === 'buyAtomicSwap';
+        const isAtomicSwap = pendingPsbt.type === 'createOffer' || pendingPsbt.type === 'buyAtomicSwap' || pendingPsbt.type === 'buyNow';
         const isSeller = pendingPsbt.type === 'createOffer';
-        const isBuyer = pendingPsbt.type === 'buyAtomicSwap';
+        const isBuyer = pendingPsbt.type === 'buyAtomicSwap' || pendingPsbt.type === 'buyNow';
         
         // 🛡️ DESIGN PROFISSIONAL PARA ATOMIC SWAP (VENDEDOR E COMPRADOR)
         if (isAtomicSwap) {
@@ -6209,22 +6209,75 @@ async function showPsbtConfirmation() {
                 `;
             }
             
-            // Info específica para comprador
-            if (isBuyer && pendingPsbt.breakdown) {
-                const b = pendingPsbt.breakdown;
+            // Info específica para comprador - DESIGN COM UTXO DETAILS
+            if (isBuyer) {
+                const b = pendingPsbt.breakdown || {};
+                const inscriptionId = pendingPsbt.inscriptionId || pendingPsbt.inscription_id || '';
+                const inscriptionNumber = pendingPsbt.inscriptionNumber || pendingPsbt.inscription_number || '?';
+                const sellerValue = b.sellerValue || pendingPsbt.seller_value || 555;
+                const price = b.price || pendingPsbt.price || 0;
+                const marketFee = b.marketFee || Math.max(Math.floor(price * 0.02), 546);
+                const totalRequired = b.totalRequired || (price + marketFee);
+                
                 html += `
+                    <!-- UTXO Details Section -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+                        <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                            📦 Transaction Details
+                        </div>
+                        
+                        <!-- Inscription you're buying (OUTPUT to you) -->
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 10px; color: #22c55e; font-weight: 600; text-transform: uppercase;">📥 YOU RECEIVE</span>
+                                <span style="font-size: 11px; color: #22c55e; font-weight: 700;">${sellerValue} sats</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                ${inscriptionId ? `
+                                <img src="https://ordinals.com/content/${inscriptionId}" 
+                                     style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 2px solid rgba(34, 197, 94, 0.5);"
+                                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
+                                ` : ''}
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 13px; font-weight: 600; color: #22c55e;">Inscription #${inscriptionNumber}</div>
+                                    <div style="font-size: 10px; color: #888;">Transfers to your wallet</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div style="text-align: center; color: #555; font-size: 12px; margin: 4px 0;">↑</div>
+                        
+                        <!-- Payment (YOUR INPUT) -->
+                        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 10px; color: #ef4444; font-weight: 600; text-transform: uppercase;">📤 YOU PAY</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: 700;">${totalRequired} sats</span>
+                            </div>
+                            <div style="font-size: 10px; color: #888;">From your wallet UTXOs</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Breakdown -->
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-size: 12px; color: #10B981;">Price</span>
-                            <span style="font-size: 14px; color: #fff;">${b.price || 0} sats</span>
+                        <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                            💰 Price Breakdown
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 12px; color: #10B981;">Inscription Price</span>
+                            <span style="font-size: 13px; color: #fff;">${price.toLocaleString()} sats</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <span style="font-size: 12px; color: #10B981;">Market Fee (2%)</span>
-                            <span style="font-size: 14px; color: #fff;">${b.marketFee || 0} sats</span>
+                            <span style="font-size: 13px; color: #fff;">${marketFee.toLocaleString()} sats</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(16,185,129,0.2);">
-                            <span style="font-size: 12px; color: #10B981; font-weight: 600;">Total</span>
-                            <span style="font-size: 16px; color: #10B981; font-weight: 700;">${b.totalRequired || 0} sats</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 12px; color: #10B981;">Network Fee</span>
+                            <span style="font-size: 13px; color: #fff;">~${(b.minerFee || 0).toLocaleString()} sats</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 8px; border-top: 1px solid rgba(16,185,129,0.2);">
+                            <span style="font-size: 12px; color: #10B981; font-weight: 600;">Total Payment</span>
+                            <span style="font-size: 16px; color: #10B981; font-weight: 700;">${totalRequired.toLocaleString()} sats</span>
                         </div>
                     </div>
                 `;

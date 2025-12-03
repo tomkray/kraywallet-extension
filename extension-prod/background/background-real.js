@@ -2118,6 +2118,10 @@ async function buyNow({ orderId, buyerAddress }) {
             purchaseId: buyData.purchase_id,
             buyerAddress: actualBuyerAddress,
             sellerAddress: buyData.seller_address,
+            // 🖼️ Inscription details for UI display
+            inscriptionId: buyData.inscription_id || buyData.inscriptionId,
+            inscriptionNumber: buyData.inscription_number || buyData.inscriptionNumber,
+            price: buyData.price || buyData.breakdown?.price,
             inputsToSign: buyerInputIndexes.map(idx => ({
                 index: idx,
                 sighashTypes: [0x01] // SIGHASH_ALL
