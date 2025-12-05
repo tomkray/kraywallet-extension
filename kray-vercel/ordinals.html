@@ -1674,10 +1674,14 @@
             }
             
             const data = await response.json();
-            const listings = data.listings || [];
+            const allListings = data.listings || [];
             
-            console.log(`✅ Loaded ${listings.length} atomic swap listings`);
-            console.log('   📋 Listings data:', listings);
+            // 🔥 FILTRAR: Mostrar APENAS listings ATIVAS (OPEN)
+            // NÃO mostrar SOLD, CANCELLED, FILLED, EXPIRED, ou PENDING
+            const listings = allListings.filter(l => l.status === 'OPEN');
+            
+            console.log(`✅ Loaded ${allListings.length} total listings, showing ${listings.length} active (OPEN)`);
+            console.log('   📋 Filtered out:', allListings.length - listings.length, 'non-active listings');
             
             const grid = document.getElementById('marketplaceGrid');
             console.log('   🎯 Grid element:', grid ? 'FOUND ✅' : 'NOT FOUND ❌');
@@ -1695,7 +1699,7 @@
             grid.innerHTML = '';
             
             if (listings.length === 0) {
-                console.log('   ⚠️ No listings, showing empty state');
+                console.log('   ⚠️ No active listings, showing empty state');
                 grid.innerHTML = `
                     <div style="text-align: center; padding: 60px 20px; grid-column: 1 / -1;">
                         <div style="font-size: 60px; margin-bottom: 20px;">🏜️</div>
@@ -1710,7 +1714,7 @@
             console.log(`   🎨 Rendering ${listings.length} cards...`);
             for (let i = 0; i < listings.length; i++) {
                 const listing = listings[i];
-                console.log(`      [${i+1}/${listings.length}] Creating card for:`, listing.inscription_id);
+                console.log(`      [${i+1}/${listings.length}] Creating card for:`, listing.inscription_id, '(status:', listing.status, ')');
                 const card = await createMarketplaceListingCard(listing);
                 console.log(`      [${i+1}/${listings.length}] Card created, appending to grid`);
                 grid.appendChild(card);
