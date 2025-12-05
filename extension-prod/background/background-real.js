@@ -2149,7 +2149,7 @@ async function createAndSignListing({ inscriptionId, priceSats, description, pas
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 order_id: createData.order_id,
-                seller_signed_psbt: signedPsbt
+                signed_psbt: signedPsbt  // Backend expects 'signed_psbt', not 'seller_signed_psbt'
             })
         });
         
@@ -2193,8 +2193,8 @@ async function signPsbtInternal(psbtBase64, mnemonic, inputsToSign) {
                 mnemonic,
                 psbt: psbtBase64,
                 network: 'mainnet',
-                sighashType: 0x83, // SIGHASH_SINGLE|ANYONECANPAY for seller listing
-                inputsToSign: inputsToSign || [{ index: 0, sighashTypes: [0x83] }]
+                sighashType: 0x82, // SIGHASH_NONE|ANYONECANPAY for seller listing (secure model)
+                inputsToSign: inputsToSign || [{ index: 0, sighashTypes: [0x82] }]
             })
         });
         
@@ -2301,7 +2301,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, step
         console.log('📋 Listing created, PSBT ready for signature');
         console.log('   Order ID:', data.order_id);
         console.log('   Status:', data.status);
-        console.log('   SIGHASH: SINGLE|ANYONECANPAY (0x83)');
+        console.log('   SIGHASH: NONE|ANYONECANPAY (0x82) - SECURE MODEL');
         
         // If status is PENDING, we need to sign the PSBT
         if (data.status === 'PENDING' && data.psbt_base64) {
@@ -2316,7 +2316,7 @@ async function createBuyNowListing({ inscriptionId, priceSats, description, step
                 priceSats: priceSats,
                 inputsToSign: data.toSignInputs || [{
                     index: 0,
-                    sighashTypes: [0x83] // SIGHASH_SINGLE|ANYONECANPAY
+                    sighashTypes: [0x82] // SIGHASH_NONE|ANYONECANPAY - Secure model
                 }],
                 timestamp: Date.now()
             };
